@@ -46,7 +46,7 @@ RUN flutter create --platforms=web --org com.vegnbio .
 RUN flutter pub get
 
 # Exposer le port pour le développement
-EXPOSE 3000
+EXPOSE 4200
 
 # Commande pour lancer l'application en mode développement
-CMD ["flutter", "run", "-d", "web-server", "--web-port", "3000", "--web-hostname", "0.0.0.0"]
+CMD ["flutter", "run", "-d", "web-server", "--web-port", "4200", "--web-hostname", "0.0.0.0"]

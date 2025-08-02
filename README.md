@@ -46,7 +46,7 @@ cd vegnbioFront
 docker-compose up --build
 ```
 
-L'application sera accessible à l'adresse : http://localhost:3000
+L'application sera accessible à l'adresse : http://localhost:4200
 
 ## Structure du projet
 
