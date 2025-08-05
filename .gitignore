@@ -14,7 +14,8 @@
 build/
 coverage/
 lib/generated_plugin_registrant.dart
-# For library packages, don’t commit the pubspec.lock file.
+
+# For library packages, don't commit the pubspec.lock file.
 # Regenerating the pubspec.lock file lets you test your package against the latest compatible versions of its dependencies.
 # See https://dart.dev/guides/libraries/private-files#pubspeclock
 #pubspec.lock
@@ -25,9 +26,15 @@ lib/generated_plugin_registrant.dart
 **/android/captures/
 **/android/gradlew
 **/android/gradlew.bat
-**/android/key.properties
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
+
+# Fichiers de signature Android (SENSIBLE)
+**/android/key.properties
+**/android/app/upload-keystore.jks
+**/android/app/*.keystore
+**/android/app/*.jks
+**/android/app/debug.keystore
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -57,6 +64,34 @@ lib/generated_plugin_registrant.dart
 **/ios/Flutter/flutter_export_environment.sh
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+
+# Web related
+**/web/icons/
+**/web/canvaskit/
+
+# Fichiers de configuration sensibles
+.env
+.env.*
+!.env.example
+
+# Fichiers système
+.DS_Store
+*.log
+*.bak
+*.swp
+*.tmp
+
+# IDE et éditeurs
+.idea/
+.vscode/
+*.iml
+*.iws
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Fichiers de build Docker
+.docker/
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

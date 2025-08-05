@@ -16,6 +16,19 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path_android: "assets/icon/playstore.png"  # Icône spécifique pour Android
+  image_path_ios: "assets/icon/appstore.png"      # Icône spécifique pour iOS
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/web.jpg"            # Icône spécifique pour le web
+    background_color: "#ffffff"
+    theme_color: "#ffffff"

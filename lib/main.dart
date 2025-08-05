@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
       title: "Veg'N Bio",
       theme: AppTheme.lightTheme,
       routerConfig: _router,
+      debugShowCheckedModeBanner: false,  // Supprime la bannière debug
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),

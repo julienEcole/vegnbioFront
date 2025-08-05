@@ -1,9 +1,19 @@
 services:
   flutter_web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.web
     ports:
       - "4200:4200"
+    restart: unless-stopped
+
+  flutter_android:
+    build: 
+      context: .
+      dockerfile: Dockerfile.android
     volumes:
-      - .:/app
+      - ./build:/app/build
+    entrypoint: ["/home/developer/entrypoint.sh"]
+    command: sh -c "flutter build apk --debug && echo 'APK créé dans ./build/app/outputs/flutter-apk/app-debug.apk' && ls -la build/app/outputs/flutter-apk/"
     environment:
-      - FLUTTER_WEB=true
+      - ANDROID_SDK_ROOT=/opt/android-sdk
