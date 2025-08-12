@@ -52,12 +52,7 @@ RUN flutter pub get
 # Build l'application en mode production
 RUN flutter build web --release
 
-# Ajouter les en-têtes de sécurité à index.html
-RUN sed -i '/<head>/a \
-  <meta http-equiv="Content-Security-Policy" content="default-src '\''self'\''; script-src '\''self'\'' '\''unsafe-inline'\'' '\''unsafe-eval'\''; style-src '\''self'\'' '\''unsafe-inline'\'';">\
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">\
-  <meta http-equiv="X-Frame-Options" content="DENY">' \
-  build/web/index.html
+# Les en-têtes de sécurité sont gérés par nginx
 
 # Générer le hash des fichiers pour vérification d'intégrité
 RUN cd build/web && find . -type f -exec sha256sum {} \; > checksums.txt

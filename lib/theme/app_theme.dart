@@ -44,31 +44,38 @@ class AppTheme {
           color: Color(0xFF2E7D32),
           fontWeight: FontWeight.bold,
           fontSize: 28,
+          fontFamily: 'Roboto',
         ),
         headlineMedium: TextStyle(
           color: Color(0xFF2E7D32),
           fontWeight: FontWeight.bold,
           fontSize: 24,
+          fontFamily: 'Roboto',
         ),
         titleLarge: TextStyle(
           color: Color(0xFF1B5E20),
           fontWeight: FontWeight.w600,
           fontSize: 20,
+          fontFamily: 'Roboto',
         ),
         titleMedium: TextStyle(
           color: Color(0xFF2E7D32),
           fontWeight: FontWeight.w600,
           fontSize: 16,
+          fontFamily: 'Roboto',
         ),
         bodyLarge: TextStyle(
           color: Color(0xFF333333),
           fontSize: 16,
+          fontFamily: 'Roboto',
         ),
         bodyMedium: TextStyle(
           color: Color(0xFF666666),
           fontSize: 14,
+          fontFamily: 'Roboto',
         ),
       ),
+      fontFamily: 'Roboto',
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4CAF50),

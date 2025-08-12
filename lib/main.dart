@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'screens/home_screen.dart';
 import 'screens/menu_screen.dart';
@@ -9,7 +10,7 @@ import 'screens/profile_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 final GoRouter _router = GoRouter(
@@ -23,6 +24,13 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => const MenuScreen(),
     ),
     GoRoute(
+      path: '/menus/restaurant/:restaurantId',
+      builder: (context, state) {
+        final restaurantId = int.tryParse(state.pathParameters['restaurantId'] ?? '');
+        return MenuScreen(restaurantId: restaurantId);
+      },
+    ),
+    GoRoute(
       path: '/evenements',
       builder: (context, state) => const EventsScreen(),
     ),
@@ -33,6 +41,13 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/restaurants',
       builder: (context, state) => const RestaurantsScreen(),
+    ),
+    GoRoute(
+      path: '/restaurants/:restaurantId',
+      builder: (context, state) {
+        final restaurantId = int.tryParse(state.pathParameters['restaurantId'] ?? '');
+        return RestaurantsScreen(highlightRestaurantId: restaurantId);
+      },
     ),
     GoRoute(
       path: '/profil',
