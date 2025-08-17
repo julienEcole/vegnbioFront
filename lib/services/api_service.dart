@@ -1,13 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
 
 class ApiService {
-  // Configuration dynamique de l'URL selon l'environnement
+  // Configuration unifiée de l'URL pour tous les environnements
   static String get baseUrl {
-    // En développement local ou si l'API est accessible directement
-    return 'http://localhost:3000/api';
+    // URL corrigée pour pointer vers le bon port de l'API
+    return 'http://localhost:3001/api';
   }
   
   // Configuration pour les requêtes HTTP
@@ -254,12 +257,145 @@ class ApiService {
   Future<bool> checkApiHealth() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/'),
+        Uri.parse('$baseUrl/restaurants'),
         headers: headers,
       );
       return response.statusCode == 200;
     } catch (e) {
       return false;
+    }
+  }
+
+  // Récupérer l'image principale d'un restaurant
+  Future<String?> getRestaurantPrimaryImage(int restaurantId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/images/restaurant/$restaurantId/primary'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        // Si c'est une redirection, l'URL finale est dans la réponse
+        return response.headers['location'] ?? response.request?.url.toString();
+      }
+      return null;
+    } catch (e) {
+      print('❌ Erreur récupération image principale: $e');
+      return null;
+    }
+  }
+
+  // Récupérer toutes les images d'un restaurant
+  Future<List<Map<String, dynamic>>> getRestaurantImages(int restaurantId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/images/restaurant/$restaurantId/all'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((img) => img as Map<String, dynamic>).toList();
+      }
+      return [];
+    } catch (e) {
+      print('❌ Erreur récupération images restaurant: $e');
+      return [];
+    }
+  }
+
+  // Récupérer l'image d'un menu
+  Future<String?> getMenuImage(int menuId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/images/menu/$menuId'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        // Si c'est une redirection, l'URL finale est dans la réponse
+        return response.headers['location'] ?? response.request?.url.toString();
+      }
+      return null;
+    } catch (e) {
+      print('❌ Erreur récupération image menu: $e');
+      return null;
+    }
+  }
+
+  // Upload d'image pour un restaurant
+  Future<Map<String, dynamic>> uploadRestaurantImage(int restaurantId, File imageFile) async {
+    try {
+      final uri = Uri.parse('$baseUrl/restaurants/$restaurantId/image');
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Déterminer le type MIME du fichier
+      final mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+      
+      // Ajouter le fichier à la requête
+      final multipartFile = await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: MediaType.parse(mimeType),
+      );
+      request.files.add(multipartFile);
+      
+      print('📤 Upload image restaurant - URI: $uri');
+      print('📎 Fichier: ${imageFile.path}');
+      print('🎯 Type MIME: $mimeType');
+      
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      
+      print('📡 Statut upload: ${response.statusCode}');
+      print('📄 Réponse: $responseBody');
+      
+      if (response.statusCode == 200) {
+        return json.decode(responseBody);
+      } else {
+        throw Exception('Erreur upload image restaurant: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      print('❌ Erreur upload image restaurant: $e');
+      throw Exception('Erreur lors de l\'upload de l\'image: $e');
+    }
+  }
+
+  // Upload d'image pour un menu
+  Future<Map<String, dynamic>> uploadMenuImage(int menuId, File imageFile) async {
+    try {
+      final uri = Uri.parse('$baseUrl/menus/$menuId/image');
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Déterminer le type MIME du fichier
+      final mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+      
+      // Ajouter le fichier à la requête
+      final multipartFile = await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+        contentType: MediaType.parse(mimeType),
+      );
+      request.files.add(multipartFile);
+      
+      print('📤 Upload image menu - URI: $uri');
+      print('📎 Fichier: ${imageFile.path}');
+      print('🎯 Type MIME: $mimeType');
+      
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      
+      print('📡 Statut upload: ${response.statusCode}');
+      print('📄 Réponse: $responseBody');
+      
+      if (response.statusCode == 200) {
+        return json.decode(responseBody);
+      } else {
+        throw Exception('Erreur upload image menu: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      print('❌ Erreur upload image menu: $e');
+      throw Exception('Erreur lors de l\'upload de l\'image: $e');
     }
   }
 }

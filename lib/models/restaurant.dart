@@ -1,8 +1,13 @@
+import 'restaurant_image.dart';
+
 class Restaurant {
   final int id;
   final String nom;
   final String quartier;
   final String? adresse;
+  final String? imageUrl; // URL de l'image principale (pour compatibilité)
+  final List<RestaurantImage>? images; // Nouvelles images multiples
+  final int imagesCount; // Nombre total d'images
   final List<Horaire>? horaires;
   final List<Equipement>? equipements;
 
@@ -11,21 +16,26 @@ class Restaurant {
     required this.nom,
     required this.quartier,
     this.adresse,
+    this.imageUrl,
+    this.images,
+    this.imagesCount = 0,
     this.horaires,
     this.equipements,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
-    final id = json['id'];
-    final nom = json['nom'];
-    final quartier = json['quartier'];
-    final adresse = json['adresse'];
-    
     return Restaurant(
-      id: id is int ? id : int.tryParse(id.toString()) ?? 0,
-      nom: nom?.toString() ?? '',
-      quartier: quartier?.toString() ?? '',
-      adresse: adresse?.toString(),
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      nom: json['nom']?.toString() ?? '',
+      quartier: json['quartier']?.toString() ?? '',
+      adresse: json['adresse']?.toString(),
+      imageUrl: json['imageUrl'] ?? json['image_url'],
+      images: json['images'] != null
+          ? (json['images'] as List)
+              .map((img) => RestaurantImage.fromJson(img as Map<String, dynamic>))
+              .toList()
+          : null,
+      imagesCount: json['imagesCount'] ?? json['images_count'] ?? 0,
       horaires: json['horaires'] != null
           ? (json['horaires'] as List)
               .map((h) => Horaire.fromJson(h as Map<String, dynamic>))
@@ -45,9 +55,34 @@ class Restaurant {
       'nom': nom,
       'quartier': quartier,
       'adresse': adresse,
+      'imageUrl': imageUrl,
+      'images': images?.map((img) => img.toJson()).toList(),
+      'imagesCount': imagesCount,
       'horaires': horaires?.map((h) => h.toJson()).toList(),
       'equipements': equipements?.map((e) => e.toJson()).toList(),
     };
+  }
+
+  /// Retourne l'image principale ou null si aucune image
+  String? get primaryImageUrl {
+    if (images != null && images!.isNotEmpty) {
+      final primaryImage = images!.firstWhere(
+        (img) => img.isPrimary,
+        orElse: () => images!.first,
+      );
+      return primaryImage.imageUrl;
+    }
+    return imageUrl; // Fallback vers l'ancien système
+  }
+
+  /// Retourne toutes les images ou une liste vide
+  List<RestaurantImage> get allImages {
+    return images ?? [];
+  }
+
+  /// Vérifie si le restaurant a des images
+  bool get hasImages {
+    return (images != null && images!.isNotEmpty) || imageUrl != null;
   }
 }
 

@@ -4,7 +4,7 @@ echo "🛠️  Reconstruction de l'image Docker Flutter Web avec les corrections
 
 # Arrêter les conteneurs existants
 echo "🛑 Arrêt des conteneurs existants..."
-docker-compose down
+docker compose down
 
 # Supprimer les images existantes pour forcer la reconstruction
 echo "🗑️  Suppression des images existantes..."
@@ -17,6 +17,6 @@ docker builder prune -f
 
 # Reconstruire et lancer
 echo "🏗️  Reconstruction et lancement..."
-docker-compose up --build flutter_web
+docker compose up --build flutter_web
 
 echo "✅ Terminé ! L'application devrait maintenant fonctionner sur http://localhost:4200"

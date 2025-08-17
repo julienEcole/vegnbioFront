@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/menu_image_widget.dart';
 import '../providers/menu_provider.dart';
 import '../providers/restaurant_provider.dart';
 import '../models/menu.dart';
@@ -339,125 +340,143 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    menu.titre,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    menu.formattedDate,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image du menu
+          MenuImageWidget(
+            imageUrl: menu.imageUrl,
+            width: double.infinity,
+            height: 180,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
             ),
-            if (restaurant != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.restaurant, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () {
-                        context.go('/restaurants/${restaurant.id}');
-                      },
-                      child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Colors.transparent,
-                      ),
+            fallbackIcon: Icons.restaurant_menu,
+            margin: const EdgeInsets.all(0),
+          ),
+          
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
                       child: Text(
-                        restaurant.nom,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Theme.of(context).colorScheme.primary,
+                        menu.titre,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        menu.formattedDate,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.launch,
-                    size: 12,
-                    color: Theme.of(context).colorScheme.primary,
+                  ],
+                ),
+                if (restaurant != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.restaurant, size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            context.go('/restaurants/${restaurant.id}');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: Colors.transparent,
+                            ),
+                            child: Text(
+                              restaurant.nom,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.launch,
+                        size: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
-            if (menu.description != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                menu.description!,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.warning_amber, size: 16, color: Colors.orange),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    menu.allergenesText,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.orange,
-                    ),
+                if (menu.description != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    menu.description!,
+                    style: const TextStyle(fontSize: 16),
                   ),
+                ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.warning_amber, size: 16, color: Colors.orange),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        menu.allergenesText,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                if (menu.allergenes.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: menu.allergenes.map((allergene) {
+                      return Chip(
+                        label: Text(
+                          allergene,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        backgroundColor: Colors.orange.shade100,
+                        avatar: const Icon(
+                          Icons.warning,
+                          size: 16,
+                          color: Colors.orange,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
             ),
-            if (menu.allergenes.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: menu.allergenes.map((allergene) {
-                  return Chip(
-                    label: Text(
-                      allergene,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    backgroundColor: Colors.orange.shade100,
-                    avatar: const Icon(
-                      Icons.warning,
-                      size: 16,
-                      color: Colors.orange,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

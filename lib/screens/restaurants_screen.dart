@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/restaurant_images_widget.dart';
 import '../providers/restaurant_provider.dart';
 import '../models/restaurant.dart';
+import '../widgets/restaurant_gallery_widget.dart';
 
 class RestaurantsScreen extends ConsumerStatefulWidget {
   final int? highlightRestaurantId;
@@ -17,6 +19,7 @@ class RestaurantsScreen extends ConsumerStatefulWidget {
 class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
   final ScrollController _scrollController = ScrollController();
   final Map<int, GlobalKey> _restaurantKeys = {};
+  bool _useGalleryMode = false; // Nouvel état pour basculer entre les modes
 
   @override
   void dispose() {
@@ -32,6 +35,20 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
       appBar: AppBar(
         title: const Text('Nos Restaurants'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // Toggle pour basculer entre les modes d'affichage
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _useGalleryMode = !_useGalleryMode;
+              });
+            },
+            icon: Icon(
+              _useGalleryMode ? Icons.view_carousel : Icons.view_agenda,
+            ),
+            tooltip: _useGalleryMode ? 'Mode liste' : 'Mode galerie',
+          ),
+        ],
       ),
       body: restaurantsAsync.when(
         data: (restaurants) {
@@ -96,107 +113,142 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
         hoverColor: Colors.grey.withValues(alpha: 0.1),
         splashColor: Colors.grey.withValues(alpha: 0.3),
         highlightColor: Colors.grey.withValues(alpha: 0.1),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                restaurant.nom,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    restaurant.quartier,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Images du restaurant (gère 0 à n images)
+            _useGalleryMode
+                ? RestaurantGalleryWidget(
+                    images: restaurant.allImages,
+                    width: double.infinity,
+                    height: 240, // Hauteur augmentée pour la galerie
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
                     ),
-                  ),
-                ],
-              ),
-              if (restaurant.adresse != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  restaurant.adresse!,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-              if (restaurant.horaires != null && restaurant.horaires!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Horaires :',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildHoraires(restaurant.horaires!),
-              ],
-              if (restaurant.equipements != null && restaurant.equipements!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Équipements :',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildEquipements(restaurant.equipements!),
-              ],
-              const SizedBox(height: 16),
-              // Indicateur visuel que la carte est cliquable
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                      ),
+                    margin: const EdgeInsets.all(0),
+                    imageHeight: 140, // Hauteur d'image réduite pour mieux s'adapter
+                    imageSpacing: 12, // Espacement réduit
+                  )
+                : RestaurantImagesWidget(
+                    images: restaurant.allImages,
+                    width: double.infinity,
+                    height: 200,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.restaurant_menu,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Voir les menus',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 12,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ],
-                    ),
+                    enableHorizontalScroll: true, // Activer la galerie scrollable
+                    showMultipleImages: false, // Désactiver l'ancien mode
+                    margin: const EdgeInsets.all(0),
                   ),
-                ],
+            
+            // Debug: Afficher les informations sur les images
+            if (restaurant.allImages.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.blue.withValues(alpha: 0.1),
+                child: Text(
+                  'Debug: ${restaurant.allImages.length} images trouvées - Mode: ${_useGalleryMode ? "Galerie" : "PageView"}',
+                  style: const TextStyle(fontSize: 10, color: Colors.blue),
+                ),
               ),
             ],
-          ),
+            
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    restaurant.nom,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        restaurant.quartier,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (restaurant.adresse != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      restaurant.adresse!,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
+                  if (restaurant.horaires != null && restaurant.horaires!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Horaires :',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildHoraires(restaurant.horaires!),
+                  ],
+                  if (restaurant.equipements != null && restaurant.equipements!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Équipements :',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildEquipements(restaurant.equipements!),
+                  ],
+                  const SizedBox(height: 16),
+                  // Indicateur visuel que la carte est cliquable
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Voir les menus',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 12,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

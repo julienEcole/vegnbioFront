@@ -5,6 +5,7 @@ class Menu {
   final DateTime date;
   final List<String> allergenes;
   final int restaurantId;
+  final String? imageUrl; // Gardé pour l'instant, sera remplacé par le système d'images
 
   Menu({
     required this.id,
@@ -13,6 +14,7 @@ class Menu {
     required this.date,
     required this.allergenes,
     required this.restaurantId,
+    this.imageUrl,
   });
 
   factory Menu.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class Menu {
     final date = json['date'];
     final allergenes = json['allergenes'];
     final restaurantId = json['restaurant_id'] ?? json['restaurantId']; // Support des deux formats
+    final imageUrl = json['imageUrl'] ?? json['image_url']; // Support des deux formats
     
     return Menu(
       id: id is int ? id : int.tryParse(id.toString()) ?? 0,
@@ -30,6 +33,7 @@ class Menu {
       date: _parseDate(date),
       allergenes: _parseAllergenes(allergenes),
       restaurantId: restaurantId is int ? restaurantId : int.tryParse(restaurantId.toString()) ?? 0,
+      imageUrl: imageUrl?.toString(),
     );
   }
 
@@ -76,6 +80,7 @@ class Menu {
       'date': date.toIso8601String().split('T')[0], // Format YYYY-MM-DD
       'allergenes': allergenes,
       'restaurant_id': restaurantId,
+      'imageUrl': imageUrl,
     };
   }
 
