@@ -275,8 +275,10 @@ class ApiService {
       );
       
       if (response.statusCode == 200) {
-        // Si c'est une redirection, l'URL finale est dans la réponse
-        return response.headers['location'] ?? response.request?.url.toString();
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data['success'] == true && data['imageUrl'] != null) {
+          return data['imageUrl'] as String;
+        }
       }
       return null;
     } catch (e) {
@@ -294,8 +296,10 @@ class ApiService {
       );
       
       if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        return jsonData.map((img) => img as Map<String, dynamic>).toList();
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data['success'] == true && data['images'] != null) {
+          return (data['images'] as List).map((img) => img as Map<String, dynamic>).toList();
+        }
       }
       return [];
     } catch (e) {
@@ -313,8 +317,10 @@ class ApiService {
       );
       
       if (response.statusCode == 200) {
-        // Si c'est une redirection, l'URL finale est dans la réponse
-        return response.headers['location'] ?? response.request?.url.toString();
+        final Map<String, dynamic> data = json.decode(response.body);
+        if (data['success'] == true && data['imageUrl'] != null) {
+          return data['imageUrl'] as String;
+        }
       }
       return null;
     } catch (e) {

@@ -19,6 +19,11 @@ class ImageUrlService {
     String format = 'jpeg',
     String fit = 'cover',
   }) {
+    // Si c'est déjà une URL complète, la retourner telle quelle
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
     return _buildImageUrl(
       type: 'restaurants',
       path: imagePath,
@@ -46,6 +51,11 @@ class ImageUrlService {
     String format = 'jpeg',
     String fit = 'cover',
   }) {
+    // Si c'est déjà une URL complète, la retourner telle quelle
+    if (imageName.startsWith('http://') || imageName.startsWith('https://')) {
+      return imageName;
+    }
+    
     return _buildImageUrl(
       type: 'menus',
       path: imageName,
@@ -77,9 +87,20 @@ class ImageUrlService {
 
     final queryString = params.isNotEmpty ? '?${params.join('&')}' : '';
     
-    // Encoder le chemin pour gérer les caractères spéciaux comme /
-    final encodedPath = Uri.encodeComponent(path);
+    // Pour les restaurants, séparer le dossier et le nom de fichier
+    if (type == 'restaurants' && path.contains('/')) {
+      final parts = path.split('/');
+      if (parts.length == 2) {
+        final folder = parts[0]; // Le dossier (ex: "republique")
+        final filename = parts[1]; // Le nom de fichier (ex: "Veg'N Bio République dehors.png")
+        // Encoder seulement le nom de fichier, pas le dossier
+        final encodedFilename = Uri.encodeComponent(filename);
+        return '$_baseUrl/resize/$type/$folder/$encodedFilename$queryString';
+      }
+    }
     
+    // Pour les menus ou les cas simples, encoder le chemin complet
+    final encodedPath = Uri.encodeComponent(path);
     return '$_baseUrl/resize/$type/$encodedPath$queryString';
   }
 
