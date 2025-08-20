@@ -340,144 +340,363 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image du menu
-          MenuImageWidget(
-            imageUrl: menu.imageUrl,
-            width: double.infinity,
-            height: 180,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
-            fallbackIcon: Icons.restaurant_menu,
-            margin: const EdgeInsets.all(0),
-          ),
-          
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        menu.titre,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: LayoutBuilder(
+          key: ValueKey('menu_layout'), // Clé simple pour l'animation
+          builder: (context, constraints) {
+            // Utiliser un layout horizontal si l'écran est suffisamment large
+            final useHorizontalLayout = constraints.maxWidth > 600;
+            // Utiliser un layout compact pour les très petits écrans
+            final useCompactLayout = constraints.maxWidth < 400;
+            
+            if (useHorizontalLayout) {
+              // Layout horizontal : image à droite, infos à gauche
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Section des informations (gauche) - plus d'espace
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _buildMenuInfo(context, menu, restaurant),
+                    ),
+                  ),
+                  // Séparateur visuel
+                  Container(
+                    width: 1,
+                    height: 200,
+                    color: Colors.grey.shade200,
+                  ),
+                  // Image du menu (droite) - moins d'espace mais suffisant
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      height: 200,
+                      child: MenuImageWidget.createMenuCard(
+                        imageUrl: menu.imageUrl,
+                        width: double.infinity,
+                        height: 200,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
                         ),
+                        fallbackIcon: Icons.restaurant_menu,
+                        margin: const EdgeInsets.all(0),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        menu.formattedDate,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                  ),
+                ],
+              );
+            } else if (useCompactLayout) {
+              // Layout compact pour très petits écrans
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image du menu (haut) - hauteur réduite
+                  MenuImageWidget.createMenuCard(
+                    imageUrl: menu.imageUrl,
+                    width: double.infinity,
+                    height: 150, // Plus compact
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
                     ),
-                  ],
+                    fallbackIcon: Icons.restaurant_menu,
+                    margin: const EdgeInsets.all(0),
+                  ),
+                  // Séparateur visuel
+                  Container(
+                    height: 1,
+                    color: Colors.grey.shade200,
+                  ),
+                  // Section des informations (bas) - padding réduit
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: _buildCompactMenuInfo(context, menu, restaurant),
+                  ),
+                ],
+              );
+            } else {
+              // Layout vertical standard : image au-dessus, infos en dessous
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image du menu (haut)
+                  MenuImageWidget.createMenuCard(
+                    imageUrl: menu.imageUrl,
+                    width: double.infinity,
+                    height: 200,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                    fallbackIcon: Icons.restaurant_menu,
+                    margin: const EdgeInsets.all(0),
+                  ),
+                  // Séparateur visuel
+                  Container(
+                    height: 1,
+                    color: Colors.grey.shade200,
+                  ),
+                  // Section des informations (bas)
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: _buildMenuInfo(context, menu, restaurant),
+                  ),
+                ],
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuInfo(BuildContext context, Menu menu, Restaurant? restaurant) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                menu.titre,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                if (restaurant != null) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.restaurant, size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () {
-                            context.go('/restaurants/${restaurant.id}');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                              color: Colors.transparent,
-                            ),
-                            child: Text(
-                              restaurant.nom,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.launch,
-                        size: 12,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.green.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                menu.formattedDate,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (restaurant != null) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.restaurant, size: 16, color: Colors.grey),
+              const SizedBox(width: 4),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    context.go('/restaurants/${restaurant.id}');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: Colors.transparent,
+                    ),
+                    child: Text(
+                      restaurant.nom,
+                      style: TextStyle(
+                        fontSize: 14,
                         color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ],
-                  ),
-                ],
-                if (menu.description != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    menu.description!,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.warning_amber, size: 16, color: Colors.orange),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        menu.allergenesText,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.orange,
-                        ),
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                  ],
-                ),
-                if (menu.allergenes.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: menu.allergenes.map((allergene) {
-                      return Chip(
-                        label: Text(
-                          allergene,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        backgroundColor: Colors.orange.shade100,
-                        avatar: const Icon(
-                          Icons.warning,
-                          size: 16,
-                          color: Colors.orange,
-                        ),
-                      );
-                    }).toList(),
                   ),
-                ],
-              ],
-            ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.launch,
+                size: 12,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ],
           ),
         ],
-      ),
+        if (menu.description != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            menu.description!,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            const Icon(Icons.warning_amber, size: 16, color: Colors.orange),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                menu.allergenesText,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.orange,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (menu.allergenes.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: menu.allergenes.map((allergene) {
+              return Chip(
+                label: Text(
+                  allergene,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                backgroundColor: Colors.orange.shade100,
+                avatar: const Icon(
+                  Icons.warning,
+                  size: 16,
+                  color: Colors.orange,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCompactMenuInfo(BuildContext context, Menu menu, Restaurant? restaurant) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                menu.titre,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.green.shade100,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                menu.formattedDate,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (restaurant != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              const Icon(Icons.restaurant, size: 14, color: Colors.grey),
+              const SizedBox(width: 2),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    context.go('/restaurants/${restaurant.id}');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      color: Colors.transparent,
+                    ),
+                    child: Text(
+                      restaurant.nom,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 2),
+              Icon(
+                Icons.launch,
+                size: 10,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ),
+        ],
+        if (menu.description != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            menu.description!,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.warning_amber, size: 14, color: Colors.orange),
+            const SizedBox(width: 2),
+            Expanded(
+              child: Text(
+                menu.allergenesText,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.orange,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (menu.allergenes.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 3,
+            children: menu.allergenes.map((allergene) {
+              return Chip(
+                label: Text(
+                  allergene,
+                  style: const TextStyle(fontSize: 10),
+                ),
+                backgroundColor: Colors.orange.shade100,
+                avatar: const Icon(
+                  Icons.warning,
+                  size: 14,
+                  color: Colors.orange,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ],
     );
   }
 

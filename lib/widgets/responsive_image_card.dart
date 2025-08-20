@@ -109,53 +109,63 @@ class ResponsiveImageCard extends StatelessWidget {
         ),
         borderRadius: borderRadius,
       ) : null,
-      child: Image.network(
-        optimizedImageUrl,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (context, error, stackTrace) {
-          print('Erreur de chargement de l\'image: $optimizedImageUrl - $error');
-          return _buildFallback(context, borderRadius, borderColor);
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          
-          return Container(
+      child: Container(
+        // Ajouter un fond pour les images avec BoxFit.contain
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50, // Fond subtil pour les images centrées
+          borderRadius: borderRadius,
+        ),
+        child: ClipRRect(
+          borderRadius: borderRadius,
+          child: Image.network(
+            optimizedImageUrl,
             width: width,
             height: height,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: borderRadius,
-              border: showBorder ? Border.all(
-                color: borderColor,
-                width: borderWidth,
-              ) : null,
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                    strokeWidth: 2,
+            fit: fit,
+            errorBuilder: (context, error, stackTrace) {
+              print('Erreur de chargement de l\'image: $optimizedImageUrl - $error');
+              return _buildFallback(context, borderRadius, borderColor);
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              
+              return Container(
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: borderRadius,
+                  border: showBorder ? Border.all(
+                    color: borderColor,
+                    width: borderWidth,
+                  ) : null,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                        strokeWidth: 2,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Chargement...',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Chargement...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
