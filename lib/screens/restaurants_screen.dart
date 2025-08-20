@@ -105,57 +105,61 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       elevation: isHighlighted ? 8 : 4,
       color: isHighlighted ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05) : null,
-      child: InkWell(
-        onTap: () {
-          context.go('/menus/restaurant/${restaurant.id}');
-        },
-        borderRadius: BorderRadius.circular(12), // Même rayon que la Card
-        hoverColor: Colors.grey.withValues(alpha: 0.1),
-        splashColor: Colors.grey.withValues(alpha: 0.3),
-        highlightColor: Colors.grey.withValues(alpha: 0.1),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Images du restaurant (gère 0 à n images)
-            _useGalleryMode
-                ? RestaurantGalleryWidget(
-                    images: restaurant.allImages,
-                    width: double.infinity,
-                    height: 240, // Hauteur augmentée pour la galerie
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                    margin: const EdgeInsets.all(0),
-                    imageHeight: 140, // Hauteur d'image réduite pour mieux s'adapter
-                    imageSpacing: 12, // Espacement réduit
-                  )
-                : RestaurantImagesWidget(
-                    images: restaurant.allImages,
-                    width: double.infinity,
-                    height: 200,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    ),
-                    enableHorizontalScroll: true, // Activer la galerie scrollable
-                    showMultipleImages: false, // Désactiver l'ancien mode
-                    margin: const EdgeInsets.all(0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Images du restaurant (gère 0 à n images) - SANS InkWell
+          _useGalleryMode
+              ? RestaurantGalleryWidget(
+                  images: restaurant.allImages,
+                  width: double.infinity,
+                  height: 240, // Hauteur augmentée pour la galerie
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
                   ),
-            
-            // Debug: Afficher les informations sur les images
-            if (restaurant.allImages.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.blue.withValues(alpha: 0.1),
-                child: Text(
-                  'Debug: ${restaurant.allImages.length} images trouvées - Mode: ${_useGalleryMode ? "Galerie" : "PageView"}',
-                  style: const TextStyle(fontSize: 10, color: Colors.blue),
+                  margin: const EdgeInsets.all(0),
+                  imageHeight: 140, // Hauteur d'image réduite pour mieux s'adapter
+                  imageSpacing: 12, // Espacement réduit
+                )
+              : RestaurantImagesWidget(
+                  images: restaurant.allImages,
+                  width: double.infinity,
+                  height: 200,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                  enableHorizontalScroll: true, // Activer la galerie scrollable
+                  showMultipleImages: true, // Activer l'affichage multiple
+                  margin: const EdgeInsets.all(0),
                 ),
+          
+          // Debug: Afficher les informations sur les images
+          if (restaurant.allImages.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.blue.withValues(alpha: 0.1),
+              child: Text(
+                'Debug: ${restaurant.allImages.length} images trouvées - Mode: ${_useGalleryMode ? "Galerie" : "PageView"}',
+                style: const TextStyle(fontSize: 10, color: Colors.blue),
               ),
-            ],
-            
-            Padding(
+            ),
+          ],
+          
+          // Partie cliquable de la carte (SANS les images)
+          InkWell(
+            onTap: () {
+              context.go('/menus/restaurant/${restaurant.id}');
+            },
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+            hoverColor: Colors.grey.withValues(alpha: 0.1),
+            splashColor: Colors.grey.withValues(alpha: 0.3),
+            highlightColor: Colors.grey.withValues(alpha: 0.1),
+            child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,8 +210,7 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                       'Équipements :',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                        fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
                     _buildEquipements(restaurant.equipements!),
@@ -220,8 +223,8 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(20),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -229,8 +232,8 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                             Text(
                               'Voir les menus',
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
                                 fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -238,7 +241,7 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                             Icon(
                               Icons.arrow_forward_ios,
                               size: 12,
-                              color: Theme.of(context).colorScheme.onPrimary,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ],
                         ),
@@ -248,8 +251,8 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
