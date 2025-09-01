@@ -3,6 +3,8 @@ class MenuSearchCriteria {
   final int? restaurantId;
   final List<String> allergenesExclus;
   final List<String> allergenesInclus;
+  final List<String> produitsExclus;
+  final List<String> produitsInclus;
   final DateTime? dateDebut;
   final DateTime? dateFin;
 
@@ -11,6 +13,8 @@ class MenuSearchCriteria {
     this.restaurantId,
     this.allergenesExclus = const [],
     this.allergenesInclus = const [],
+    this.produitsExclus = const [],
+    this.produitsInclus = const [],
     this.dateDebut,
     this.dateFin,
   });
@@ -21,6 +25,8 @@ class MenuSearchCriteria {
     int? restaurantId,
     List<String>? allergenesExclus,
     List<String>? allergenesInclus,
+    List<String>? produitsExclus,
+    List<String>? produitsInclus,
     DateTime? dateDebut,
     DateTime? dateFin,
   }) {
@@ -29,6 +35,8 @@ class MenuSearchCriteria {
       restaurantId: restaurantId ?? this.restaurantId,
       allergenesExclus: allergenesExclus ?? this.allergenesExclus,
       allergenesInclus: allergenesInclus ?? this.allergenesInclus,
+      produitsExclus: produitsExclus ?? this.produitsExclus,
+      produitsInclus: produitsInclus ?? this.produitsInclus,
       dateDebut: dateDebut ?? this.dateDebut,
       dateFin: dateFin ?? this.dateFin,
     );
@@ -40,6 +48,8 @@ class MenuSearchCriteria {
       restaurantId == null &&
       allergenesExclus.isEmpty &&
       allergenesInclus.isEmpty &&
+      produitsExclus.isEmpty &&
+      produitsInclus.isEmpty &&
       dateDebut == null &&
       dateFin == null;
 
@@ -78,11 +88,41 @@ class MenuSearchCriteria {
     );
   }
 
+  // Ajouter un produit à inclure
+  MenuSearchCriteria addProduitInclus(String produit) {
+    if (produitsInclus.contains(produit)) return this;
+    return copyWith(
+      produitsInclus: [...produitsInclus, produit],
+    );
+  }
+
+  // Retirer un produit à inclure
+  MenuSearchCriteria removeProduitInclus(String produit) {
+    return copyWith(
+      produitsInclus: produitsInclus.where((p) => p != produit).toList(),
+    );
+  }
+
+  // Ajouter un produit à exclure
+  MenuSearchCriteria addProduitExclu(String produit) {
+    if (produitsExclus.contains(produit)) return this;
+    return copyWith(
+      produitsExclus: [...produitsExclus, produit],
+    );
+  }
+
+  // Retirer un produit à exclure
+  MenuSearchCriteria removeProduitExclu(String produit) {
+    return copyWith(
+      produitsExclus: produitsExclus.where((p) => p != produit).toList(),
+    );
+  }
+
   @override
   String toString() {
     return 'MenuSearchCriteria(titre: $titre, restaurantId: $restaurantId, '
            'allergenesExclus: $allergenesExclus, allergenesInclus: $allergenesInclus, '
-           'dateDebut: $dateDebut, dateFin: $dateFin)';
+           'produitsExclus: $produitsExclus, produitsInclus: $produitsInclus, dateDebut: $dateDebut, dateFin: $dateFin)';
   }
 }
 

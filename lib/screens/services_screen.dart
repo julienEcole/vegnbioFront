@@ -1,17 +1,58 @@
 import 'package:flutter/material.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/auth_guard_wrapper.dart';
+import '../widgets/public_services_view.dart';
 
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return _buildServicesScreen(context).authGuard(
+      pageType: 'public', // Les services sont publics mais peuvent avoir des fonctionnalités admin
+      publicView: const PublicServicesView(), // Vue publique si token invalide
+      requireAuth: false, // Pas d'authentification requise pour voir les services
+      customMessage: 'Connectez-vous pour accéder aux fonctionnalités complètes',
+    );
+  }
+
+  Widget _buildServicesScreen(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nos Services'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // Bouton d'ajout de service (pour les administrateurs)
+          ElevatedButton.icon(
+            onPressed: () {
+              // TODO: Implémenter l'ajout de service
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('⚙️ Ajouter un service'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
       ),
       body: const Center(
-        child: Text('Page des services à venir'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.room_service, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Page des services à venir',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Fonctionnalités d\'administration disponibles',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: const CustomNavigationBar(),
     );

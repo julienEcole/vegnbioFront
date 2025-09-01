@@ -6,6 +6,9 @@ import '../widgets/restaurant_images_widget.dart';
 import '../providers/restaurant_provider.dart';
 import '../models/restaurant.dart';
 import '../widgets/restaurant_gallery_widget.dart';
+import '../services/api_service.dart';
+import '../widgets/auth_guard_wrapper.dart';
+import '../widgets/public_restaurant_view.dart';
 
 class RestaurantsScreen extends ConsumerStatefulWidget {
   final int? highlightRestaurantId;
@@ -29,6 +32,15 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return _buildRestaurantsScreen(context).authGuard(
+      pageType: 'admin', // Les restaurants nécessitent un accès admin pour les fonctionnalités complètes
+      publicView: PublicRestaurantView(highlightRestaurantId: widget.highlightRestaurantId), // Vue publique si token invalide
+      requireAuth: true,
+      customMessage: 'Accès aux restaurants nécessite une authentification valide',
+    );
+  }
+
+  Widget _buildRestaurantsScreen(BuildContext context) {
     final restaurantsAsync = ref.watch(restaurantsProvider);
 
     return Scaffold(
@@ -36,6 +48,18 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
         title: const Text('Nos Restaurants'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // Bouton d'ajout de restaurant (pour les administrateurs)
+          ElevatedButton.icon(
+            onPressed: () {
+              context.push('/admin/restaurant/new');
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('🏪 Ajouter un restaurant'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          ),
           // Toggle pour basculer entre les modes d'affichage
           IconButton(
             onPressed: () {
@@ -164,12 +188,46 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    restaurant.nom,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          restaurant.nom,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      // Boutons d'administration
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 18),
+                            onPressed: () {
+                              context.push('/admin/restaurant/edit/${restaurant.id}');
+                            },
+                            tooltip: 'Modifier le restaurant',
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.blue.shade100,
+                              foregroundColor: Colors.blue.shade700,
+                              padding: const EdgeInsets.all(8),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, size: 18),
+                            onPressed: () => _showDeleteRestaurantDialog(restaurant),
+                            tooltip: 'Supprimer le restaurant',
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.red.shade100,
+                              foregroundColor: Colors.red.shade700,
+                              padding: const EdgeInsets.all(8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -345,5 +403,63 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
         ),
       ),
     );
+  }
+
+  void _showDeleteRestaurantDialog(Restaurant restaurant) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmer la suppression'),
+        content: Text('Êtes-vous sûr de vouloir supprimer le restaurant "${restaurant.nom}" ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _deleteRestaurant(restaurant);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteRestaurant(Restaurant restaurant) async {
+    try {
+      final apiService = ApiService();
+      final success = await apiService.deleteRestaurant(restaurant.id);
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Restaurant supprimé avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Rafraîchir la liste immédiatement
+        ref.invalidate(restaurantsProvider);
+        // Forcer le rafraîchissement
+        setState(() {});
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors de la suppression'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de la suppression: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

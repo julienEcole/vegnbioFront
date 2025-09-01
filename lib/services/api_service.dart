@@ -5,6 +5,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
+import '../models/user.dart';
+import 'auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Configuration unifiée de l'URL pour tous les environnements
@@ -22,6 +25,44 @@ class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
+
+  // Méthode pour vérifier la validité du token (optionnel)
+  Future<bool> isTokenValid() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      if (token == null) return false;
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/verify'),
+        headers: {
+          ...headers,
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('❌ Erreur lors de la vérification du token: $e');
+      return false;
+    }
+  }
+
+  // Méthode pour obtenir les headers avec authentification
+  Future<Map<String, String>> getAuthHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    
+    if (token == null) {
+      throw Exception('Token d\'authentification manquant');
+    }
+
+    return {
+      ...headers,
+      'Authorization': 'Bearer $token',
+    };
+  }
 
   // Récupérer tous les restaurants
   Future<List<Restaurant>> getRestaurants() async {
@@ -402,6 +443,248 @@ class ApiService {
     } catch (e) {
       print('❌ Erreur upload image menu: $e');
       throw Exception('Erreur lors de l\'upload de l\'image: $e');
+    }
+  }
+
+  // ===== CRUD RESTAURANTS =====
+  
+  /// Créer un nouveau restaurant
+  Future<Restaurant> createRestaurant({
+    required String nom,
+    required String quartier,
+    String? adresse,
+  }) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/restaurants'),
+        headers: headers,
+        body: json.encode({
+          'nom': nom,
+          'quartier': quartier,
+          'adresse': adresse,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return Restaurant.fromJson(jsonData);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Erreur lors de la création du restaurant');
+      }
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Mettre à jour un restaurant
+  Future<Restaurant> updateRestaurant({
+    required int id,
+    String? nom,
+    String? quartier,
+    String? adresse,
+  }) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final Map<String, dynamic> updateData = {};
+      
+      if (nom != null) updateData['nom'] = nom;
+      if (quartier != null) updateData['quartier'] = quartier;
+      if (adresse != null) updateData['adresse'] = adresse;
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/restaurants/$id'),
+        headers: headers,
+        body: json.encode(updateData),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return Restaurant.fromJson(jsonData);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Erreur lors de la mise à jour du restaurant');
+      }
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Supprimer un restaurant
+  Future<bool> deleteRestaurant(int id) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/restaurants/$id'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      } else {
+        print('❌ Erreur suppression restaurant: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Exception suppression restaurant: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  // ===== CRUD MENUS =====
+  
+  /// Créer un nouveau menu
+  Future<Menu> createMenu({
+    required String titre,
+    String? description,
+    required DateTime date,
+    required List<String> allergenes,
+    required int restaurantId,
+  }) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/menus'),
+        headers: headers,
+        body: json.encode({
+          'titre': titre,
+          'description': description,
+          'date': date.toIso8601String().split('T')[0],
+          'allergenes': allergenes,
+          'restaurant_id': restaurantId,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return Menu.fromJson(jsonData);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Erreur lors de la création du menu');
+      }
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Mettre à jour un menu
+  Future<Menu> updateMenu({
+    required int id,
+    String? titre,
+    String? description,
+    DateTime? date,
+    List<String>? allergenes,
+    int? restaurantId,
+  }) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final Map<String, dynamic> updateData = {};
+      
+      if (titre != null) updateData['titre'] = titre;
+      if (description != null) updateData['description'] = description;
+      if (date != null) updateData['date'] = date.toIso8601String().split('T')[0];
+      if (allergenes != null) updateData['allergenes'] = allergenes;
+      if (restaurantId != null) updateData['restaurant_id'] = restaurantId;
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/menus/$id'),
+        headers: headers,
+        body: json.encode(updateData),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return Menu.fromJson(jsonData);
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Erreur lors de la mise à jour du menu');
+      }
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Supprimer un menu
+  Future<bool> deleteMenu(int id) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/menus/$id'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      } else {
+        print('❌ Erreur suppression menu: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Exception suppression menu: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  // ===== GESTION DES IMAGES =====
+  
+  /// Supprimer une image de restaurant
+  Future<bool> deleteRestaurantImage(int restaurantId, int imageId) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId'),
+        headers: headers,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Supprimer une image de menu
+  Future<bool> deleteMenuImage(int menuId, int imageId) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/images/menu/$menuId/$imageId'),
+        headers: headers,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Définir une image comme principale pour un restaurant
+  Future<bool> setRestaurantPrimaryImage(int restaurantId, int imageId) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.put(
+        Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId/primary'),
+        headers: headers,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Définir une image comme principale pour un menu
+  Future<bool> setMenuPrimaryImage(int menuId, int imageId) async {
+    try {
+      final headers = await AuthService().getAuthHeaders();
+      final response = await http.put(
+        Uri.parse('$baseUrl/images/menu/$menuId/$imageId/primary'),
+        headers: headers,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Erreur de connexion: $e');
     }
   }
 }

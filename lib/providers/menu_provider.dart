@@ -3,10 +3,21 @@ import '../models/menu.dart';
 import '../models/search_criteria.dart';
 import '../services/api_service.dart';
 
+// Provider pour forcer le rafraîchissement des menus
+final menuRefreshProvider = StateProvider<int>((ref) => 0);
+
 // Provider pour la liste des menus
 final menusProvider = FutureProvider<List<Menu>>((ref) async {
+  // Écouter le provider de rafraîchissement pour forcer la mise à jour
+  final refreshCount = ref.watch(menuRefreshProvider);
+  print('🔄 menusProvider appelé avec refreshCount: $refreshCount');
+  
+  // Charger depuis l'API à chaque fois
   final apiService = ref.read(apiServiceProvider);
-  return apiService.getMenus();
+  final menus = await apiService.getMenus();
+  print('📋 menusProvider: Chargement depuis l\'API (${menus.length} menus)');
+  
+  return menus;
 });
 
 // Provider pour un menu spécifique
@@ -30,7 +41,7 @@ final searchCriteriaProvider = StateProvider<MenuSearchCriteria>((ref) {
 
 // Provider pour savoir si une recherche est active
 final isSearchActiveProvider = Provider<bool>((ref) {
-  final criteria = ref.watch(searchCriteriaProvider);
+  final criteria = ref.read(searchCriteriaProvider);
   return !criteria.isEmpty;
 });
 
@@ -80,6 +91,31 @@ final filteredMenusProvider = FutureProvider<List<Menu>>((ref) async {
       }
     }
     
+    // Filtre par produits à exclure
+    if (criteria.produitsExclus.isNotEmpty) {
+      // Le menu ne doit contenir AUCUN des produits à exclure
+      for (final produitExclu in criteria.produitsExclus) {
+        if (menu.produits.contains(produitExclu)) {
+          return false;
+        }
+      }
+    }
+
+    // Filtre par produits à inclure
+    if (criteria.produitsInclus.isNotEmpty) {
+      // Le menu doit contenir AU MOINS UN des produits à inclure
+      bool hasMatchingProduct = false;
+      for (final produitInclus in criteria.produitsInclus) {
+        if (menu.produits.contains(produitInclus)) {
+          hasMatchingProduct = true;
+          break;
+        }
+      }
+      if (!hasMatchingProduct) {
+        return false;
+      }
+    }
+    
     // Filtre par date
     if (criteria.dateDebut != null) {
       if (menu.date.isBefore(criteria.dateDebut!)) {
@@ -91,6 +127,11 @@ final filteredMenusProvider = FutureProvider<List<Menu>>((ref) async {
       if (menu.date.isAfter(criteria.dateFin!)) {
         return false;
       }
+    }
+
+    // Filtre par disponibilité (seulement les menus disponibles)
+    if (!menu.disponible) {
+      return false;
     }
     
     return true;
@@ -131,7 +172,45 @@ final availableAllergenesForRestaurantProvider = FutureProvider<List<String>>((r
   return result;
 });
 
+// Provider pour les produits disponibles filtrés par restaurant sélectionné (depuis la mémoire)
+final availableProduitsForRestaurantProvider = FutureProvider<List<String>>((ref) async {
+  final searchCriteria = ref.watch(searchCriteriaProvider);
+  final allMenus = await ref.watch(menusProvider.future);
+  
+  List<Menu> menusToCheck;
+  
+  // Si un restaurant est sélectionné, filtrer seulement ses menus
+  if (searchCriteria.restaurantId != null) {
+    menusToCheck = allMenus.where((menu) => menu.restaurantId == searchCriteria.restaurantId).toList();
+    print('🍽️  Filtrage produits pour restaurant ${searchCriteria.restaurantId}');
+  } else {
+    // Sinon, utiliser tous les menus
+    menusToCheck = allMenus;
+    print('🍽️  Récupération de tous les produits disponibles');
+  }
+  
+  // Debug: afficher les menus et leurs produits
+  print('🍽️  Nombre de menus à analyser: ${menusToCheck.length}');
+  for (final menu in menusToCheck.take(3)) { // Afficher seulement les 3 premiers pour éviter le spam
+    print('🍽️  Menu "${menu.titre}": ${menu.produits.length} produits - ${menu.produits}');
+  }
+  
+  // Extraire tous les produits uniques
+  final Set<String> produits = {};
+  for (final menu in menusToCheck) {
+    if (menu.produits.isNotEmpty) {
+      produits.addAll(menu.produits);
+    }
+  }
+  
+  final result = produits.toList()..sort();
+  print('🍽️  Produits uniques trouvés: $result (${result.length} au total)');
+  return result;
+});
+
 // Réexport du provider du service API depuis restaurant_provider
 final apiServiceProvider = Provider<ApiService>((ref) {
   return ApiService();
 });
+
+

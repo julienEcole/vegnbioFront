@@ -7,6 +7,13 @@ import 'screens/events_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/restaurants_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/admin_menu_screen.dart';
+import 'screens/admin_restaurant_screen.dart';
+import 'screens/edit_menu_screen.dart';
+import 'screens/edit_restaurant_screen.dart';
+import 'providers/menu_provider.dart';
+import 'providers/restaurant_provider.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -53,7 +60,74 @@ final GoRouter _router = GoRouter(
       path: '/profil',
       builder: (context, state) => const ProfileScreen(),
     ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (context, state) => const DashboardScreen(),
+    ),
+    // Routes admin pour la création
+    GoRoute(
+      path: '/admin/menu/new',
+      builder: (context, state) => const AdminMenuScreen(),
+    ),
+    GoRoute(
+      path: '/admin/restaurant/new',
+      builder: (context, state) => const AdminRestaurantScreen(),
+    ),
+    // Routes pour l'édition
+    GoRoute(
+      path: '/admin/menu/edit/:id',
+      builder: (context, state) {
+        final menuId = int.tryParse(state.pathParameters['id'] ?? '');
+        if (menuId == null) {
+          return const Scaffold(body: Center(child: Text('ID de menu invalide')));
+        }
+        return Consumer(
+          builder: (context, ref, child) {
+            final menuAsync = ref.watch(menuProvider(menuId));
+            
+            return menuAsync.when(
+              data: (menu) => EditMenuScreen(menu: menu),
+              loading: () => const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, stack) => Scaffold(
+                body: Center(child: Text('Erreur: $error')),
+              ),
+            );
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: '/admin/restaurant/edit/:id',
+      builder: (context, state) {
+        final restaurantId = int.tryParse(state.pathParameters['id'] ?? '');
+        if (restaurantId == null) {
+          return const Scaffold(body: Center(child: Text('ID de restaurant invalide')));
+        }
+        return Consumer(
+          builder: (context, ref, child) {
+            final restaurantAsync = ref.watch(restaurantProvider(restaurantId));
+            
+            return restaurantAsync.when(
+              data: (restaurant) => EditRestaurantScreen(restaurant: restaurant),
+              loading: () => const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, stack) => Scaffold(
+                body: Center(child: Text('Erreur: $error')),
+              ),
+            );
+          },
+        );
+      },
+    ),
   ],
+  errorBuilder: (context, state) => const Scaffold(
+    body: Center(
+      child: Text('Page non trouvée'),
+    ),
+  ),
 );
 
 class MyApp extends StatelessWidget {

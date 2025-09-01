@@ -4,7 +4,10 @@ class Menu {
   final String? description;
   final DateTime date;
   final List<String> allergenes;
+  final List<String> produits;
   final int restaurantId;
+  final double prix;
+  final bool disponible;
   final String? imageUrl; // Gardé pour l'instant, sera remplacé par le système d'images
 
   Menu({
@@ -13,7 +16,10 @@ class Menu {
     this.description,
     required this.date,
     required this.allergenes,
+    required this.produits,
     required this.restaurantId,
+    required this.prix,
+    required this.disponible,
     this.imageUrl,
   });
 
@@ -23,7 +29,10 @@ class Menu {
     final description = json['description'];
     final date = json['date'];
     final allergenes = json['allergenes'];
+    final produits = json['produits'];
     final restaurantId = json['restaurant_id'] ?? json['restaurantId']; // Support des deux formats
+    final prix = json['prix'];
+    final disponible = json['disponible'];
     final imageUrl = json['imageUrl'] ?? json['image_url']; // Support des deux formats
     
     return Menu(
@@ -32,7 +41,10 @@ class Menu {
       description: description?.toString(),
       date: _parseDate(date),
       allergenes: _parseAllergenes(allergenes),
+      produits: _parseProduits(produits),
       restaurantId: restaurantId is int ? restaurantId : int.tryParse(restaurantId.toString()) ?? 0,
+      prix: prix is num ? prix.toDouble() : 0.0,
+      disponible: disponible is bool ? disponible : true,
       imageUrl: imageUrl?.toString(),
     );
   }
@@ -72,6 +84,24 @@ class Menu {
     return [];
   }
 
+  // Méthode helper pour parser les produits de manière robuste
+  static List<String> _parseProduits(dynamic produitsValue) {
+    if (produitsValue == null) return [];
+    
+    try {
+      if (produitsValue is List) {
+        return produitsValue.map((e) => e.toString()).toList();
+      } else if (produitsValue is String) {
+        // Si c'est une chaîne, on essaie de la parser
+        return [produitsValue];
+      }
+    } catch (e) {
+      print('Erreur parsing produits: $e, valeur: $produitsValue');
+    }
+    
+    return [];
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -79,7 +109,10 @@ class Menu {
       'description': description,
       'date': date.toIso8601String().split('T')[0], // Format YYYY-MM-DD
       'allergenes': allergenes,
+      'produits': produits,
       'restaurant_id': restaurantId,
+      'prix': prix,
+      'disponible': disponible,
       'imageUrl': imageUrl,
     };
   }
@@ -95,5 +128,14 @@ class Menu {
   String get allergenesText {
     if (allergenes.isEmpty) return 'Aucun allergène signalé';
     return 'Allergènes : ${allergenes.join(', ')}';
+  }
+
+  String get produitsText {
+    if (produits.isEmpty) return 'Aucun produit détaillé';
+    return 'Produits : ${produits.join(', ')}';
+  }
+
+  String get prixText {
+    return '${prix.toStringAsFixed(2)} €';
   }
 }
