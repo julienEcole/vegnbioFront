@@ -189,7 +189,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   tooltip: 'Modifier',
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete_forever, color: Colors.red, size: 24),
                   onPressed: () => _showDeleteMenuDialog(menu),
                   tooltip: 'Supprimer',
                 ),
@@ -284,7 +284,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   tooltip: 'Modifier',
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete_forever, color: Colors.red, size: 24),
                   onPressed: () => _showDeleteRestaurantDialog(restaurant),
                   tooltip: 'Supprimer',
                 ),
@@ -306,7 +306,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('❌ Annuler'),
+            child: const Text('Annuler'),
           ),
           TextButton(
             onPressed: () async {
@@ -314,7 +314,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               await _deleteMenu(menu);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('🗑️ Supprimer'),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.delete_forever, size: 16),
+                SizedBox(width: 4),
+                Text('Supprimer'),
+              ],
+            ),
           ),
         ],
       ),
@@ -361,7 +368,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('❌ Annuler'),
+            child: const Text('Annuler'),
           ),
           TextButton(
             onPressed: () async {
@@ -369,7 +376,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               await _deleteRestaurant(restaurant);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('🗑️ Supprimer'),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.delete_forever, size: 16),
+                SizedBox(width: 4),
+                Text('Supprimer'),
+              ],
+            ),
           ),
         ],
       ),

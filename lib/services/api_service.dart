@@ -5,7 +5,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
-import '../models/user.dart';
+
 import 'auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -486,6 +486,7 @@ class ApiService {
     String? adresse,
   }) async {
     try {
+      print('🔄 API: Début updateRestaurant pour ID $id');
       final headers = await AuthService().getAuthHeaders();
       final Map<String, dynamic> updateData = {};
       
@@ -493,20 +494,29 @@ class ApiService {
       if (quartier != null) updateData['quartier'] = quartier;
       if (adresse != null) updateData['adresse'] = adresse;
 
+      print('📤 API: Données à envoyer: $updateData');
+
       final response = await http.put(
         Uri.parse('$baseUrl/restaurants/$id'),
         headers: headers,
         body: json.encode(updateData),
       );
 
+      print('📥 API: Réponse status: ${response.statusCode}');
+      print('📥 API: Réponse body: ${response.body}');
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
-        return Restaurant.fromJson(jsonData);
+        final restaurant = Restaurant.fromJson(jsonData);
+        print('✅ API: Restaurant mis à jour: ${restaurant.nom}');
+        return restaurant;
       } else {
         final errorData = json.decode(response.body);
+        print('❌ API: Erreur mise à jour restaurant: ${errorData['message']}');
         throw Exception(errorData['message'] ?? 'Erreur lors de la mise à jour du restaurant');
       }
     } catch (e) {
+      print('❌ API: Exception updateRestaurant: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -578,6 +588,7 @@ class ApiService {
     int? restaurantId,
   }) async {
     try {
+      print('🔄 API: Début updateMenu pour ID $id');
       final headers = await AuthService().getAuthHeaders();
       final Map<String, dynamic> updateData = {};
       
@@ -587,20 +598,29 @@ class ApiService {
       if (allergenes != null) updateData['allergenes'] = allergenes;
       if (restaurantId != null) updateData['restaurant_id'] = restaurantId;
 
+      print('📤 API: Données à envoyer: $updateData');
+
       final response = await http.put(
         Uri.parse('$baseUrl/menus/$id'),
         headers: headers,
         body: json.encode(updateData),
       );
 
+      print('📥 API: Réponse status: ${response.statusCode}');
+      print('📥 API: Réponse body: ${response.body}');
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
-        return Menu.fromJson(jsonData);
+        final menu = Menu.fromJson(jsonData);
+        print('✅ API: Menu mis à jour: ${menu.titre}');
+        return menu;
       } else {
         final errorData = json.decode(response.body);
+        print('❌ API: Erreur mise à jour menu: ${errorData['message']}');
         throw Exception(errorData['message'] ?? 'Erreur lors de la mise à jour du menu');
       }
     } catch (e) {
+      print('❌ API: Exception updateMenu: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }

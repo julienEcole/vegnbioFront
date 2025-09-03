@@ -42,15 +42,21 @@ class AuthService {
         if (token != null) {
           // Pour la connexion, on passe l'email utilisé pour la connexion
           return await _processToken(token, 'login', email);
+        } else {
+          return {
+            'success': false,
+            'message': 'Token manquant dans la réponse',
+          };
         }
+      } else {
+        // Traiter les erreurs (401, 400, etc.)
+        final errorData = json.decode(response.body);
+        print('AuthService - Erreur de connexion: ${errorData['message']}');
+        return {
+          'success': false,
+          'message': errorData['message'] ?? 'Erreur de connexion',
+        };
       }
-      
-      // En cas d'échec
-      final errorData = json.decode(response.body);
-      return {
-        'success': false,
-        'message': errorData['message'] ?? 'Erreur de connexion',
-      };
     } catch (e) {
       print('AuthService - Erreur lors de la connexion: $e');
       return {

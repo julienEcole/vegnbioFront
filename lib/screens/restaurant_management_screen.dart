@@ -33,6 +33,7 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
   }
 
   Future<void> _loadRestaurants() async {
+    print('🔄 Début du chargement des restaurants');
     setState(() {
       _isLoading = true;
       _error = null;
@@ -44,7 +45,10 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
         _restaurants = restaurants;
         _isLoading = false;
       });
+      
+      print('✅ Restaurants chargés: ${_restaurants.length} restaurants');
     } catch (e) {
+      print('❌ Erreur lors du chargement: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -139,9 +143,8 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
         adresse: data['adresse']!.isEmpty ? null : data['adresse'],
       );
 
-      setState(() {
-        _restaurants.add(restaurant);
-      });
+      // Rafraîchir les données depuis le serveur
+      await _loadRestaurants();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -244,6 +247,7 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
 
   Future<void> _updateRestaurant(int id, Map<String, String> data) async {
     try {
+      print('🔄 Début de la modification du restaurant $id');
       final updatedRestaurant = await _apiService.updateRestaurant(
         id: id,
         nom: data['nom'],
@@ -251,12 +255,25 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
         adresse: data['adresse']!.isEmpty ? null : data['adresse'],
       );
 
+      print('✅ Restaurant modifié avec succès: ${updatedRestaurant.nom}');
+      print('🔄 Rafraîchissement des données...');
+
+      // Mettre à jour l'élément dans la liste locale
       setState(() {
         final index = _restaurants.indexWhere((r) => r.id == id);
         if (index != -1) {
           _restaurants[index] = updatedRestaurant;
+          print('✅ Restaurant mis à jour dans la liste locale');
         }
       });
+
+      // Attendre un peu avant de rafraîchir pour s'assurer que l'API a traité la modification
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Rafraîchir les données depuis le serveur
+      await _loadRestaurants();
+
+      print('✅ Données rafraîchies');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -267,6 +284,7 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
         );
       }
     } catch (e) {
+      print('❌ Erreur lors de la modification: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -311,9 +329,8 @@ class _RestaurantManagementScreenState extends ConsumerState<RestaurantManagemen
       final success = await _apiService.deleteRestaurant(id);
       
       if (success) {
-        setState(() {
-          _restaurants.removeWhere((r) => r.id == id);
-        });
+        // Rafraîchir les données depuis le serveur
+        await _loadRestaurants();
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

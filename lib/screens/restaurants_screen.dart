@@ -216,7 +216,7 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, size: 18),
+                            icon: const Text('🗑️', style: TextStyle(fontSize: 18)),
                             onPressed: () => _showDeleteRestaurantDialog(restaurant),
                             tooltip: 'Supprimer le restaurant',
                             style: IconButton.styleFrom(

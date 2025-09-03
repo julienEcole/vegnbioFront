@@ -7,6 +7,7 @@ import '../providers/restaurant_provider.dart';
 import '../providers/menu_provider.dart';
 import '../widgets/image_upload_widget.dart';
 import '../services/api_service.dart';
+import '../services/menu_cache_service.dart';
 
 class EditMenuScreen extends ConsumerStatefulWidget {
   final Menu menu;
@@ -460,6 +461,10 @@ class _EditMenuScreenState extends ConsumerState<EditMenuScreen> {
         allergenes: updatedMenu.allergenes,
       );
       
+      // Mettre à jour le cache automatiquement
+      final cacheService = ref.read(menuCacheServiceProvider);
+      cacheService.updateMenuInCache(result);
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -468,9 +473,8 @@ class _EditMenuScreenState extends ConsumerState<EditMenuScreen> {
           ),
         );
         
-        // Rafraîchir les providers
-        ref.invalidate(menuProvider(updatedMenu.id));
-        ref.invalidate(filteredMenusProvider);
+        // Forcer le rafraîchissement du provider Riverpod
+        ref.read(menuRefreshProvider.notifier).state++;
         
         context.pop();
       }

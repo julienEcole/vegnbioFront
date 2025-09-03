@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import '../models/menu.dart';
 import '../models/restaurant.dart';
 import '../models/search_criteria.dart';
@@ -68,23 +68,29 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           ),
           const SizedBox(width: 8),
           // Bouton pour ouvrir les filtres
-          IconButton(
-            icon: const Icon(Icons.filter_alt),
+          TextButton(
             onPressed: () => _showFiltersModal(context),
-            tooltip: 'Ouvrir les filtres',
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.blue.shade100,
-              foregroundColor: Colors.blue.shade700,
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.blue.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
+            child: const Text('Filtres', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
+          TextButton(
             onPressed: _refreshMenus,
-            tooltip: 'Rafraîchir la liste',
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.orange.shade100,
-              foregroundColor: Colors.orange.shade700,
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.orange.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
+            child: const Text('Rafraîchir', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -402,7 +408,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
               // Filtre par titre
               if (searchCriteria.titre != null && searchCriteria.titre!.isNotEmpty)
                 _buildFilterChip(
-                  '🔍 ${searchCriteria.titre}',
+                  'Titre: ${searchCriteria.titre}',
                   Colors.blue.shade100,
                   () => _updateSearchCriteria(titre: ''),
                 ),
@@ -410,7 +416,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
               // Filtre par restaurant
               if (searchCriteria.restaurantId != null)
                 _buildFilterChip(
-                  '🏪 Restaurant sélectionné',
+                  'Restaurant sélectionné',
                   Colors.green.shade100,
                   () => _updateSearchCriteria(restaurantId: null),
                 ),
@@ -418,7 +424,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
               // Allergènes exclus
               ...searchCriteria.allergenesExclus.map((allergene) => 
                 _buildFilterChip(
-                  '🚫 $allergene',
+                  'Exclure: $allergene',
                   Colors.red.shade100,
                   () => _updateSearchCriteria(
                     allergenesExclus: searchCriteria.allergenesExclus
@@ -431,7 +437,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
               // Allergènes inclus
               ...searchCriteria.allergenesInclus.map((allergene) => 
                 _buildFilterChip(
-                  '✅ $allergene',
+                  'Inclure: $allergene',
                   Colors.green.shade100,
                   () => _updateSearchCriteria(
                     allergenesInclus: searchCriteria.allergenesInclus
@@ -581,7 +587,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                         child: TextField(
                           controller: _titreController,
                           decoration: const InputDecoration(
-                            labelText: '🔍 Titre du menu',
+                            labelText: 'Titre du menu',
                             prefixIcon: Icon(Icons.search),
                             border: OutlineInputBorder(),
                           ),
@@ -653,9 +659,16 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: const Text(
-                            '🔍 Rechercher',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.search, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Rechercher',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
                       ),

@@ -2,26 +2,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/menu.dart';
 import '../models/search_criteria.dart';
 import '../services/api_service.dart';
+import '../services/menu_cache_service.dart';
 
 // Provider pour forcer le rafraîchissement des menus
 final menuRefreshProvider = StateProvider<int>((ref) => 0);
 
-// Provider pour la liste des menus
+// Provider pour la liste des menus avec cache intelligent
 final menusProvider = FutureProvider<List<Menu>>((ref) async {
   // Écouter le provider de rafraîchissement pour forcer la mise à jour
   final refreshCount = ref.watch(menuRefreshProvider);
   print('🔄 menusProvider appelé avec refreshCount: $refreshCount');
   
-  // Charger depuis l'API à chaque fois
-  final apiService = ref.read(apiServiceProvider);
-  final menus = await apiService.getMenus();
-  print('📋 menusProvider: Chargement depuis l\'API (${menus.length} menus)');
+  // Utiliser le cache intelligent
+  final cacheService = ref.read(menuCacheServiceProvider);
+  final menus = await cacheService.getMenus();
+  print('📋 menusProvider: Chargement depuis le cache intelligent (${menus.length} menus)');
   
   return menus;
 });
 
-// Provider pour un menu spécifique
+// Provider pour un menu spécifique avec rafraîchissement automatique
 final menuProvider = FutureProvider.family<Menu, int>((ref, id) async {
+  // Écouter le provider de rafraîchissement pour forcer la mise à jour
+  ref.watch(menuRefreshProvider);
+  
   final apiService = ref.read(apiServiceProvider);
   return apiService.getMenu(id);
 });

@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/image_upload_widget.dart';
-import '../providers/menu_provider.dart';
 import '../providers/restaurant_provider.dart';
 import '../models/menu.dart';
-import '../models/restaurant.dart';
 
 class AdminMenuScreen extends ConsumerStatefulWidget {
   final Menu? menuToEdit;
@@ -84,7 +82,7 @@ class _AdminMenuScreenState extends ConsumerState<AdminMenuScreen> {
         actions: [
           if (widget.menuToEdit != null)
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete_forever, color: Colors.red, size: 24),
               onPressed: _showDeleteConfirmation,
               tooltip: 'Supprimer le menu',
             ),

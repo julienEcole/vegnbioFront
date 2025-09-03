@@ -200,7 +200,7 @@ class _FournisseurDashboardScreenState extends ConsumerState<FournisseurDashboar
                       tooltip: 'Modifier',
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Text('🗑️', style: TextStyle(fontSize: 20)),
                       onPressed: () => _showDeleteMenuDialog(menu),
                       tooltip: 'Supprimer',
                     ),
@@ -228,14 +228,21 @@ class _FournisseurDashboardScreenState extends ConsumerState<FournisseurDashboar
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('❌ Annuler'),
+              child: const Text('Annuler'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteRestaurant(restaurant.id);
               },
-              child: const Text('🗑️ Supprimer', style: TextStyle(color: Colors.red)),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.delete_forever, size: 16, color: Colors.red),
+                  SizedBox(width: 4),
+                  Text('Supprimer', style: TextStyle(color: Colors.red)),
+                ],
+              ),
             ),
           ],
         );
@@ -253,14 +260,21 @@ class _FournisseurDashboardScreenState extends ConsumerState<FournisseurDashboar
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('❌ Annuler'),
+              child: const Text('Annuler'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteMenu(menu.id);
               },
-              child: const Text('🗑️ Supprimer', style: TextStyle(color: Colors.red)),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.delete_forever, size: 16, color: Colors.red),
+                  SizedBox(width: 4),
+                  Text('Supprimer', style: TextStyle(color: Colors.red)),
+                ],
+              ),
             ),
           ],
         );

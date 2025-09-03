@@ -44,7 +44,7 @@ class MenuDetailCard extends StatelessWidget {
                 if (onDelete != null)
                   IconButton(
                     onPressed: onDelete,
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Text('🗑️', style: TextStyle(fontSize: 20)),
                     tooltip: 'Supprimer',
                   ),
               ],

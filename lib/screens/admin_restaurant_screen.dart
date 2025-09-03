@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/image_upload_widget.dart';
-import '../providers/restaurant_provider.dart';
 import '../models/restaurant.dart';
 
 class AdminRestaurantScreen extends ConsumerStatefulWidget {
@@ -91,7 +90,7 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
         actions: [
           if (widget.restaurantToEdit != null)
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete_forever, color: Colors.red, size: 24),
               onPressed: _showDeleteConfirmation,
               tooltip: 'Supprimer le restaurant',
             ),

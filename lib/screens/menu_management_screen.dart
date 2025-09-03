@@ -4,6 +4,8 @@ import '../models/menu.dart';
 import '../models/restaurant.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/menu_cache_service.dart';
+import '../providers/menu_provider.dart';
 
 class MenuManagementScreen extends ConsumerStatefulWidget {
   const MenuManagementScreen({super.key});
@@ -16,17 +18,14 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
   final _apiService = ApiService();
   final _authService = AuthService();
   
-  List<Menu> _menus = [];
   List<Restaurant> _restaurants = [];
-  bool _isLoading = true;
-  String? _error;
   String? _userRole;
 
   @override
   void initState() {
     super.initState();
     _loadUserRole();
-    _loadData();
+    _loadRestaurants();
   }
 
   Future<void> _loadUserRole() async {
@@ -34,28 +33,14 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
     setState(() => _userRole = role);
   }
 
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
+  Future<void> _loadRestaurants() async {
     try {
-      final futures = await Future.wait([
-        _apiService.getMenus(),
-        _apiService.getRestaurants(),
-      ]);
-
+      final restaurants = await _apiService.getRestaurants();
       setState(() {
-        _menus = futures[0] as List<Menu>;
-        _restaurants = futures[1] as List<Restaurant>;
-        _isLoading = false;
+        _restaurants = restaurants;
       });
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      print('❌ Erreur lors du chargement des restaurants: $e');
     }
   }
 
@@ -207,9 +192,10 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
         restaurantId: data['restaurantId'],
       );
 
-      setState(() {
-        _menus.add(menu);
-      });
+      // Mettre à jour le cache et forcer le rafraîchissement
+      final cacheService = ref.read(menuCacheServiceProvider);
+      cacheService.updateMenuInCache(menu);
+      ref.read(menuRefreshProvider.notifier).state++;
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -363,6 +349,7 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
 
   Future<void> _updateMenu(int id, Map<String, dynamic> data) async {
     try {
+      print('🔄 Début de la modification du menu $id');
       final allergenes = data['allergenes'].toString().isEmpty 
           ? <String>[]
           : data['allergenes'].toString().split(',').map((e) => e.trim()).toList();
@@ -376,12 +363,16 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
         restaurantId: data['restaurantId'],
       );
 
-      setState(() {
-        final index = _menus.indexWhere((m) => m.id == id);
-        if (index != -1) {
-          _menus[index] = updatedMenu;
-        }
-      });
+      print('✅ Menu modifié avec succès: ${updatedMenu.titre}');
+      
+      // Mettre à jour le cache automatiquement
+      final cacheService = ref.read(menuCacheServiceProvider);
+      cacheService.updateMenuInCache(updatedMenu);
+      
+      // Forcer le rafraîchissement du provider Riverpod
+      ref.read(menuRefreshProvider.notifier).state++;
+
+      print('✅ Interface mise à jour automatiquement');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -392,6 +383,7 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
         );
       }
     } catch (e) {
+      print('❌ Erreur lors de la modification: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -436,9 +428,10 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
       final success = await _apiService.deleteMenu(id);
       
       if (success) {
-        setState(() {
-          _menus.removeWhere((m) => m.id == id);
-        });
+        // Supprimer du cache et forcer le rafraîchissement
+        final cacheService = ref.read(menuCacheServiceProvider);
+        cacheService.removeMenuFromCache(id);
+        ref.read(menuRefreshProvider.notifier).state++;
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -475,20 +468,27 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final menusAsync = ref.watch(menusProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestion des Menus'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         actions: [
-          if (_canManageMenus)
-            IconButton(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-            ),
+          IconButton(
+            onPressed: _loadRestaurants,
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
-      body: _buildBody(),
+      body: menusAsync.when(
+        data: (menus) => _buildMenuList(menus),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Text('Erreur: $error'),
+        ),
+      ),
       floatingActionButton: _canManageMenus
           ? FloatingActionButton(
               onPressed: _showCreateDialog,
@@ -499,30 +499,8 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
     );
   }
 
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text('Erreur: $_error'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Réessayer'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_menus.isEmpty) {
+  Widget _buildMenuList(List<Menu> menus) {
+    if (menus.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -537,9 +515,9 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _menus.length,
+      itemCount: menus.length,
       itemBuilder: (context, index) {
-        final menu = _menus[index];
+        final menu = menus[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: ListTile(

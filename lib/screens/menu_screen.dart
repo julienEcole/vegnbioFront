@@ -10,7 +10,7 @@ import '../models/restaurant.dart';
 import '../models/search_criteria.dart';
 import '../services/api_service.dart';
 import '../services/token_validator_service.dart';
-import '../widgets/protected_screen_wrapper.dart';
+
 import '../widgets/public_menu_view.dart';
 import '../widgets/auth_guard_wrapper.dart';
 
@@ -70,6 +70,9 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   Widget _buildMenuScreen(BuildContext context) {
     final menusAsync = ref.watch(filteredMenusProvider);
     final restaurantsAsync = ref.watch(restaurantsProvider);
+    final screenSize = MediaQuery.of(context).size;
+    final bool isLargeScreen = screenSize.width > 800;
+    final bool isMediumScreen = screenSize.width > 600;
 
     // Déterminer le titre de la page en fonction du contexte
     String pageTitle = 'Nos Menus';
@@ -90,35 +93,42 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           // Bouton d'ajout de menu (pour les administrateurs)
-          ElevatedButton.icon(
-            onPressed: () {
-              context.push('/admin/menu/new');
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('🍽️ Ajouter un menu'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+          if (isMediumScreen)
+            ElevatedButton.icon(
+              onPressed: () {
+                context.push('/admin/menu/new');
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('🍽️ Ajouter un menu'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
               foregroundColor: Colors.white,
             ),
           ),
           const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.filter_alt),
+          TextButton(
             onPressed: () => _showFiltersModal(context),
-            tooltip: 'Ouvrir les filtres',
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.blue.shade100,
-              foregroundColor: Colors.blue.shade700,
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.blue.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
+            child: const Text('Filtres', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
+          TextButton(
             onPressed: _refreshMenus,
-            tooltip: 'Rafraîchir la liste',
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.orange.shade100,
-              foregroundColor: Colors.orange.shade700,
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.orange.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
+            child: const Text('Rafraîchir', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -146,6 +156,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   Widget _buildActiveFiltersDisplay() {
     final searchCriteria = ref.watch(searchCriteriaProvider);
+    final screenSize = MediaQuery.of(context).size;
+    final bool isSmallScreen = screenSize.width < 600;
     
     // Si aucun filtre n'est actif, ne rien afficher
     if (searchCriteria.isEmpty) {
@@ -154,7 +166,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         border: Border(
@@ -164,42 +176,87 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.filter_alt, color: Colors.green, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Filtres actifs :',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green.shade700,
+          if (isSmallScreen) ...[
+            // Version mobile : disposition verticale
+            Row(
+              children: [
+                const Icon(Icons.filter_alt, color: Colors.green, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Filtres actifs :',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green.shade700,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () => _showFiltersModal(context),
-                icon: const Icon(Icons.edit, size: 16),
-                label: const Text('Modifier'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.green.shade700,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton.icon(
+                  onPressed: () => _showFiltersModal(context),
+                  icon: const Icon(Icons.edit, size: 16),
+                  label: const Text('Modifier'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.green.shade700,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: () {
-                  _titreController.clear();
-                  ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
-                },
-                icon: const Icon(Icons.clear, size: 16),
-                label: const Text('Effacer tout'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red.shade700,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                TextButton.icon(
+                  onPressed: () {
+                    _titreController.clear();
+                    ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
+                  },
+                  icon: const Icon(Icons.clear, size: 16),
+                  label: const Text('Effacer tout'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ] else ...[
+            // Version desktop : disposition horizontale
+            Row(
+              children: [
+                const Icon(Icons.filter_alt, color: Colors.green, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Filtres actifs :',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () => _showFiltersModal(context),
+                  icon: const Icon(Icons.edit, size: 16),
+                  label: const Text('Modifier'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.green.shade700,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    _titreController.clear();
+                    ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
+                  },
+                  icon: const Icon(Icons.clear, size: 16),
+                  label: const Text('Effacer tout'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -208,7 +265,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               // Filtre par titre
               if (searchCriteria.titre != null && searchCriteria.titre!.isNotEmpty)
                 _buildFilterChip(
-                  '🔍 ${searchCriteria.titre}',
+                  'Titre: ${searchCriteria.titre}',
                   Colors.blue.shade100,
                   () => _updateSearchCriteria(titre: ''),
                 ),
@@ -216,7 +273,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               // Filtre par restaurant
               if (searchCriteria.restaurantId != null)
                 _buildFilterChip(
-                  '🏪 Restaurant sélectionné',
+                  'Restaurant sélectionné',
                   Colors.green.shade100,
                   () => _updateSearchCriteria(restaurantId: null),
                 ),
@@ -224,7 +281,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               // Allergènes exclus
               ...searchCriteria.allergenesExclus.map((allergene) => 
                 _buildFilterChip(
-                  '🚫 $allergene',
+                  'Exclure: $allergene',
                   Colors.red.shade100,
                   () => _updateSearchCriteria(
                     allergenesExclus: searchCriteria.allergenesExclus
@@ -237,7 +294,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               // Allergènes inclus
               ...searchCriteria.allergenesInclus.map((allergene) => 
                 _buildFilterChip(
-                  '✅ $allergene',
+                  'Inclure: $allergene',
                   Colors.green.shade100,
                   () => _updateSearchCriteria(
                     allergenesInclus: searchCriteria.allergenesInclus
@@ -250,7 +307,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               // Produits exclus
               ...searchCriteria.produitsExclus.map((produit) => 
                 _buildFilterChip(
-                  '🚫 $produit',
+                  'Exclure: $produit',
                   Colors.red.shade100,
                   () => _updateSearchCriteria(
                     produitsExclus: searchCriteria.produitsExclus
@@ -263,7 +320,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               // Produits inclus
               ...searchCriteria.produitsInclus.map((produit) => 
                 _buildFilterChip(
-                  '🍽️ $produit',
+                  'Inclure: $produit',
                   Colors.green.shade100,
                   () => _updateSearchCriteria(
                     produitsInclus: searchCriteria.produitsInclus
@@ -294,9 +351,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   Widget _buildFiltersModal() {
     final searchCriteria = ref.watch(searchCriteriaProvider);
     final restaurantsAsync = ref.watch(restaurantsProvider);
+    final screenSize = MediaQuery.of(context).size;
+    final bool isSmallScreen = screenSize.width < 600;
     
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * (isSmallScreen ? 0.9 : 0.85),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -308,8 +367,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
         children: [
           // En-tête du modal
           Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+            padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
+            decoration: BoxDecoration(
               color: Colors.green.shade50,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
@@ -319,11 +378,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             child: Row(
               children: [
                 const Icon(Icons.filter_alt, color: Colors.green, size: 24),
-                const SizedBox(width: 12),
-                const Text(
+                SizedBox(width: isSmallScreen ? 8.0 : 12.0),
+                Text(
                   'Filtres de recherche',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: isSmallScreen ? 18 : 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
                   ),
@@ -351,7 +410,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                         child: TextField(
             controller: _titreController,
             decoration: const InputDecoration(
-                            labelText: '🔍 Titre du menu',
+                            labelText: 'Titre du menu',
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(),
             ),
@@ -364,7 +423,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             data: (restaurants) => DropdownButtonFormField<int>(
               value: searchCriteria.restaurantId,
               decoration: const InputDecoration(
-                              labelText: '🏪 Restaurant',
+                              labelText: 'Restaurant',
                 prefixIcon: Icon(Icons.restaurant),
                 border: OutlineInputBorder(),
               ),
@@ -402,7 +461,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('🚫 Exclure les allergènes :', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                            const Text('Exclure les allergènes :', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
           const SizedBox(height: 8),
           Consumer(
             builder: (context, ref, child) {
@@ -645,9 +704,16 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: const Text(
-                            '🔍 Rechercher',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.search, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Rechercher',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -721,7 +787,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 child: TextField(
                   controller: _titreController,
                   decoration: const InputDecoration(
-                    labelText: '🔍 Titre',
+                    labelText: 'Titre',
                     prefixIcon: Icon(Icons.search, size: 18),
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -736,7 +802,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                   data: (restaurants) => DropdownButtonFormField<int>(
                     value: searchCriteria.restaurantId,
                     decoration: const InputDecoration(
-                      labelText: '🏪 Restaurant',
+                      labelText: 'Restaurant',
                       prefixIcon: Icon(Icons.restaurant, size: 18),
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1218,7 +1284,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete, size: 20),
+                  icon: const Text('🗑️', style: TextStyle(fontSize: 20)),
                   onPressed: () => _showDeleteMenuDialog(menu),
                   tooltip: 'Supprimer le menu',
                   style: IconButton.styleFrom(

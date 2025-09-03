@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../services/auth_guard_service.dart';
-import '../factories/view_factory.dart';
+
 
 /// Widget qui protège un écran en vérifiant l'authentification et les rôles
 /// Affiche une version publique si le token est invalide et qu'une vue publique existe
