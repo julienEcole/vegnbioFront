@@ -27,11 +27,28 @@ class MenuCacheService {
 
     print('🔄 MenuCacheService: Chargement depuis l\'API');
     final apiService = ApiService();
-    _cachedMenus = await apiService.getMenus();
-    _lastUpdate = DateTime.now();
     
-    print('✅ MenuCacheService: Cache mis à jour (${_cachedMenus.length} menus)');
-    return _cachedMenus;
+    try {
+      _cachedMenus = await apiService.getMenus();
+      _lastUpdate = DateTime.now();
+      
+      print('✅ MenuCacheService: Cache mis à jour (${_cachedMenus.length} menus)');
+      
+      // Debug: afficher les détails des premiers menus
+      for (int i = 0; i < _cachedMenus.length && i < 3; i++) {
+        final menu = _cachedMenus[i];
+        print('🍽️  Menu ${i + 1}: "${menu.titre}"');
+        print('   - Description: ${menu.description}');
+        print('   - Allergènes: ${menu.allergenes}');
+        print('   - Produits: ${menu.produits}');
+        print('   - Prix: ${menu.prix}');
+      }
+      
+      return _cachedMenus;
+    } catch (e) {
+      print('❌ MenuCacheService: Erreur lors du chargement des menus: $e');
+      return [];
+    }
   }
 
   // Mettre à jour un menu dans le cache

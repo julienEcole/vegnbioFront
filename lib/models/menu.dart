@@ -43,7 +43,7 @@ class Menu {
       allergenes: _parseAllergenes(allergenes),
       produits: _parseProduits(produits),
       restaurantId: restaurantId is int ? restaurantId : int.tryParse(restaurantId.toString()) ?? 0,
-      prix: prix is num ? prix.toDouble() : 0.0,
+      prix: prix is num ? prix.toDouble() : (prix is String ? double.tryParse(prix) ?? 0.0 : 0.0),
       disponible: disponible is bool ? disponible : true,
       imageUrl: imageUrl?.toString(),
     );

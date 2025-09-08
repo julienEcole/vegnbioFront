@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/navigation_bar.dart';
-import '../widgets/image_upload_widget.dart';
-import '../providers/restaurant_provider.dart';
-import '../models/menu.dart';
+import '../../widgets/navigation_bar.dart';
+import '../../widgets/image_upload_widget.dart';
+import '../../providers/restaurant_provider.dart';
+import '../../models/menu.dart';
 
 class AdminMenuScreen extends ConsumerStatefulWidget {
   final Menu? menuToEdit;

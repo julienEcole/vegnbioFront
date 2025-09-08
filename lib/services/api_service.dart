@@ -261,9 +261,28 @@ class ApiService {
   Future<List<String>> getAvailableAllergenes() async {
     print('🔍 Récupération des allergènes disponibles...');
     
-    // Directement utiliser l'extraction depuis les menus
-    // car l'endpoint /menus/allergenes n'existe pas encore côté backend
-    return _extractAllergenesFromMenus();
+    try {
+      final result = await _extractAllergenesFromMenus();
+      print('✅ getAvailableAllergenes retourne: $result');
+      return result;
+    } catch (e) {
+      print('❌ Erreur dans getAvailableAllergenes: $e');
+      return [];
+    }
+  }
+
+  // Récupérer tous les produits disponibles dans les menus
+  Future<List<String>> getAvailableProduits() async {
+    print('🔍 Récupération des produits disponibles...');
+    
+    try {
+      final result = await _extractProduitsFromMenus();
+      print('✅ getAvailableProduits retourne: $result');
+      return result;
+    } catch (e) {
+      print('❌ Erreur dans getAvailableProduits: $e');
+      return [];
+    }
   }
 
   // Méthode fallback pour extraire les allergènes depuis tous les menus
@@ -290,6 +309,34 @@ class ApiService {
       return allergenes;
     } catch (e) {
       print('❌ Erreur extraction allergènes: $e');
+      return [];
+    }
+  }
+
+  // Méthode fallback pour extraire les produits depuis tous les menus
+  Future<List<String>> _extractProduitsFromMenus() async {
+    try {
+      print('📋 Récupération de tous les menus pour extraire les produits...');
+      final menus = await getMenus();
+      print('📊 Nombre de menus récupérés: ${menus.length}');
+      
+      final Set<String> allProduits = {};
+      
+      for (int i = 0; i < menus.length; i++) {
+        final menu = menus[i];
+        print('🍽️  Menu ${i + 1}: "${menu.titre}" - Produits: ${menu.produits}');
+        if (menu.produits.isNotEmpty) {
+          allProduits.addAll(menu.produits);
+        }
+      }
+      
+      final produits = allProduits.toList()..sort();
+      print('🏷️  PRODUITS FINAUX EXTRAITS: $produits');
+      print('🔢 Nombre total de produits uniques: ${produits.length}');
+      
+      return produits;
+    } catch (e) {
+      print('❌ Erreur extraction produits: $e');
       return [];
     }
   }

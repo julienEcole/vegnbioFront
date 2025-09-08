@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/navigation_bar.dart';
-import '../widgets/menu_image_widget.dart';
-import '../providers/menu_provider.dart';
-import '../providers/restaurant_provider.dart';
-import '../models/menu.dart';
-import '../models/restaurant.dart';
-import '../models/search_criteria.dart';
-import '../services/api_service.dart';
-import '../services/token_validator_service.dart';
+import '../../widgets/navigation_bar.dart';
+import '../../widgets/menu/menu_image_widget.dart';
+import '../../providers/menu_provider.dart';
+import '../../providers/restaurant_provider.dart';
+import '../../models/menu.dart';
+import '../../models/restaurant.dart';
+import '../../models/search_criteria.dart';
+import '../../services/api_service.dart';
+import '../../services/token_validator_service.dart';
 
-import '../widgets/public_menu_view.dart';
-import '../widgets/auth_guard_wrapper.dart';
+import '../../widgets/view_factory_wrapper.dart';
 
 class MenuScreen extends ConsumerStatefulWidget {
   final int? restaurantId;
@@ -59,11 +58,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildMenuScreen(context).authGuard(
-      pageType: 'admin', // Les menus nécessitent un accès admin pour les fonctionnalités complètes
-      publicView: PublicMenuView(), // Vue publique si token invalide
-      requireAuth: true,
-      customMessage: 'Accès aux menus nécessite une authentification valide',
+    return ViewFactoryWrapper(
+      pageType: 'menus',
+      parameters: {
+        'restaurantId': widget.restaurantId,
+      },
     );
   }
 
@@ -465,7 +464,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
           const SizedBox(height: 8),
           Consumer(
             builder: (context, ref, child) {
-              final availableAllergenesAsync = ref.watch(availableAllergenesForRestaurantProvider);
+              final availableAllergenesAsync = ref.watch(availableAllergenesProvider);
               
               return availableAllergenesAsync.when(
                 data: (availableAllergenes) {
@@ -514,7 +513,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             const SizedBox(height: 8),
                             Consumer(
                               builder: (context, ref, child) {
-                                final availableAllergenesAsync = ref.watch(availableAllergenesForRestaurantProvider);
+                                final availableAllergenesAsync = ref.watch(availableAllergenesProvider);
                                 
                                 return availableAllergenesAsync.when(
                                   data: (availableAllergenes) {
@@ -571,7 +570,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             const SizedBox(height: 8),
                             Consumer(
                               builder: (context, ref, child) {
-                                final availableProduitsAsync = ref.watch(availableProduitsForRestaurantProvider);
+                                final availableProduitsAsync = ref.watch(availableProduitsProvider);
                                 
                                 return availableProduitsAsync.when(
                                   data: (availableProduits) {
@@ -625,7 +624,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             const SizedBox(height: 8),
                             Consumer(
                               builder: (context, ref, child) {
-                                final availableProduitsAsync = ref.watch(availableProduitsForRestaurantProvider);
+                                final availableProduitsAsync = ref.watch(availableProduitsProvider);
                                 
                                 return availableProduitsAsync.when(
                                   data: (availableProduits) {
@@ -845,7 +844,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     const SizedBox(height: 6),
                     Consumer(
                       builder: (context, ref, child) {
-                        final availableAllergenesAsync = ref.watch(availableAllergenesForRestaurantProvider);
+                        final availableAllergenesAsync = ref.watch(availableAllergenesProvider);
                         
                         return availableAllergenesAsync.when(
                           data: (availableAllergenes) {
@@ -895,7 +894,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     const SizedBox(height: 6),
           Consumer(
             builder: (context, ref, child) {
-              final availableAllergenesAsync = ref.watch(availableAllergenesForRestaurantProvider);
+              final availableAllergenesAsync = ref.watch(availableAllergenesProvider);
               
               return availableAllergenesAsync.when(
                 data: (availableAllergenes) {
@@ -952,7 +951,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     const SizedBox(height: 6),
                     Consumer(
                       builder: (context, ref, child) {
-                        final availableProduitsAsync = ref.watch(availableProduitsForRestaurantProvider);
+                        final availableProduitsAsync = ref.watch(availableProduitsProvider);
                         
                         return availableProduitsAsync.when(
                           data: (availableProduits) {
@@ -1007,7 +1006,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     const SizedBox(height: 6),
                     Consumer(
                       builder: (context, ref, child) {
-                        final availableProduitsAsync = ref.watch(availableProduitsForRestaurantProvider);
+                        final availableProduitsAsync = ref.watch(availableProduitsProvider);
                         
                         return availableProduitsAsync.when(
                           data: (availableProduits) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/restaurant.dart';
-import '../providers/restaurant_provider.dart';
-import '../widgets/restaurant_images_widget.dart';
-import '../widgets/navigation_bar.dart';
-import '../services/navigation_service.dart';
+import '../../models/restaurant.dart';
+import '../../providers/restaurant_provider.dart';
+import 'restaurant_images_widget.dart';
+import '../navigation_bar.dart';
+import '../../services/navigation_service.dart';
 
 /// Vue publique des restaurants accessible sans authentification
 class PublicRestaurantView extends ConsumerWidget {

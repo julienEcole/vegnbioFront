@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -21,12 +22,17 @@ class AppTheme {
         ),
         color: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF4CAF50),
+      appBarTheme: AppBarTheme(
+        backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
-        shape: RoundedRectangleBorder(
+        titleTextStyle: GoogleFonts.roboto(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(16),
           ),
@@ -36,50 +42,49 @@ class AppTheme {
         backgroundColor: const Color(0xFF4CAF50),
         indicatorColor: Colors.white.withOpacity(0.2),
         labelTextStyle: MaterialStateProperty.all(
-          const TextStyle(color: Colors.white, fontSize: 12),
+          GoogleFonts.roboto(
+            color: Colors.white,
+            fontSize: 12,
+          ),
         ),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          color: Color(0xFF2E7D32),
+      textTheme: GoogleFonts.robotoTextTheme().copyWith(
+        headlineLarge: GoogleFonts.roboto(
+          color: const Color(0xFF2E7D32),
           fontWeight: FontWeight.bold,
           fontSize: 28,
-          fontFamily: 'Roboto',
         ),
-        headlineMedium: TextStyle(
-          color: Color(0xFF2E7D32),
+        headlineMedium: GoogleFonts.roboto(
+          color: const Color(0xFF2E7D32),
           fontWeight: FontWeight.bold,
           fontSize: 24,
-          fontFamily: 'Roboto',
         ),
-        titleLarge: TextStyle(
-          color: Color(0xFF1B5E20),
+        titleLarge: GoogleFonts.roboto(
+          color: const Color(0xFF1B5E20),
           fontWeight: FontWeight.w600,
           fontSize: 20,
-          fontFamily: 'Roboto',
         ),
-        titleMedium: TextStyle(
-          color: Color(0xFF2E7D32),
+        titleMedium: GoogleFonts.roboto(
+          color: const Color(0xFF2E7D32),
           fontWeight: FontWeight.w600,
           fontSize: 16,
-          fontFamily: 'Roboto',
         ),
-        bodyLarge: TextStyle(
-          color: Color(0xFF333333),
+        bodyLarge: GoogleFonts.roboto(
+          color: const Color(0xFF333333),
           fontSize: 16,
-          fontFamily: 'Roboto',
         ),
-        bodyMedium: TextStyle(
-          color: Color(0xFF666666),
+        bodyMedium: GoogleFonts.roboto(
+          color: const Color(0xFF666666),
           fontSize: 14,
-          fontFamily: 'Roboto',
         ),
       ),
-      fontFamily: 'Roboto',
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4CAF50),
           foregroundColor: Colors.white,
+          textStyle: GoogleFonts.roboto(
+            fontWeight: FontWeight.w600,
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

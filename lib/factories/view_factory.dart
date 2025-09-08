@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/public_menu_view.dart';
-import '../widgets/public_restaurant_view.dart';
+import '../widgets/menu/public_menu_view.dart';
+import '../widgets/restaurant/public_restaurant_view.dart';
 import '../widgets/public_events_view.dart';
 import '../widgets/public_services_view.dart';
-import '../screens/menu_screen.dart';
-import '../screens/restaurants_screen.dart';
-import '../screens/events_screen.dart';
-import '../screens/services_screen.dart';
+import '../widgets/authenticated_events_view.dart';
+import '../widgets/authenticated_services_view.dart';
 
 /// Factory pour créer les vues appropriées selon le rôle et le type de page
 class ViewFactory {
@@ -53,15 +51,18 @@ class ViewFactory {
   static Widget _createAuthenticatedView(String pageType, Map<String, dynamic>? parameters) {
     switch (pageType.toLowerCase()) {
       case 'menus':
-        final restaurantId = parameters?['restaurantId'] as int?;
-        return MenuScreen(restaurantId: restaurantId);
+        // Pour les menus, même les admin/restaurateurs ont la vue publique
+        // (pas de fonctionnalités de gestion dans cette vue)
+        return const PublicMenuView();
       case 'restaurants':
+        // Pour les restaurants, même les admin/restaurateurs ont la vue publique
+        // (pas de fonctionnalités de gestion dans cette vue)
         final highlightRestaurantId = parameters?['highlightRestaurantId'] as int?;
-        return RestaurantsScreen(highlightRestaurantId: highlightRestaurantId);
+        return PublicRestaurantView(highlightRestaurantId: highlightRestaurantId);
       case 'events':
-        return const EventsScreen();
+        return const AuthenticatedEventsView();
       case 'services':
-        return const ServicesScreen();
+        return const AuthenticatedServicesView();
       default:
         // Vue par défaut si le type n'est pas reconnu
         return _createDefaultAuthenticatedView();
@@ -74,9 +75,10 @@ class ViewFactory {
 
     switch (pageType.toLowerCase()) {
       case 'menus':
-        return ['admin', 'restaurateur'].contains(userRole);
+        return ['admin', 'restaurateur', 'fournisseur', 'client'].contains(userRole);
       case 'restaurants':
-        return ['admin', 'restaurateur'].contains(userRole);
+        // Tous les utilisateurs authentifiés ont accès (même vue publique pour tous)
+        return ['admin', 'restaurateur', 'client', 'fournisseur'].contains(userRole);
       case 'events':
         return ['admin', 'restaurateur', 'fournisseur'].contains(userRole);
       case 'services':

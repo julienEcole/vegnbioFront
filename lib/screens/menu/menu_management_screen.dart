@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/menu.dart';
-import '../models/restaurant.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
-import '../services/menu_cache_service.dart';
-import '../providers/menu_provider.dart';
+import '../../models/menu.dart';
+import '../../models/restaurant.dart';
+import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/menu_cache_service.dart';
+import '../../providers/menu_provider.dart';
 
 class MenuManagementScreen extends ConsumerStatefulWidget {
   const MenuManagementScreen({super.key});

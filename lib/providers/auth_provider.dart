@@ -69,9 +69,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       
       if (result['success'] == true) {
-        // Après inscription réussie, on reste en état non authentifié
-        // L'utilisateur doit se connecter
-        state = const AuthState.unauthenticated();
+        // Après inscription réussie, si un token est retourné, connecter automatiquement l'utilisateur
+        if (result['token'] != null) {
+          final role = result['role'] as String;
+          final userId = result['userId'] as int;
+          
+          state = AuthState.authenticated(
+            role: role,
+            userId: userId,
+          );
+        } else {
+          // Si pas de token, rester en état non authentifié
+          state = const AuthState.unauthenticated();
+        }
       } else {
         state = AuthState.error(result['message'] ?? 'Erreur d\'inscription');
       }

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/navigation_bar.dart';
-import '../widgets/restaurant_images_widget.dart';
-import '../providers/restaurant_provider.dart';
-import '../models/restaurant.dart';
-import '../widgets/restaurant_gallery_widget.dart';
-import '../services/api_service.dart';
-import '../widgets/auth_guard_wrapper.dart';
-import '../widgets/public_restaurant_view.dart';
+import '../../widgets/navigation_bar.dart';
+import '../../widgets/restaurant/restaurant_images_widget.dart';
+import '../../providers/restaurant_provider.dart';
+import '../../models/restaurant.dart';
+import '../../widgets/restaurant/restaurant_gallery_widget.dart';
+import '../../services/api_service.dart';
+import '../../widgets/view_factory_wrapper.dart';
 
 class RestaurantsScreen extends ConsumerStatefulWidget {
   final int? highlightRestaurantId;
@@ -32,11 +31,11 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildRestaurantsScreen(context).authGuard(
-      pageType: 'admin', // Les restaurants nécessitent un accès admin pour les fonctionnalités complètes
-      publicView: PublicRestaurantView(highlightRestaurantId: widget.highlightRestaurantId), // Vue publique si token invalide
-      requireAuth: true,
-      customMessage: 'Accès aux restaurants nécessite une authentification valide',
+    return ViewFactoryWrapper(
+      pageType: 'restaurants',
+      parameters: {
+        'highlightRestaurantId': widget.highlightRestaurantId,
+      },
     );
   }
 

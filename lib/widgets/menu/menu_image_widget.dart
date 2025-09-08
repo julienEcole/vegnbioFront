@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/responsive_image_card.dart';
-import '../services/image_url_service.dart';
+import '../responsive_image_card.dart';
+import '../../services/image_url_service.dart';
 
 class MenuImageWidget extends StatelessWidget {
   final String? imageUrl;

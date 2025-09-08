@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../services/auth_service.dart';
+import '../providers/auth_provider.dart';
 
 enum LoginMode { login, register }
 
@@ -18,7 +18,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
   
   bool _isLoading = false;
   bool _isRegistering = false;
@@ -52,26 +51,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _authService.login(
+      await ref.read(authProvider.notifier).login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      if (result['success'] == true) {
+      // Vérifier l'état d'authentification après la tentative de connexion
+      final authState = ref.read(authProvider);
+      
+      if (authState is AuthenticatedAuthState) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Connexion réussie ! Bienvenue ${result['role']}'),
+              content: Text('Connexion réussie ! Bienvenue ${authState.role}'),
               backgroundColor: Colors.green,
             ),
           );
           Navigator.of(context).pop(true); // Retour avec succès
         }
-      } else {
+      } else if (authState is ErrorAuthState) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Erreur de connexion'),
+              content: Text(authState.message),
               backgroundColor: Colors.red,
             ),
           );
@@ -109,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _authService.register(
+      await ref.read(authProvider.notifier).register(
         nom: _nomController.text.trim(),
         prenom: _prenomController.text.trim(),
         email: _emailController.text.trim(),
@@ -117,30 +119,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         nameRole: _selectedRole,
       );
 
-      print('LoginScreen - Résultat inscription: $result');
-      print('LoginScreen - Success: ${result['success']}');
+      // Vérifier l'état d'authentification après l'inscription
+      final authState = ref.read(authProvider);
       
-      if (result['success'] == true) {
+      if (authState is AuthenticatedAuthState) {
         if (mounted) {
-          print('LoginScreen - Inscription réussie, fermeture de l\'écran...');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Inscription réussie !'),
+              content: Text('Inscription réussie ! Bienvenue ${authState.role}'),
               backgroundColor: Colors.green,
             ),
           );
           // IMPORTANT : Fermer l'écran et retourner au profil après inscription réussie
           Navigator.of(context).pop(true);
         }
-      } else {
-        print('LoginScreen - Inscription échouée: ${result['message']}');
+      } else if (authState is ErrorAuthState) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Erreur d\'inscription'),
+              content: Text(authState.message),
               backgroundColor: Colors.red,
             ),
           );
+        }
+      } else if (authState is UnauthenticatedAuthState) {
+        // Si pas de token retourné, afficher un message de succès mais demander de se connecter
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Inscription réussie ! Veuillez vous connecter.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          // Passer en mode connexion
+          setState(() => _isRegistering = false);
         }
       }
     } catch (e) {

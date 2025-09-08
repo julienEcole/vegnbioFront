@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import '../widgets/navigation_bar.dart';
-import '../widgets/auth_guard_wrapper.dart';
-import '../widgets/public_events_view.dart';
+import '../widgets/view_factory_wrapper.dart';
 
 class EventsScreen extends StatelessWidget {
   const EventsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return _buildEventsScreen(context).authGuard(
-      pageType: 'public', // Les événements sont publics mais peuvent avoir des fonctionnalités admin
-      publicView: const PublicEventsView(), // Vue publique si token invalide
-      requireAuth: false, // Pas d'authentification requise pour voir les événements
-      customMessage: 'Connectez-vous pour accéder aux fonctionnalités complètes',
+    return const ViewFactoryWrapper(
+      pageType: 'events',
     );
   }
 

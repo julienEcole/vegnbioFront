@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/menu.dart';
-import '../models/restaurant.dart';
-import '../providers/restaurant_provider.dart';
-import '../providers/menu_provider.dart';
-import '../widgets/image_upload_widget.dart';
-import '../services/api_service.dart';
-import '../services/menu_cache_service.dart';
+import '../../models/menu.dart';
+import '../../models/restaurant.dart';
+import '../../providers/restaurant_provider.dart';
+import '../../providers/menu_provider.dart';
+import '../../widgets/image_upload_widget.dart';
+import '../../services/api_service.dart';
+import '../../services/menu_cache_service.dart';
 
 class EditMenuScreen extends ConsumerStatefulWidget {
   final Menu menu;

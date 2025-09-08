@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/restaurant.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
+import '../../models/restaurant.dart';
+import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
 
 class RestaurantManagementScreen extends ConsumerStatefulWidget {
   const RestaurantManagementScreen({super.key});

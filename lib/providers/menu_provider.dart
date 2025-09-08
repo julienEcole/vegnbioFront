@@ -144,8 +144,20 @@ final filteredMenusProvider = FutureProvider<List<Menu>>((ref) async {
 
 // Provider pour les allergènes disponibles dans la base de données
 final availableAllergenesProvider = FutureProvider<List<String>>((ref) async {
-  final apiService = ref.read(apiServiceProvider);
-  return apiService.getAvailableAllergenes();
+  print('🏷️  Provider availableAllergenesProvider appelé');
+  
+  // Utiliser les menus déjà chargés au lieu de faire un nouvel appel API
+  final allMenus = await ref.watch(menusProvider.future);
+  print('🏷️  Menus chargés: ${allMenus.length}');
+  
+  final Set<String> allergenes = {};
+  for (final menu in allMenus) {
+    allergenes.addAll(menu.allergenes);
+  }
+  
+  final result = allergenes.toList()..sort();
+  print('🏷️  Provider availableAllergenesProvider retourne: $result (${result.length} au total)');
+  return result;
 });
 
 // Provider pour les allergènes filtrés par restaurant sélectionné (depuis la mémoire)
@@ -176,39 +188,21 @@ final availableAllergenesForRestaurantProvider = FutureProvider<List<String>>((r
   return result;
 });
 
-// Provider pour les produits disponibles filtrés par restaurant sélectionné (depuis la mémoire)
-final availableProduitsForRestaurantProvider = FutureProvider<List<String>>((ref) async {
-  final searchCriteria = ref.watch(searchCriteriaProvider);
+// Provider pour les produits disponibles dans la base de données
+final availableProduitsProvider = FutureProvider<List<String>>((ref) async {
+  print('🍽️  Provider availableProduitsProvider appelé');
+  
+  // Utiliser les menus déjà chargés au lieu de faire un nouvel appel API
   final allMenus = await ref.watch(menusProvider.future);
+  print('🍽️  Menus chargés: ${allMenus.length}');
   
-  List<Menu> menusToCheck;
-  
-  // Si un restaurant est sélectionné, filtrer seulement ses menus
-  if (searchCriteria.restaurantId != null) {
-    menusToCheck = allMenus.where((menu) => menu.restaurantId == searchCriteria.restaurantId).toList();
-    print('🍽️  Filtrage produits pour restaurant ${searchCriteria.restaurantId}');
-  } else {
-    // Sinon, utiliser tous les menus
-    menusToCheck = allMenus;
-    print('🍽️  Récupération de tous les produits disponibles');
-  }
-  
-  // Debug: afficher les menus et leurs produits
-  print('🍽️  Nombre de menus à analyser: ${menusToCheck.length}');
-  for (final menu in menusToCheck.take(3)) { // Afficher seulement les 3 premiers pour éviter le spam
-    print('🍽️  Menu "${menu.titre}": ${menu.produits.length} produits - ${menu.produits}');
-  }
-  
-  // Extraire tous les produits uniques
   final Set<String> produits = {};
-  for (final menu in menusToCheck) {
-    if (menu.produits.isNotEmpty) {
-      produits.addAll(menu.produits);
-    }
+  for (final menu in allMenus) {
+    produits.addAll(menu.produits);
   }
   
   final result = produits.toList()..sort();
-  print('🍽️  Produits uniques trouvés: $result (${result.length} au total)');
+  print('🍽️  Provider availableProduitsProvider retourne: $result (${result.length} au total)');
   return result;
 });
 

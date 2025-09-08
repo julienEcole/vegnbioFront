@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import '../widgets/navigation_bar.dart';
-import '../widgets/auth_guard_wrapper.dart';
-import '../widgets/public_services_view.dart';
+import '../widgets/view_factory_wrapper.dart';
 
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return _buildServicesScreen(context).authGuard(
-      pageType: 'public', // Les services sont publics mais peuvent avoir des fonctionnalités admin
-      publicView: const PublicServicesView(), // Vue publique si token invalide
-      requireAuth: false, // Pas d'authentification requise pour voir les services
-      customMessage: 'Connectez-vous pour accéder aux fonctionnalités complètes',
+    return const ViewFactoryWrapper(
+      pageType: 'services',
     );
   }
 

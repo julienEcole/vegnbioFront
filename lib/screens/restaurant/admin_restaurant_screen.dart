@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/navigation_bar.dart';
-import '../widgets/image_upload_widget.dart';
-import '../models/restaurant.dart';
+import '../../widgets/navigation_bar.dart';
+import '../../widgets/image_upload_widget.dart';
+import '../../models/restaurant.dart';
 
 class AdminRestaurantScreen extends ConsumerStatefulWidget {
   final Restaurant? restaurantToEdit;
