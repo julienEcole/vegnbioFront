@@ -149,6 +149,7 @@ class PublicRestaurantView extends ConsumerWidget {
                       topRight: Radius.circular(12),
                     ),
                     fit: BoxFit.cover,
+                    showAllImages: true, // Grille horizontale n×1 avec scroll
                   ),
                 ),
               ),

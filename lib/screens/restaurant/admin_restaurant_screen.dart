@@ -50,7 +50,7 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
     _nomController.text = restaurant.nom;
     _quartierController.text = restaurant.quartier;
     _adresseController.text = restaurant.adresse ?? '';
-    _imageUrl = restaurant.imageUrl;
+    _imageUrl = restaurant.primaryImageUrl;
     
     if (restaurant.equipements != null) {
       _selectedEquipements = restaurant.equipements!.map((e) => e.nom).toList();
@@ -330,7 +330,6 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
         nom: _nomController.text.trim(),
         quartier: _quartierController.text.trim(),
         adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
-        imageUrl: _imageUrl,
         images: null, // TODO: Gérer les images multiples
         imagesCount: 0,
         horaires: _horaires,

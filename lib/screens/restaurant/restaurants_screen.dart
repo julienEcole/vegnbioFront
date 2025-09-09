@@ -153,8 +153,7 @@ class _RestaurantsScreenState extends ConsumerState<RestaurantsScreen> {
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12),
                   ),
-                  enableHorizontalScroll: true, // Activer la galerie scrollable
-                  showMultipleImages: true, // Activer l'affichage multiple
+                  showAllImages: true, // Grille horizontale n×1 avec scroll
                   margin: const EdgeInsets.all(0),
                 ),
           

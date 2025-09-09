@@ -178,9 +178,10 @@ class _AuthenticatedRestaurantViewState extends ConsumerState<AuthenticatedResta
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: RestaurantImagesWidget(
-                  images: restaurant.images,
+                  images: restaurant.allImages,
                   width: 120,
                   height: 120,
+                  showAllImages: true, // Grille horizontale n×1 avec scroll
                 ),
               ),
               

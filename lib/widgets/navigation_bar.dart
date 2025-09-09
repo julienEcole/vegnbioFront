@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/panier_provider.dart';
+import '../widgets/panier/panier_badge.dart';
 
 class CustomNavigationBar extends ConsumerWidget {
   const CustomNavigationBar({super.key});
@@ -16,13 +18,36 @@ class CustomNavigationBar extends ConsumerWidget {
     return destinationsAsync.when(
       data: (destinations) {
         final selectedIndex = _getSelectedIndex(currentLocation, ref);
+        
+        // Ajouter le panier à la fin des destinations
+        final destinationsWithPanier = [
+          ...destinations,
+          NavigationDestination(
+            icon: PanierBadge(
+              onTap: () => context.go('/panier'),
+              child: const Icon(Icons.shopping_cart_outlined),
+            ),
+            selectedIcon: PanierBadge(
+              onTap: () => context.go('/panier'),
+              child: const Icon(Icons.shopping_cart),
+            ),
+            label: 'Panier',
+          ),
+        ];
+        
         return NavigationBar(
           backgroundColor: Colors.green,
           indicatorColor: Colors.white,
           elevation: 8,
-          destinations: destinations,
+          destinations: destinationsWithPanier,
           selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
+            if (index == destinations.length) {
+              // C'est le panier
+              context.go('/panier');
+              return;
+            }
+            
             routesAsync.when(
               data: (routes) {
                 if (index < routes.length) {

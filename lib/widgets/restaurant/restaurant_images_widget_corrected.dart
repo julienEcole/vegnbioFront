@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/restaurant_image.dart';
-import '../responsive_image_card.dart';
+import '../common/responsive_image_card.dart';
 
 class RestaurantImagesWidget extends StatefulWidget {
   final List<RestaurantImage>? images;
@@ -17,7 +17,6 @@ class RestaurantImagesWidget extends StatefulWidget {
   final bool enableHorizontalScroll;
   final bool showAllImages;
   final bool enableNavigationArrows;
-  final bool showMultipleImages;
 
   const RestaurantImagesWidget({
     super.key,
@@ -35,7 +34,6 @@ class RestaurantImagesWidget extends StatefulWidget {
     this.enableHorizontalScroll = false,
     this.showAllImages = false,
     this.enableNavigationArrows = false,
-    this.showMultipleImages = false,
   });
 
   @override
@@ -314,7 +312,7 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
               fallbackIcon: Icons.restaurant,
               showBorder: widget.showBorder,
               borderColor: widget.borderColor,
-              borderWidth: widget.borderWidth ?? 1.0,
+              borderWidth: widget.borderWidth,
               onTap: null, // Géré par InkWell
               isCircular: false,
             ),

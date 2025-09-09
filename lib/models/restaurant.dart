@@ -5,8 +5,7 @@ class Restaurant {
   final String nom;
   final String quartier;
   final String? adresse;
-  final String? imageUrl; // URL de l'image principale (pour compatibilité)
-  final List<RestaurantImage>? images; // Nouvelles images multiples
+  final List<RestaurantImage>? images; // Images multiples via relation 0 à n
   final int imagesCount; // Nombre total d'images
   final List<Horaire>? horaires;
   final List<Equipement>? equipements;
@@ -16,7 +15,6 @@ class Restaurant {
     required this.nom,
     required this.quartier,
     this.adresse,
-    this.imageUrl,
     this.images,
     this.imagesCount = 0,
     this.horaires,
@@ -29,7 +27,6 @@ class Restaurant {
       nom: json['nom']?.toString() ?? '',
       quartier: json['quartier']?.toString() ?? '',
       adresse: json['adresse']?.toString(),
-      imageUrl: json['imageUrl'] ?? json['image_url'],
       images: json['images'] != null
           ? (json['images'] as List)
               .map((img) => RestaurantImage.fromJson(img as Map<String, dynamic>))
@@ -55,7 +52,6 @@ class Restaurant {
       'nom': nom,
       'quartier': quartier,
       'adresse': adresse,
-      'imageUrl': imageUrl,
       'images': images?.map((img) => img.toJson()).toList(),
       'imagesCount': imagesCount,
       'horaires': horaires?.map((h) => h.toJson()).toList(),
@@ -72,7 +68,7 @@ class Restaurant {
       );
       return primaryImage.imageUrl;
     }
-    return imageUrl; // Fallback vers l'ancien système
+    return null; // Plus de fallback vers l'ancien système
   }
 
   /// Retourne toutes les images ou une liste vide
@@ -82,7 +78,7 @@ class Restaurant {
 
   /// Vérifie si le restaurant a des images
   bool get hasImages {
-    return (images != null && images!.isNotEmpty) || imageUrl != null;
+    return images != null && images!.isNotEmpty;
   }
 }
 

@@ -5,6 +5,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
+import '../models/commande.dart';
+import '../models/commande_item.dart';
 
 import 'auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -752,6 +754,119 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  // ==================== MÉTHODES COMMANDES ====================
+
+  // Récupérer toutes les commandes
+  Future<List<Commande>> getCommandes() async {
+    try {
+      final authHeaders = await getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/commandes'),
+        headers: authHeaders,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => Commande.fromJson(json)).toList();
+      } else {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des commandes: $e');
+    }
+  }
+
+  // Récupérer une commande par ID
+  Future<Commande> getCommandeById(int id) async {
+    try {
+      final authHeaders = await getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/commandes/$id'),
+        headers: authHeaders,
+      );
+
+      if (response.statusCode == 200) {
+        return Commande.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération de la commande: $e');
+    }
+  }
+
+  // Créer une nouvelle commande
+  Future<Commande> createCommande({
+    required int restaurantId,
+    List<CommandeItem> items = const [],
+    String currency = 'EUR',
+    double tvaRate = 10.0,
+  }) async {
+    try {
+      final authHeaders = await getAuthHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/commandes'),
+        headers: authHeaders,
+        body: json.encode({
+          'restaurant_id': restaurantId,
+          'currency': currency,
+          'tvaRate': tvaRate,
+          'items': items.map((item) => item.toJson()).toList(),
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return Commande.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la création de la commande: $e');
+    }
+  }
+
+  // Mettre à jour le statut d'une commande
+  Future<Commande> updateCommandeStatut(int id, String statut) async {
+    try {
+      final authHeaders = await getAuthHeaders();
+      final response = await http.put(
+        Uri.parse('$baseUrl/commandes/statut/$id'),
+        headers: authHeaders,
+        body: json.encode({'statut': statut}),
+      );
+
+      if (response.statusCode == 200) {
+        return Commande.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du statut: $e');
+    }
+  }
+
+  // Remplacer les items d'une commande
+  Future<Commande> replaceCommandeItems(int id, List<CommandeItem> items) async {
+    try {
+      final authHeaders = await getAuthHeaders();
+      final response = await http.put(
+        Uri.parse('$baseUrl/commandes/items/$id'),
+        headers: authHeaders,
+        body: json.encode({
+          'items': items.map((item) => item.toJson()).toList(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return Commande.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour des items: $e');
     }
   }
 }

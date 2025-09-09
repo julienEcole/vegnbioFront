@@ -46,7 +46,7 @@ class _EditRestaurantScreenState extends ConsumerState<EditRestaurantScreen> {
     _neighborhoodController = TextEditingController(text: widget.restaurant.quartier);
     _addressController = TextEditingController(text: widget.restaurant.adresse);
     _selectedEquipments = []; // TODO: Récupérer depuis le restaurant
-    _imageUrl = widget.restaurant.imageUrl;
+    _imageUrl = widget.restaurant.primaryImageUrl;
     
     // Initialiser les horaires par défaut
     _openingHours = {};
@@ -299,7 +299,6 @@ class _EditRestaurantScreenState extends ConsumerState<EditRestaurantScreen> {
             fermeture: '18:00', // Heure de fermeture par défaut
           )
         ).toList(),
-        imageUrl: _imageUrl,
       );
       
       // Appeler l'API pour mettre à jour
