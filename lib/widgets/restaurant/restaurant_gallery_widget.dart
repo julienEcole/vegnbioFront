@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/restaurant_image.dart';
-import '../responsive_image_card.dart';
+import '../common/responsive_image_card.dart';
 
 class RestaurantGalleryWidget extends StatelessWidget {
   final List<RestaurantImage>? images;

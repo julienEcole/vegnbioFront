@@ -11,19 +11,48 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _checkAuthStatus() async {
     try {
+      print('🔍 [AuthProvider] Vérification du statut d\'authentification...');
       final isLoggedIn = await _authService.isLoggedIn();
+      
       if (isLoggedIn) {
-        final role = await _authService.getUserRole();
-        final userId = await _authService.getUserId();
+        print('🔍 [AuthProvider] Token détecté, vérification avec l\'API...');
         
-        state = AuthState.authenticated(
-          role: role ?? 'client',
-          userId: userId ?? 0,
-        );
+        // Vérifier le token avec le backend et récupérer le profil
+        final profile = await _authService.getUserProfile();
+        
+        if (profile != null) {
+          final role = (profile['role'] as String?)?.toLowerCase() ?? '';
+          final userId = profile['id'] as int? ?? 0;
+          
+          print('✅ [AuthProvider] Profil validé depuis l\'API: $role, ID: $userId');
+          
+          state = AuthState.authenticated(
+            role: role.isEmpty ? (await _authService.getUserRole() ?? 'client') : role,
+            userId: userId == 0 ? (await _authService.getUserId() ?? 0) : userId,
+          );
+        } else {
+          print('🔄 [AuthProvider] Token invalide ou API indisponible, utilisation du fallback...');
+          // Fallback: utiliser les données stockées localement
+          final role = await _authService.getUserRole();
+          final userId = await _authService.getUserId();
+          
+          if (role != null && userId != null) {
+            state = AuthState.authenticated(
+              role: role,
+              userId: userId,
+            );
+          } else {
+            // Token invalide, déconnecter
+            await _authService.logout();
+            state = const AuthState.unauthenticated();
+          }
+        }
       } else {
+        print('🔍 [AuthProvider] Aucun token détecté');
         state = const AuthState.unauthenticated();
       }
     } catch (e) {
+      print('❌ [AuthProvider] Erreur lors de la vérification: $e');
       state = AuthState.error(e.toString());
     }
   }
@@ -35,13 +64,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final result = await _authService.login(email, password);
       
       if (result['success'] == true) {
-        final role = result['role'] as String;
-        final userId = result['userId'] as int;
+        print('✅ [AuthProvider] Connexion réussie, récupération du profil...');
         
-        state = AuthState.authenticated(
-          role: role,
-          userId: userId,
-        );
+        // Après connexion réussie, récupérer le profil depuis l'API
+        final profile = await _authService.getUserProfile();
+        
+        if (profile != null) {
+          final role = (profile['role'] as String?)?.toLowerCase() ?? '';
+          final userId = profile['id'] as int? ?? 0;
+          
+          print('✅ [AuthProvider] Profil récupéré depuis l\'API: $role, ID: $userId');
+          
+          state = AuthState.authenticated(
+            role: role.isEmpty ? (result['role'] as String) : role,
+            userId: userId == 0 ? (result['userId'] as int) : userId,
+          );
+        } else {
+          print('🔄 [AuthProvider] Fallback vers données du token');
+          // Fallback: utiliser les données du token si l'API échoue
+          final role = result['role'] as String;
+          final userId = result['userId'] as int;
+          
+          state = AuthState.authenticated(
+            role: role,
+            userId: userId,
+          );
+        }
       } else {
         state = AuthState.error(result['message'] ?? 'Erreur de connexion');
       }

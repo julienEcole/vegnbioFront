@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/restaurant_image.dart';
-import '../responsive_image_card.dart';
+import '../common/responsive_image_card.dart';
 
 class RestaurantImagesWidget extends StatefulWidget {
   final List<RestaurantImage>? images;
@@ -103,12 +103,12 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
     return Container(
       width: effectiveWidth,
       height: widget.height,
-      margin: widget.margin,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        boxShadow: [effectiveShadow],
-      ),
-      child: ClipRRect(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          boxShadow: [effectiveShadow],
+        ),
+        child: ClipRRect(
         borderRadius: borderRadius,
         child: Column(
           children: [
@@ -315,6 +315,7 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
             ],
           ],
         ),
+        ),
       ),
     );
   }
@@ -330,8 +331,6 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
       showBorder: widget.showBorder,
       borderColor: widget.borderColor,
       borderWidth: widget.borderWidth,
-      margin: widget.margin,
-      shadow: widget.shadow,
       onTap: widget.onImageTap != null ? () => widget.onImageTap!(image) : () => _showImageFullScreen(context, image),
       isCircular: widget.isCircular,
     );
@@ -350,12 +349,12 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
     return Container(
       width: widget.width,
       height: widget.height,
-      margin: widget.margin,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        boxShadow: [effectiveShadow],
-      ),
-      child: ClipRRect(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          boxShadow: [effectiveShadow],
+        ),
+        child: ClipRRect(
         borderRadius: borderRadius,
         child: Stack(
           children: [
@@ -460,6 +459,7 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
             ],
           ],
         ),
+        ),
       ),
     );
   }
@@ -476,7 +476,6 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
     return Container(
       width: widget.width,
       height: widget.height,
-      margin: widget.margin,
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
         borderRadius: borderRadius,

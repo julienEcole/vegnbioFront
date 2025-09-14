@@ -5,21 +5,28 @@ import '../../widgets/navigation_bar.dart';
 import '../../widgets/menu/menu_image_widget.dart';
 import '../../providers/menu_provider.dart';
 import '../../providers/restaurant_provider.dart';
+import '../../providers/auth_state_provider.dart';
 import '../../models/menu.dart';
 import '../../models/restaurant.dart';
 import '../../models/search_criteria.dart';
 import '../../services/api_service.dart';
-import '../../services/token_validator_service.dart';
 
-import '../../widgets/view_factory_wrapper.dart';
+import '../../widgets/unified_view_factory_wrapper.dart';
 
 class MenuScreen extends ConsumerStatefulWidget {
   final int? restaurantId;
   
-  const MenuScreen({super.key, this.restaurantId});
+  MenuScreen({super.key, this.restaurantId}) {
+    // Forcer un log visible dans le constructeur
+    print('🚨🚨🚨 [MenuScreen] CONSTRUCTEUR APPELÉ ! restaurantId: $restaurantId 🚨🚨🚨');
+  }
 
   @override
-  ConsumerState<MenuScreen> createState() => _MenuScreenState();
+  ConsumerState<MenuScreen> createState() {
+    print('🏗️ [MenuScreen] createState() appelé !');
+    debugPrint('🏗️ [MenuScreen] createState() appelé !');
+    return _MenuScreenState();
+  }
 }
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
@@ -27,6 +34,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   @override
   void initState() {
+    print('🎬 [MenuScreen] initState() appelé !');
+    debugPrint('🎬 [MenuScreen] initState() appelé !');
     super.initState();
     
          // Réinitialiser les filtres à chaque fois qu'on revient sur l'écran
@@ -58,12 +67,22 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ViewFactoryWrapper(
+    print('🚨🚨🚨 [MenuScreen] BUILD APPELÉ ! 🚨🚨🚨');
+    debugPrint('🚨🚨🚨 [MenuScreen] BUILD APPELÉ ! 🚨🚨🚨');
+    
+    // NOUVEAU SYSTÈME UNIFIÉ : Utiliser UnifiedViewFactoryWrapper
+    print('📱 [MenuScreen] → Utilisation du système unifié');
+    return UnifiedViewFactoryWrapper(
       pageType: 'menus',
       parameters: {
         'restaurantId': widget.restaurantId,
       },
+      requireAuth: false, // Les menus sont publics par défaut
     );
+    
+    // ANCIEN SYSTÈME (commenté) :
+    // return _buildMenuScreen(context);
+    // return ViewFactoryWrapper(...);
   }
 
   Widget _buildMenuScreen(BuildContext context) {
@@ -1860,11 +1879,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
   Future<void> _deleteMenu(Menu menu) async {
     try {
-      // Vérifier la validité du token avant de tenter la suppression
-      final tokenValidator = TokenValidatorService();
-      final isTokenValid = await tokenValidator.ensureTokenValid();
+      // Vérifier l'authentification avec le provider
+      final authState = ref.read(authStateProvider);
       
-      if (!isTokenValid) {
+      if (!authState.isAuthenticated) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Session expirée. Veuillez vous reconnecter.'),
@@ -1945,11 +1963,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   // Méthode pour supprimer un menu et mettre à jour l'interface
   Future<void> _deleteMenuAndUpdate(Menu menu) async {
     try {
-      // Vérifier la validité du token avant de tenter la suppression
-      final tokenValidator = TokenValidatorService();
-      final isTokenValid = await tokenValidator.ensureTokenValid();
+      // Vérifier l'authentification avec le provider
+      final authState = ref.read(authStateProvider);
       
-      if (!isTokenValid) {
+      if (!authState.isAuthenticated) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Session expirée. Redirection vers le profil...'),

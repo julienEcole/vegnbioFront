@@ -124,14 +124,22 @@ class AuthService {
 
   /// Vérifier si l'utilisateur est connecté
   Future<bool> isLoggedIn() async {
+    print('🔑 [AuthService] ===== isLoggedIn() =====');
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey) != null;
+    final token = prefs.getString(_tokenKey);
+    final result = token != null;
+    print('🔑 [AuthService] Token: ${token != null ? "PRÉSENT" : "ABSENT"}');
+    print('🔑 [AuthService] Résultat isLoggedIn: $result');
+    return result;
   }
 
   /// Obtenir le token actuel
   Future<String?> getToken() async {
+    print('🔑 [AuthService] ===== getToken() =====');
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    final token = prefs.getString(_tokenKey);
+    print('🔑 [AuthService] Token récupéré: ${token != null ? "OUI" : "NON"}');
+    return token;
   }
 
   /// Obtenir le rôle de l'utilisateur
@@ -163,6 +171,69 @@ class AuthService {
   Future<bool> hasAnyRole(List<String> roles) async {
     final userRole = await getUserRole();
     return userRole != null && roles.contains(userRole);
+  }
+
+  /// Récupérer le profil complet de l'utilisateur depuis l'API
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        print('❌ [AuthService] Pas de token pour récupérer le profil');
+        return null;
+      }
+
+      print('🔍 [AuthService] Récupération du profil avec token: ${token.substring(0, 50)}...');
+      
+      // Test de connectivité d'abord
+      try {
+        final testResponse = await http.get(
+          Uri.parse('http://localhost:3001/'),
+          headers: {'Content-Type': 'application/json'},
+        ).timeout(const Duration(seconds: 3));
+        print('✅ [AuthService] Backend accessible (${testResponse.statusCode})');
+      } catch (testError) {
+        print('❌ [AuthService] Backend non accessible: $testError');
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 [AuthService] Statut de réponse: ${response.statusCode}');
+      print('📄 [AuthService] Corps de la réponse: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['user'] != null) {
+          print('✅ [AuthService] Profil utilisateur récupéré avec succès');
+          print('✅ [AuthService] Données utilisateur: ${data['user']}');
+          return data['user'];
+        } else {
+          print('❌ [AuthService] Réponse API indique un échec: ${data['message']}');
+        }
+      } else if (response.statusCode == 401) {
+        print('🔐 [AuthService] Token invalide ou expiré (401)');
+        await logout(); // Nettoyer le token invalide
+      } else {
+        print('❌ [AuthService] Erreur HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ [AuthService] Erreur lors de la récupération du profil: $e');
+      // Si erreur réseau, ne pas invalider le token
+      if (e.toString().contains('Connection refused') || 
+          e.toString().contains('SocketException') ||
+          e.toString().contains('TimeoutException')) {
+        print('🌐 [AuthService] Erreur réseau détectée - Token conservé');
+        return null;
+      }
+      rethrow;
+    }
+    return null;
   }
 
   /// Déconnexion

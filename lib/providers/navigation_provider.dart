@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
-import '../factories/dashboard_factory.dart';
+
+// Enum pour les rôles utilisateur
+enum UserRole { client, restaurateur, fournisseur, admin }
 
 // Provider pour obtenir le rôle de l'utilisateur connecté
 final userRoleProvider = FutureProvider<UserRole>((ref) async {
   final authService = AuthService();
   final role = await authService.getUserRole();
-  return DashboardFactory.parseRole(role ?? 'client');
+  return _parseRole(role ?? 'client');
 });
+
+// Fonction pour parser le rôle depuis une string
+UserRole _parseRole(String role) {
+  switch (role.toLowerCase()) {
+    case 'restaurateur':
+      return UserRole.restaurateur;
+    case 'fournisseur':
+      return UserRole.fournisseur;
+    case 'admin':
+      return UserRole.admin;
+    default:
+      return UserRole.client;
+  }
+}
 
 // Provider pour les destinations de navigation
 final navigationDestinationsProvider = FutureProvider<List<NavigationDestination>>((ref) async {

@@ -41,7 +41,7 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0xFF4CAF50),
         indicatorColor: Colors.white.withOpacity(0.2),
-        labelTextStyle: MaterialStateProperty.all(
+        labelTextStyle: WidgetStateProperty.all(
           GoogleFonts.roboto(
             color: Colors.white,
             fontSize: 12,

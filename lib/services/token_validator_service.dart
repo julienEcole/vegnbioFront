@@ -11,10 +11,12 @@ class TokenValidatorService {
 
   /// Vérifier si le token actuel est valide (validation locale)
   Future<bool> isCurrentTokenValid() async {
+    print('🔍 [TokenValidatorService] ===== isCurrentTokenValid() =====');
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       
+      print('🔍 [TokenValidatorService] Token présent: ${token != null}');
       if (token == null) return false;
 
       // Vérifier le format du token personnalisé
@@ -69,8 +71,10 @@ class TokenValidatorService {
 
   /// Vérifier la validité du token avant une action importante
   Future<bool> ensureTokenValid() async {
+    print('🔍 [TokenValidatorService] ===== ensureTokenValid() =====');
     final isValid = await validateAndCleanToken();
     
+    print('🔍 [TokenValidatorService] Token valide après vérification: $isValid');
     if (!isValid) {
       print('⚠️ Token invalide détecté, action refusée');
     }

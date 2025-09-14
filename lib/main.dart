@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'utils/web_logger.dart';
 import 'screens/home_screen.dart';
 import 'screens/menu/menu_screen.dart';
 import 'screens/events_screen.dart';
@@ -14,21 +15,38 @@ import 'screens/menu/edit_menu_screen.dart';
 import 'screens/restaurant/edit_restaurant_screen.dart';
 import 'providers/menu_provider.dart';
 import 'providers/restaurant_provider.dart';
+import 'providers/auth_state_provider.dart';
+import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  print('🚀 [MAIN] Démarrage de l\'application...');
+  runApp(
+    ProviderScope(
+      child: const MyApp(),
+      overrides: [
+        // Initialiser l'AuthStateProvider au démarrage
+        authStateProvider.overrideWith((ref) => AuthStateNotifier(AuthService())),
+      ],
+    ),
+  );
 }
 
 final GoRouter _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const HomeScreen(),
+      builder: (context, state) {
+        WebLogger.logWithEmoji('[GoRouter] Navigation vers /', '🚨', color: '#FF5722');
+        return const HomeScreen();
+      },
     ),
     GoRoute(
       path: '/menus',
-      builder: (context, state) => const MenuScreen(),
+      builder: (context, state) {
+        WebLogger.logWithEmoji('[GoRouter] Navigation vers /menus', '🚨', color: '#FF5722');
+        return MenuScreen();
+      },
     ),
     GoRoute(
       path: '/menus/restaurant/:restaurantId',
@@ -58,7 +76,7 @@ final GoRouter _router = GoRouter(
     ),
     GoRoute(
       path: '/profil',
-      builder: (context, state) => const ProfileScreen(),
+      builder: (context, state) => ProfileScreen(),
     ),
     GoRoute(
       path: '/dashboard',
@@ -135,6 +153,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WebLogger.logWithEmoji('[MyApp] BUILD APPELÉ !', '🚨', color: '#E91E63');
     return MaterialApp.router(
       title: "Veg'N Bio",
       theme: AppTheme.lightTheme,
@@ -142,7 +161,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,  // Supprime la bannière debug
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
           child: child!,
         );
       },

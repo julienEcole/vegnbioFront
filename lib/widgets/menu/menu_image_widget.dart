@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../responsive_image_card.dart';
+import '../common/responsive_image_card.dart';
 import '../../services/image_url_service.dart';
 
 class MenuImageWidget extends StatelessWidget {
@@ -55,28 +55,16 @@ class MenuImageWidget extends StatelessWidget {
     }
 
     return ResponsiveImageCard(
-      imageUrl: imageUrl,
+      imageUrl: imageUrl!,
       width: width,
       height: height,
       fit: fit,
       borderRadius: borderRadius ?? BorderRadius.circular(16),
       fallbackIcon: fallbackIcon,
-      fallbackBackgroundColor: fallbackBackgroundColor,
       showBorder: showBorder,
       borderColor: borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
       borderWidth: borderWidth,
-      margin: margin,
-      shadow: shadow ?? BoxShadow(
-        color: Colors.black.withValues(alpha: 0.2),
-        blurRadius: 15,
-        offset: const Offset(0, 6),
-        spreadRadius: 2,
-      ),
       onTap: onTap,
-      overlay: overlay,
-      imageQuality: imageQuality,
-      imageFormat: imageFormat,
-      imageFit: imageFit,
     );
   }
 
@@ -206,9 +194,9 @@ class MenuImageWidget extends StatelessWidget {
                     maxWidth: width,
                     maxHeight: height,
                   ),
-                  child: imageUrl != null && imageUrl!.isNotEmpty
+                  child: imageUrl != null && imageUrl.isNotEmpty
                       ? Image.network(
-                          _buildOptimizedMenuImageUrl(imageUrl!, width, height, imageQuality, imageFormat),
+                          _buildOptimizedMenuImageUrl(imageUrl, width, height, imageQuality, imageFormat),
                           fit: BoxFit.contain,
                           alignment: Alignment.center,
                           errorBuilder: (context, error, stackTrace) {
@@ -231,7 +219,7 @@ class MenuImageWidget extends StatelessWidget {
                 ),
               ),
               // Overlay si présent
-              if (overlay != null) overlay!,
+              if (overlay != null) overlay,
             ],
           ),
         ),

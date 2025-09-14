@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/navigation_bar.dart';
 import '../services/navigation_service.dart';
 import '../services/auth_service.dart';
-import '../providers/auth_provider.dart';
+import '../providers/auth_state_provider.dart';
+import '../providers/registration_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
-
+  
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -22,19 +23,105 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _confirmPasswordController = TextEditingController();
   final _passwordFocusNode = FocusNode();
   final _authService = AuthService();
+  
+  // Données du profil utilisateur
+  Map<String, dynamic>? _userProfile;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialiser les contrôleurs avec les données utilisateur si connecté
+
+     print('init profile screen perso \n');
+     
+    // Charger le profil utilisateur si connecté
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = ref.read(authProvider);
-      if (authState is AuthenticatedAuthState) {
-        _nomController.text = 'Nom'; // À remplacer par les vraies données
-        _prenomController.text = 'Prénom'; // À remplacer par les vraies données
-        _emailController.text = 'email@example.com'; // À remplacer par les vraies données
-      }
+      _loadUserProfile();
     });
+  }
+  
+  /// Charger le profil utilisateur depuis l'AuthStateProvider
+  Future<void> _loadUserProfile() async {
+    print('🚨🚨🚨 [ProfileScreen] ===== _loadUserProfile APPELÉ ===== 🚨🚨🚨');
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final authState = ref.read(authStateProvider);
+      print('🔍 [ProfileScreen] État d\'authentification: isAuthenticated=${authState.isAuthenticated}, Role=${authState.userRole}');
+      
+      if (authState.isAuthenticated && authState.userProfile != null) {
+        print('✅ [ProfileScreen] Profil disponible dans AuthStateProvider: ${authState.userProfile}');
+        setState(() {
+          _userProfile = authState.userProfile;
+          _nomController.text = authState.userProfile!['nom']?.toString() ?? '';
+          _prenomController.text = authState.userProfile!['prenom']?.toString() ?? '';
+          _emailController.text = authState.userProfile!['email']?.toString() ?? '';
+        });
+      } else if (authState.isAuthenticated) {
+        print('🔄 [ProfileScreen] Authentifié mais profil manquant - Rafraîchissement...');
+        // Forcer le rafraîchissement de l'AuthStateProvider
+        await ref.read(authStateProvider.notifier).refresh();
+        
+        // Attendre un peu pour que le provider se mette à jour
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        final updatedAuthState = ref.read(authStateProvider);
+        if (updatedAuthState.userProfile != null && mounted) {
+          print('✅ [ProfileScreen] Profil récupéré après rafraîchissement: ${updatedAuthState.userProfile}');
+          setState(() {
+            _userProfile = updatedAuthState.userProfile;
+            _nomController.text = updatedAuthState.userProfile!['nom']?.toString() ?? '';
+            _prenomController.text = updatedAuthState.userProfile!['prenom']?.toString() ?? '';
+            _emailController.text = updatedAuthState.userProfile!['email']?.toString() ?? '';
+          });
+        } else {
+          print('❌ [ProfileScreen] Profil toujours manquant après rafraîchissement');
+          await _loadLocalUserData();
+        }
+      } else {
+        print('ℹ️ [ProfileScreen] Utilisateur non authentifié');
+      }
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur lors du chargement: $e');
+      await _loadLocalUserData();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  /// Charger les données utilisateur depuis le stockage local (fallback)
+  Future<void> _loadLocalUserData() async {
+    try {
+      final localEmail = await _authService.getUserEmail();
+      final localRole = await _authService.getUserRole();
+      final localUserId = await _authService.getUserId();
+      
+      print('🔄 [ProfileScreen] Données locales: Email=$localEmail, Role=$localRole, ID=$localUserId');
+      
+      if (localEmail != null && mounted) {
+        setState(() {
+          _userProfile = {
+            'email': localEmail,
+            'role': localRole ?? 'client',
+            'id': localUserId ?? 0,
+            'nom': 'Non renseigné',
+            'prenom': 'Non renseigné',
+          };
+          _emailController.text = localEmail;
+          _nomController.text = 'Non renseigné';
+          _prenomController.text = 'Non renseigné';
+        });
+      }
+    } catch (e) {
+      print('❌ [ProfileScreen] Erreur chargement données locales: $e');
+    }
   }
 
   @override
@@ -51,19 +138,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
+    final authState = ref.watch(authStateProvider);
     
-    if (authState is LoadingAuthState) {
+    print('🎨 [ProfileScreen] ===== BUILD APPELÉ =====');
+    print('🎨 [ProfileScreen] build() - authState: isAuthenticated=${authState.isAuthenticated}, Role=${authState.userRole}');
+    print('🎨 [ProfileScreen] build() - _userProfile: ${_userProfile != null}');
+    
+    // Si on a des données de profil (même si AuthStateProvider pas synchronisé), afficher la vue profil
+    if (_userProfile != null) {
+      print('🎨 [ProfileScreen] Affichage: VUE PROFIL (données disponibles)');
+      final role = _userProfile!['role']?.toString().toLowerCase() ?? 'client';
+      final userId = _userProfile!['id'] as int? ?? 0;
+      return _buildProfileView(role, userId);
+    }
+    
+    // Si AuthStateProvider est authentifié, afficher la vue profil
+    if (authState.isAuthenticated) {
+      print('🎨 [ProfileScreen] Affichage: VUE PROFIL (AuthStateProvider authenticated)');
+      return _buildProfileView(authState.userRole ?? 'client', authState.userId ?? 0);
+    }
+    
+    // Si en cours de chargement, afficher le loader
+    if (authState.isLoading || _isLoading) {
+      print('🎨 [ProfileScreen] Affichage: LOADING');
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
     
-    if (authState is AuthenticatedAuthState) {
-      return _buildProfileView(authState.role, authState.userId);
-    }
-    
-    if (authState is ErrorAuthState) {
+    // Si erreur, afficher l'erreur avec possibilité de réessayer
+    if (authState.error != null) {
+      print('🎨 [ProfileScreen] Affichage: ERREUR');
       return Scaffold(
         body: Center(
           child: Column(
@@ -71,9 +176,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               const Icon(Icons.error, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Erreur: ${authState.message}'),
+              Text('Erreur: ${authState.error}'),
               ElevatedButton(
-                onPressed: () => ref.read(authProvider.notifier).refreshAuthStatus(),
+                onPressed: () {
+                  ref.read(authStateProvider.notifier).refresh();
+                  _loadUserProfile(); // Réessayer de charger le profil aussi
+                },
                 child: const Text('Réessayer'),
               ),
             ],
@@ -82,7 +190,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
     
-    // État initial ou non authentifié
+    // Par défaut : afficher la vue de connexion
+    print('🎨 [ProfileScreen] Affichage: VUE CONNEXION (par défaut)');
     return _buildLoginView();
   }
 
@@ -183,7 +292,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
-            onPressed: () => ref.read(authProvider.notifier).logout(),
+            onPressed: () => ref.read(authStateProvider.notifier).logout(),
             icon: const Icon(Icons.logout),
             tooltip: 'Se déconnecter',
           ),
@@ -260,7 +369,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Utilisateur $role',
+                _userProfile != null 
+                  ? '${_userProfile!['prenom'] ?? ''} ${_userProfile!['nom'] ?? ''}'
+                  : 'Utilisateur $role',
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -302,6 +413,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: 'ID utilisateur',
               value: userId.toString(),
             ),
+            if (_userProfile != null && _userProfile!['email'] != null)
+              _buildProfileItem(
+                icon: Icons.email,
+                label: 'Email',
+                value: _userProfile!['email'].toString(),
+              ),
           ],
         ),
       ],
@@ -328,7 +445,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: () => ref.read(authProvider.notifier).logout(),
+        onPressed: () => ref.read(authStateProvider.notifier).logout(),
         icon: const Icon(Icons.logout),
         label: const Text(
           'Se déconnecter',
@@ -669,7 +786,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     try {
-      await ref.read(authProvider.notifier).login(email, password);
+      await ref.read(authStateProvider.notifier).login(email, password);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -679,6 +796,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         );
 
+        // Recharger le profil après connexion
+        await _loadUserProfile();
+        
         // Retourner à la page précédente après connexion
         final navigationService = NavigationService();
         await navigationService.returnToPreviousPage(context);
@@ -718,15 +838,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     try {
-      await ref.read(authProvider.notifier).register(
+      print('📝 [ProfileScreen] Tentative d\'inscription via RegistrationProvider...');
+      final registrationData = RegistrationData(
         nom: nom,
-        prenom: prenom,
         email: email,
-        motDePasse: password,
-        nameRole: role,
+        password: password,
       );
+      final success = await ref.read(registrationProvider.notifier).register(registrationData);
       
-      if (mounted) {
+      if (success && mounted) {
+        print('📝 [ProfileScreen] ✅ Inscription réussie via RegistrationProvider');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Compte créé avec succès !'),
@@ -737,8 +858,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         // Retourner à la page précédente après inscription
         final navigationService = NavigationService();
         await navigationService.returnToPreviousPage(context);
+      } else if (mounted) {
+        print('📝 [ProfileScreen] ❌ Inscription échouée via RegistrationProvider');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors de la création du compte'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
+      print('📝 [ProfileScreen] ❌ Erreur inscription: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
