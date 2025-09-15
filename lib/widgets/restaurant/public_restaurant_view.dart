@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../models/restaurant.dart';
 import '../../providers/restaurant_provider.dart';
 import 'restaurant_images_widget.dart';
-import '../navigation_bar.dart';
-import '../../services/navigation_service.dart';
 
-/// Vue publique des restaurants accessible sans authentification
+/// Vue publique des restaurants
 class PublicRestaurantView extends ConsumerWidget {
   final int? highlightRestaurantId;
   
@@ -23,9 +20,11 @@ class PublicRestaurantView extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           ElevatedButton.icon(
-            onPressed: () async {
-              final navigationService = NavigationService();
-              await navigationService.navigateToLogin(context);
+            onPressed: () {
+              // TODO: Implémenter la navigation vers la connexion
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Fonctionnalité de connexion à implémenter')),
+              );
             },
             icon: const Icon(Icons.login),
             label: const Text('Se connecter'),
@@ -87,7 +86,6 @@ class PublicRestaurantView extends ConsumerWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomNavigationBar(),
     );
   }
 
@@ -215,7 +213,10 @@ class PublicRestaurantView extends ConsumerWidget {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          context.push('/menus/restaurant/${restaurant.id}');
+                          // TODO: Implémenter la navigation vers les menus du restaurant
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Navigation vers les menus de ${restaurant.nom} à implémenter')),
+                          );
                         },
                         icon: const Icon(Icons.restaurant_menu),
                         label: const Text('Voir les menus'),

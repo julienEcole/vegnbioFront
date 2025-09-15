@@ -1,170 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'utils/web_logger.dart';
-import 'screens/home_screen.dart';
-import 'screens/menu/menu_screen.dart';
-import 'screens/events_screen.dart';
-import 'screens/services_screen.dart';
-import 'screens/restaurant/restaurants_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/menu/admin_menu_screen.dart';
-import 'screens/restaurant/admin_restaurant_screen.dart';
-import 'screens/menu/edit_menu_screen.dart';
-import 'screens/restaurant/edit_restaurant_screen.dart';
-import 'providers/menu_provider.dart';
-import 'providers/restaurant_provider.dart';
-import 'providers/auth_state_provider.dart';
-import 'services/auth_service.dart';
-import 'theme/app_theme.dart';
+import 'screens/home/home_screen.dart';
+import 'factories/auth_view_factory.dart';
+import 'factories/dashboard_view_factory.dart';
+import 'factories/event_view_factory.dart';
+import 'factories/restaurant_view_factory.dart';
+import 'factories/menu_view_factory.dart';
+import 'factories/service_view_factory.dart';
+import 'widgets/main_layout.dart';
 
 void main() {
-  print('🚀 [MAIN] Démarrage de l\'application...');
-  runApp(
-    ProviderScope(
-      child: const MyApp(),
-      overrides: [
-        // Initialiser l'AuthStateProvider au démarrage
-        authStateProvider.overrideWith((ref) => AuthStateNotifier(AuthService())),
-      ],
-    ),
-  );
+  print('🚀 MAIN START');
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-final GoRouter _router = GoRouter(
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) {
-        WebLogger.logWithEmoji('[GoRouter] Navigation vers /', '🚨', color: '#FF5722');
-        return const HomeScreen();
-      },
-    ),
-    GoRoute(
-      path: '/menus',
-      builder: (context, state) {
-        WebLogger.logWithEmoji('[GoRouter] Navigation vers /menus', '🚨', color: '#FF5722');
-        return MenuScreen();
-      },
-    ),
-    GoRoute(
-      path: '/menus/restaurant/:restaurantId',
-      builder: (context, state) {
-        final restaurantId = int.tryParse(state.pathParameters['restaurantId'] ?? '');
-        return MenuScreen(restaurantId: restaurantId);
-      },
-    ),
-    GoRoute(
-      path: '/evenements',
-      builder: (context, state) => const EventsScreen(),
-    ),
-    GoRoute(
-      path: '/services',
-      builder: (context, state) => const ServicesScreen(),
-    ),
-    GoRoute(
-      path: '/restaurants',
-      builder: (context, state) => const RestaurantsScreen(),
-    ),
-    GoRoute(
-      path: '/restaurants/:restaurantId',
-      builder: (context, state) {
-        final restaurantId = int.tryParse(state.pathParameters['restaurantId'] ?? '');
-        return RestaurantsScreen(highlightRestaurantId: restaurantId);
-      },
-    ),
-    GoRoute(
-      path: '/profil',
-      builder: (context, state) => ProfileScreen(),
-    ),
-    GoRoute(
-      path: '/dashboard',
-      builder: (context, state) => const DashboardScreen(),
-    ),
-    // Routes admin pour la création
-    GoRoute(
-      path: '/admin/menu/new',
-      builder: (context, state) => const AdminMenuScreen(),
-    ),
-    GoRoute(
-      path: '/admin/restaurant/new',
-      builder: (context, state) => const AdminRestaurantScreen(),
-    ),
-    // Routes pour l'édition
-    GoRoute(
-      path: '/admin/menu/edit/:id',
-      builder: (context, state) {
-        final menuId = int.tryParse(state.pathParameters['id'] ?? '');
-        if (menuId == null) {
-          return const Scaffold(body: Center(child: Text('ID de menu invalide')));
-        }
-        return Consumer(
-          builder: (context, ref, child) {
-            final menuAsync = ref.watch(menuProvider(menuId));
-            
-            return menuAsync.when(
-              data: (menu) => EditMenuScreen(menu: menu),
-              loading: () => const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, stack) => Scaffold(
-                body: Center(child: Text('Erreur: $error')),
-              ),
-            );
-          },
-        );
-      },
-    ),
-    GoRoute(
-      path: '/admin/restaurant/edit/:id',
-      builder: (context, state) {
-        final restaurantId = int.tryParse(state.pathParameters['id'] ?? '');
-        if (restaurantId == null) {
-          return const Scaffold(body: Center(child: Text('ID de restaurant invalide')));
-        }
-        return Consumer(
-          builder: (context, ref, child) {
-            final restaurantAsync = ref.watch(restaurantProvider(restaurantId));
-            
-            return restaurantAsync.when(
-              data: (restaurant) => EditRestaurantScreen(restaurant: restaurant),
-              loading: () => const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, stack) => Scaffold(
-                body: Center(child: Text('Erreur: $error')),
-              ),
-            );
-          },
-        );
-      },
-    ),
-  ],
-  errorBuilder: (context, state) => const Scaffold(
-    body: Center(
-      child: Text('Page non trouvée'),
-    ),
-  ),
-);
-
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    WebLogger.logWithEmoji('[MyApp] BUILD APPELÉ !', '🚨', color: '#E91E63');
+  Widget build(BuildContext context, WidgetRef ref) {
+    print('🏗️ MYAPP BUILD');
+
     return MaterialApp.router(
-      title: "Veg'N Bio",
-      theme: AppTheme.lightTheme,
+      title: 'Veg\'N Bio',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
       routerConfig: _router,
-      debugShowCheckedModeBanner: false,  // Supprime la bannière debug
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: child!,
-        );
-      },
     );
   }
 }
+
+final _router = GoRouter(
+  initialLocation: '/',
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/',
+        child: const HomeScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/profil',
+      builder: (context, state) {
+        final viewType = state.uri.queryParameters['view'];
+        return MainLayout(
+          currentRoute: '/profil',
+          child: Consumer(
+            builder: (context, ref, child) {
+              return AuthViewFactory.createAuthView(
+                ref,
+                forcedType: viewType != null 
+                  ? AuthViewType.values.firstWhere(
+                      (e) => e.name == viewType,
+                      orElse: () => AuthViewType.defaultView,
+                    )
+                  : null,
+              );
+            },
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/dashboard',
+        child: Consumer(
+          builder: (context, ref, child) {
+            return DashboardViewFactory.createDashboardView(ref);
+          },
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/evenements',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/evenements',
+        child: Consumer(
+          builder: (context, ref, child) {
+            return EventViewFactory.createEventView(ref);
+          },
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/restaurants',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/restaurants',
+        child: Consumer(
+          builder: (context, ref, child) {
+            return RestaurantViewFactory.createRestaurantView(ref);
+          },
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/menus',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/menus',
+        child: Consumer(
+          builder: (context, ref, child) {
+            return MenuViewFactory.createMenuView(ref);
+          },
+        ),
+      ),
+    ),
+    GoRoute(
+      path: '/services',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/services',
+        child: Consumer(
+          builder: (context, ref, child) {
+            return ServiceViewFactory.createServiceView(ref);
+          },
+        ),
+      ),
+    ),
+  ],
+);

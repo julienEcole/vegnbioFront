@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../models/restaurant.dart';
 import '../../providers/restaurant_provider.dart';
 import '../../widgets/image_upload_widget.dart';
@@ -211,7 +210,7 @@ class _EditRestaurantScreenState extends ConsumerState<EditRestaurantScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => context.pop(),
+                    onPressed: _isLoading ? null : () => Navigator.pop(context),
                     icon: const Icon(Icons.cancel),
                     label: const Text('❌ Annuler'),
                     style: OutlinedButton.styleFrom(
@@ -322,7 +321,7 @@ class _EditRestaurantScreenState extends ConsumerState<EditRestaurantScreen> {
         ref.invalidate(restaurantProvider(updatedRestaurant.id));
         ref.invalidate(restaurantsProvider);
         
-        context.pop();
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {

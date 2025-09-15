@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widgets/navigation_bar.dart';
-import '../utils/web_logger.dart';
 
-/// Vue publique de la page d'accueil accessible sans authentification
+/// Vue publique de la page d'accueil
 class PublicHomeView extends StatelessWidget {
   const PublicHomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    WebLogger.logWithEmoji('[PublicHomeView] ===== DÉBUT build() =====', '🏠', color: '#00BCD4');
-    
     // Obtenir la taille de l'écran
     final screenSize = MediaQuery.of(context).size;
     final bool isSmallScreen = screenSize.width < 600;
@@ -49,7 +45,6 @@ class PublicHomeView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const CustomNavigationBar(),
     );
   }
 

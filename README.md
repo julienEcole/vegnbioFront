@@ -321,12 +321,10 @@ flutter build ios
 
 ## 📱 Navigation
 
-L'application utilise **go_router** pour la navigation :
-- `/` - Écran d'accueil
-- `/restaurants` - Liste des restaurants
-- `/menus` - Liste des menus avec recherche
-- `/evenements` - Événements
-- `/services` - Services
+L'application utilise une navigation simple avec MaterialApp :
+- Écran d'accueil par défaut
+- Navigation via les widgets et boutons
+- Pas de routing complexe implémenté
 - `/profil` - Profil utilisateur
 
 ## 🎯 Prochaines étapes

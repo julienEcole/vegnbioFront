@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../models/menu.dart';
 import '../../models/restaurant.dart';
 import '../../providers/restaurant_provider.dart';
@@ -395,7 +394,7 @@ class _EditMenuScreenState extends ConsumerState<EditMenuScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _isLoading ? null : () => context.pop(),
+                    onPressed: _isLoading ? null : () => Navigator.pop(context),
                     icon: const Icon(Icons.cancel),
                     label: const Text('❌ Annuler'),
                     style: OutlinedButton.styleFrom(
@@ -476,7 +475,7 @@ class _EditMenuScreenState extends ConsumerState<EditMenuScreen> {
         // Forcer le rafraîchissement du provider Riverpod
         ref.read(menuRefreshProvider.notifier).state++;
         
-        context.pop();
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {

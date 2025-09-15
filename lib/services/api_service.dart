@@ -6,7 +6,6 @@ import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
 
-import 'auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
@@ -26,43 +25,6 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // Méthode pour vérifier la validité du token (optionnel)
-  Future<bool> isTokenValid() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-      
-      if (token == null) return false;
-
-      final response = await http.get(
-        Uri.parse('$baseUrl/auth/verify'),
-        headers: {
-          ...headers,
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 5));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print('❌ Erreur lors de la vérification du token: $e');
-      return false;
-    }
-  }
-
-  // Méthode pour obtenir les headers avec authentification
-  Future<Map<String, String>> getAuthHeaders() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    
-    if (token == null) {
-      throw Exception('Token d\'authentification manquant');
-    }
-
-    return {
-      ...headers,
-      'Authorization': 'Bearer $token',
-    };
-  }
 
   // Récupérer tous les restaurants
   Future<List<Restaurant>> getRestaurants() async {
@@ -502,7 +464,7 @@ class ApiService {
     String? adresse,
   }) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.post(
         Uri.parse('$baseUrl/restaurants'),
         headers: headers,
@@ -534,7 +496,7 @@ class ApiService {
   }) async {
     try {
       print('🔄 API: Début updateRestaurant pour ID $id');
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final Map<String, dynamic> updateData = {};
       
       if (nom != null) updateData['nom'] = nom;
@@ -571,7 +533,7 @@ class ApiService {
   /// Supprimer un restaurant
   Future<bool> deleteRestaurant(int id) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/restaurants/$id'),
         headers: headers,
@@ -600,7 +562,7 @@ class ApiService {
     required int restaurantId,
   }) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.post(
         Uri.parse('$baseUrl/menus'),
         headers: headers,
@@ -636,7 +598,7 @@ class ApiService {
   }) async {
     try {
       print('🔄 API: Début updateMenu pour ID $id');
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final Map<String, dynamic> updateData = {};
       
       if (titre != null) updateData['titre'] = titre;
@@ -675,7 +637,7 @@ class ApiService {
   /// Supprimer un menu
   Future<bool> deleteMenu(int id) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/menus/$id'),
         headers: headers,
@@ -698,7 +660,7 @@ class ApiService {
   /// Supprimer une image de restaurant
   Future<bool> deleteRestaurantImage(int restaurantId, int imageId) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId'),
         headers: headers,
@@ -713,7 +675,7 @@ class ApiService {
   /// Supprimer une image de menu
   Future<bool> deleteMenuImage(int menuId, int imageId) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/images/menu/$menuId/$imageId'),
         headers: headers,
@@ -728,7 +690,7 @@ class ApiService {
   /// Définir une image comme principale pour un restaurant
   Future<bool> setRestaurantPrimaryImage(int restaurantId, int imageId) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.put(
         Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId/primary'),
         headers: headers,
@@ -743,7 +705,7 @@ class ApiService {
   /// Définir une image comme principale pour un menu
   Future<bool> setMenuPrimaryImage(int menuId, int imageId) async {
     try {
-      final headers = await AuthService().getAuthHeaders();
+      final authHeaders = headers;
       final response = await http.put(
         Uri.parse('$baseUrl/images/menu/$menuId/$imageId/primary'),
         headers: headers,

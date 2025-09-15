@@ -1,82 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../providers/navigation_provider.dart';
 
-class CustomNavigationBar extends ConsumerWidget {
-  const CustomNavigationBar({super.key});
+class CustomNavigationBar extends StatelessWidget {
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
+
+  const CustomNavigationBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final String currentLocation = GoRouterState.of(context).uri.path;
-
-    final destinationsAsync = ref.watch(navigationDestinationsProvider);
-    final routesAsync = ref.watch(navigationRoutesProvider);
-
-    return destinationsAsync.when(
-      data: (destinations) {
-        final selectedIndex = _getSelectedIndex(currentLocation, ref);
-        return NavigationBar(
-          backgroundColor: Colors.green,
-          indicatorColor: Colors.white,
-          elevation: 8,
-          destinations: destinations,
-          selectedIndex: selectedIndex,
-          onDestinationSelected: (int index) {
-            routesAsync.when(
-              data: (routes) {
-                if (index < routes.length) {
-                  context.go(routes[index]);
-                }
-              },
-              loading: () {},
-              error: (error, stack) {},
-            );
-          },
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        );
-      },
-      loading: () => NavigationBar(
-        backgroundColor: Colors.green,
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            label: 'Chargement...',
-          ),
-        ],
-      ),
-      error: (error, stack) => NavigationBar(
-        backgroundColor: Colors.green,
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.error_outline),
-            label: 'Erreur',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Retourne l'index en fonction de la route actuelle (gère aussi les sous-routes)
-  int _getSelectedIndex(String location, WidgetRef ref) {
-    final routesAsync = ref.watch(navigationRoutesProvider);
-    return routesAsync.when(
-      data: (routes) {
-        int bestIndex = 0;
-        int bestLength = -1;
-        for (int i = 0; i < routes.length; i++) {
-          final route = routes[i];
-          if (location == route || location.startsWith('$route/')) {
-            if (route.length > bestLength) {
-              bestIndex = i;
-              bestLength = route.length;
-            }
-          }
-        }
-        return bestIndex;
-      },
-      loading: () => 0,
-      error: (error, stack) => 0,
+  Widget build(BuildContext context) {
+    // Suppression temporaire de la logique d'authentification pour tester
+    
+    return NavigationBar(
+      backgroundColor: Colors.green,
+      indicatorColor: Colors.white,
+      elevation: 8,
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Accueil',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.restaurant_menu_outlined),
+          selectedIcon: Icon(Icons.restaurant_menu),
+          label: 'Menus',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.event_outlined),
+          selectedIcon: Icon(Icons.event),
+          label: 'Événements',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.room_service_outlined),
+          selectedIcon: Icon(Icons.room_service),
+          label: 'Services',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.location_on_outlined),
+          selectedIcon: Icon(Icons.location_on),
+          label: 'Restaurants',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.login_outlined),
+          selectedIcon: Icon(Icons.login),
+          label: 'Connexion',
+        ),
+      ],
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onDestinationSelected,
     );
   }
 }

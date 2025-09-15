@@ -7,12 +7,12 @@ import '../../models/search_criteria.dart';
 import '../../providers/menu_provider.dart';
 import '../../providers/restaurant_provider.dart';
 import 'menu_image_widget.dart';
-import '../navigation_bar.dart';
-import '../../services/navigation_service.dart';
 
 /// Vue publique des menus accessible sans authentification
 class PublicMenuView extends ConsumerStatefulWidget {
-  const PublicMenuView({super.key});
+  final int? restaurantId;
+  
+  const PublicMenuView({super.key, this.restaurantId});
 
   @override
   ConsumerState<PublicMenuView> createState() => _PublicMenuViewState();
@@ -58,9 +58,11 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
         actions: [
           // Bouton de connexion plus visible
           ElevatedButton.icon(
-            onPressed: () async {
-              final navigationService = NavigationService();
-              await navigationService.navigateToLogin(context);
+            onPressed: () {
+              // TODO: Implémenter la navigation vers la connexion
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Fonctionnalité de connexion à implémenter')),
+              );
             },
             icon: const Icon(Icons.login),
             label: const Text('Se connecter'),
@@ -154,7 +156,6 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomNavigationBar(),
     );
   }
 

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../widgets/navigation_bar.dart';
-import '../services/navigation_service.dart';
-
-/// Vue publique des services accessible sans authentification
+/// Vue publique des services
 class PublicServicesView extends ConsumerWidget {
   const PublicServicesView({super.key});
 
@@ -12,13 +9,15 @@ class PublicServicesView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Services - Vue Publique'),
+        title: const Text('Services'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           ElevatedButton.icon(
-            onPressed: () async {
-              final navigationService = NavigationService();
-              await navigationService.navigateToLogin(context);
+            onPressed: () {
+              // TODO: Implémenter la navigation vers la connexion
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Fonctionnalité de connexion à implémenter')),
+              );
             },
             icon: const Icon(Icons.login),
             label: const Text('Se connecter'),
@@ -76,7 +75,6 @@ class PublicServicesView extends ConsumerWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomNavigationBar(),
     );
   }
 
@@ -188,9 +186,11 @@ class PublicServicesView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () async {
-                    final navigationService = NavigationService();
-                    await navigationService.navigateToLogin(context);
+                  onPressed: () {
+                    // TODO: Implémenter la navigation vers la connexion
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Fonctionnalité de connexion à implémenter')),
+                    );
                   },
                   icon: const Icon(Icons.login),
                   label: const Text('Se connecter pour en savoir plus'),

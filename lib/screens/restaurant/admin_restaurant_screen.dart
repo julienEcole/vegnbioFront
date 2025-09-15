@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../widgets/navigation_bar.dart';
 import '../../widgets/image_upload_widget.dart';
 import '../../models/restaurant.dart';
 
@@ -228,7 +226,7 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _isLoading ? null : () => context.pop(),
+                      onPressed: _isLoading ? null : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -241,7 +239,6 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const CustomNavigationBar(),
     );
   }
 
@@ -354,7 +351,7 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
         );
       }
 
-      context.pop();
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e')),
@@ -403,7 +400,7 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Restaurant supprimé avec succès')),
       );
-      context.pop();
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors de la suppression: $e')),
