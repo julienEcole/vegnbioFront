@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/menu_provider.dart';
 import '../../widgets/vegetal_form_widgets.dart';
+import '../../widgets/menu/public_menu_view.dart';
 
 /// Écran de connexion simplifié
 class AuthLoginScreen extends ConsumerStatefulWidget {
@@ -35,7 +38,30 @@ class _AuthLoginScreenState extends ConsumerState<AuthLoginScreen> {
       final authState = ref.read(authProvider);
       if (authState.isAuthenticated) {
         if (mounted) {
-          Navigator.pop(context); // Retourner à l'écran précédent
+          // Vérifier s'il y a des filtres sauvegardés (venant de la vue publique des menus)
+          final savedFilters = ref.read(savedFiltersProvider);
+          
+          if (savedFilters != null) {
+            // Restaurer les filtres et retourner aux menus
+            ref.read(searchCriteriaProvider.notifier).state = savedFilters;
+            ref.read(savedFiltersProvider.notifier).state = null; // Nettoyer
+            context.go('/menus');
+          } else {
+            // Navigation par défaut selon le rôle
+            final role = authState.role?.toLowerCase();
+            switch (role) {
+              case 'admin':
+              case 'restaurateur':
+              case 'fournisseur':
+                context.go('/dashboard');
+                break;
+              case 'client':
+                context.go('/menus');
+                break;
+              default:
+                context.go('/');
+            }
+          }
         }
       }
     }

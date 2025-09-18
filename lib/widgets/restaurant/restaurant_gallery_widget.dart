@@ -100,7 +100,6 @@ class RestaurantGalleryWidget extends StatelessWidget {
                               showBorder: showBorder,
                               borderColor: effectiveBorderColor,
                               borderWidth: borderWidth,
-                              shadow: effectiveShadow,
                               onTap: onImageTap != null ? () => onImageTap!(image) : null,
                               isCircular: false,
                             ),
@@ -236,8 +235,6 @@ class RestaurantGalleryWidget extends StatelessWidget {
       showBorder: showBorder,
       borderColor: borderColor,
       borderWidth: borderWidth,
-      margin: margin,
-      shadow: shadow,
       onTap: onImageTap != null ? () => onImageTap!(image) : null,
       isCircular: false,
     );

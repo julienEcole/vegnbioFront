@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../models/menu.dart';
 import '../../models/restaurant.dart';
 import '../../models/search_criteria.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/menu_provider.dart';
 import '../../providers/restaurant_provider.dart';
 import 'menu_image_widget.dart';
+
+/// Provider pour sauvegarder les filtres avant la redirection vers la connexion
+final savedFiltersProvider = StateProvider<MenuSearchCriteria?>((ref) => null);
 
 /// Vue publique des menus accessible sans authentification
 class PublicMenuView extends ConsumerStatefulWidget {
@@ -24,9 +29,19 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
   @override
   void initState() {
     super.initState();
-    // Réinitialiser les filtres pour la vue publique
+    // Vérifier s'il y a des filtres sauvegardés à restaurer
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
+      final savedFilters = ref.read(savedFiltersProvider);
+      if (savedFilters != null) {
+        // Restaurer les filtres sauvegardés
+        ref.read(searchCriteriaProvider.notifier).state = savedFilters;
+        // Effacer les filtres sauvegardés
+        ref.read(savedFiltersProvider.notifier).state = null;
+        print('🔄 [PublicMenuView] Filtres restaurés après connexion');
+      } else {
+        // Réinitialiser les filtres pour la vue publique
+        ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
+      }
       _syncControllersWithFilters();
     });
   }
@@ -35,6 +50,25 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
   void _syncControllersWithFilters() {
     final currentSearchCriteria = ref.read(searchCriteriaProvider);
     _titreController.text = currentSearchCriteria.titre ?? '';
+  }
+
+  /// Gérer la connexion avec sauvegarde des filtres
+  void _handleLoginWithFilters() {
+    final currentFilters = ref.read(searchCriteriaProvider);
+    
+    // Sauvegarder les filtres actuels
+    ref.read(savedFiltersProvider.notifier).state = currentFilters;
+    
+    print('💾 [PublicMenuView] Filtres sauvegardés avant connexion: $currentFilters');
+    
+    // Rediriger vers l'écran de connexion
+    context.go('/profil?view=login');
+  }
+
+  /// Gérer la déconnexion
+  void _handleLogout() {
+    ref.read(authProvider.notifier).logout();
+    print('🚪 [PublicMenuView] Déconnexion effectuée');
   }
 
   @override
@@ -50,24 +84,20 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
     
     final menusAsync = ref.watch(filteredMenusProvider);
     final restaurantsAsync = ref.watch(restaurantsProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nos Menus'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          // Bouton de connexion plus visible
+          // Bouton de connexion/déconnexion dynamique
           ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implémenter la navigation vers la connexion
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fonctionnalité de connexion à implémenter')),
-              );
-            },
-            icon: const Icon(Icons.login),
-            label: const Text('Se connecter'),
+            onPressed: authState.isAuthenticated ? _handleLogout : _handleLoginWithFilters,
+            icon: Icon(authState.isAuthenticated ? Icons.logout : Icons.login),
+            label: Text(authState.isAuthenticated ? 'Se déconnecter' : 'Se connecter'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: authState.isAuthenticated ? Colors.red : Colors.green,
               foregroundColor: Colors.white,
             ),
           ),
@@ -101,45 +131,46 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
       ),
       body: Column(
         children: [
-          // Message informatif
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue.shade700),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Vue publique des menus',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade700,
+          // Message informatif adaptatif
+          if (!authState.isAuthenticated)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Vue publique des menus',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Connectez-vous pour accéder aux fonctionnalités complètes',
-                        style: TextStyle(
-                          color: Colors.blue.shade600,
-                          fontSize: 12,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Connectez-vous pour accéder aux fonctionnalités complètes',
+                          style: TextStyle(
+                            color: Colors.blue.shade600,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           // Affichage des filtres actifs
           _buildActiveFiltersDisplay(),
           // Liste des menus
@@ -714,7 +745,6 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
   }
 
   Widget _buildAllergenesSection() {
-    final currentSearchCriteria = ref.watch(searchCriteriaProvider);
     final menusAsync = ref.watch(menusProvider);
     
     return menusAsync.when(
@@ -726,7 +756,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
         }
         final allergenes = allergenesSet.toList()..sort();
         
-        return _buildAllergenesContentDirect(currentSearchCriteria, allergenes);
+        return _buildAllergenesContentDirect(allergenes);
       },
       loading: () => const Center(
         child: Padding(
@@ -743,7 +773,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
     );
   }
 
-  Widget _buildAllergenesContentDirect(MenuSearchCriteria currentSearchCriteria, List<String> allergenes) {
+  Widget _buildAllergenesContentDirect(List<String> allergenes) {
     return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -768,31 +798,45 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
               spacing: 8,
               runSpacing: 4,
               children: allergenes.map((allergene) {
-                final isExcluded = currentSearchCriteria.allergenesExclus.contains(allergene);
-                final isIncluded = currentSearchCriteria.allergenesInclus.contains(allergene);
+                // Re-lire les critères à chaque reconstruction pour avoir l'état actuel
+                final currentCriteria = ref.watch(searchCriteriaProvider);
+                final isExcluded = currentCriteria.allergenesExclus.contains(allergene);
+                final isIncluded = currentCriteria.allergenesInclus.contains(allergene);
+                
+                // Debug: afficher l'état des filtres
+                print('🔍 [FilterDebug] Allergène: $allergene');
+                print('🔍 [FilterDebug] isExcluded: $isExcluded');
+                print('🔍 [FilterDebug] isIncluded: $isIncluded');
+                print('🔍 [FilterDebug] allergenesExclus: ${currentCriteria.allergenesExclus}');
+                print('🔍 [FilterDebug] allergenesInclus: ${currentCriteria.allergenesInclus}');
             
             return FilterChip(
               label: Text(allergene),
               selected: isExcluded || isIncluded,
               onSelected: (selected) {
-                if (isExcluded) {
+                // Re-lire les critères actuels pour avoir les valeurs les plus récentes
+                final currentCriteria = ref.read(searchCriteriaProvider);
+                final isCurrentlyExcluded = currentCriteria.allergenesExclus.contains(allergene);
+                final isCurrentlyIncluded = currentCriteria.allergenesInclus.contains(allergene);
+                
+                if (isCurrentlyExcluded) {
                   // Retirer de la liste d'exclusion
                   _updateSearchCriteria(
-                    allergenesExclus: currentSearchCriteria.allergenesExclus
+                    allergenesExclus: currentCriteria.allergenesExclus
                         .where((a) => a != allergene)
                         .toList(),
                   );
-                } else if (isIncluded) {
+                } else if (isCurrentlyIncluded) {
                   // Retirer de la liste d'inclusion
                   _updateSearchCriteria(
-                    allergenesInclus: currentSearchCriteria.allergenesInclus
+                    allergenesInclus: currentCriteria.allergenesInclus
                         .where((a) => a != allergene)
                         .toList(),
                   );
                 } else {
                   // Ajouter à la liste d'exclusion par défaut
                   _updateSearchCriteria(
-                    allergenesExclus: [...currentSearchCriteria.allergenesExclus, allergene],
+                    allergenesExclus: [...currentCriteria.allergenesExclus, allergene],
                   );
                 }
               },
@@ -801,12 +845,8 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                   : isIncluded 
                       ? Colors.green.shade100 
                       : Colors.grey.shade100,
-              selectedColor: isExcluded 
-                  ? Colors.red.shade200 
-                  : Colors.green.shade200,
-              checkmarkColor: isExcluded 
-                  ? Colors.red.shade700 
-                  : Colors.green.shade700,
+              selectedColor: isExcluded ? Colors.red.shade200 : Colors.green.shade200,
+              checkmarkColor: isExcluded ? Colors.red.shade700 : Colors.green.shade700,
               avatar: Icon(
                 isExcluded 
                     ? Icons.block 
@@ -836,8 +876,9 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           spacing: 8,
           runSpacing: 4,
           children: allergenes.map((allergene) {
-            final isIncluded = currentSearchCriteria.allergenesInclus.contains(allergene);
-            final isExcluded = currentSearchCriteria.allergenesExclus.contains(allergene);
+            final currentCriteria = ref.watch(searchCriteriaProvider);
+            final isIncluded = currentCriteria.allergenesInclus.contains(allergene);
+            final isExcluded = currentCriteria.allergenesExclus.contains(allergene);
             
             return FilterChip(
               label: Text(allergene),
@@ -846,22 +887,22 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                 if (isIncluded) {
                   // Retirer de la liste d'inclusion
                   _updateSearchCriteria(
-                    allergenesInclus: currentSearchCriteria.allergenesInclus
+                    allergenesInclus: currentCriteria.allergenesInclus
                         .where((a) => a != allergene)
                         .toList(),
                   );
                 } else if (isExcluded) {
                   // Retirer de l'exclusion et ajouter à l'inclusion
                   _updateSearchCriteria(
-                    allergenesExclus: currentSearchCriteria.allergenesExclus
+                    allergenesExclus: currentCriteria.allergenesExclus
                         .where((a) => a != allergene)
                         .toList(),
-                    allergenesInclus: [...currentSearchCriteria.allergenesInclus, allergene],
+                    allergenesInclus: [...currentCriteria.allergenesInclus, allergene],
                   );
                 } else {
                   // Ajouter à la liste d'inclusion
                   _updateSearchCriteria(
-                    allergenesInclus: [...currentSearchCriteria.allergenesInclus, allergene],
+                    allergenesInclus: [...currentCriteria.allergenesInclus, allergene],
                   );
                 }
               },
@@ -885,7 +926,6 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
   }
 
   Widget _buildProduitsSection() {
-    final currentSearchCriteria = ref.watch(searchCriteriaProvider);
     final menusAsync = ref.watch(menusProvider);
     
     return menusAsync.when(
@@ -897,7 +937,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
         }
         final produits = produitsSet.toList()..sort();
         
-        return _buildProduitsContentDirect(currentSearchCriteria, produits);
+        return _buildProduitsContentDirect(produits);
       },
       loading: () => const Center(
         child: Padding(
@@ -914,7 +954,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
     );
   }
 
-  Widget _buildProduitsContentDirect(MenuSearchCriteria currentSearchCriteria, List<String> produits) {
+  Widget _buildProduitsContentDirect(List<String> produits) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -939,31 +979,45 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           spacing: 8,
           runSpacing: 4,
           children: produits.map((produit) {
-            final isExcluded = currentSearchCriteria.produitsExclus.contains(produit);
-            final isIncluded = currentSearchCriteria.produitsInclus.contains(produit);
+            // Re-lire les critères à chaque reconstruction pour avoir l'état actuel
+            final currentCriteria = ref.watch(searchCriteriaProvider);
+            final isExcluded = currentCriteria.produitsExclus.contains(produit);
+            final isIncluded = currentCriteria.produitsInclus.contains(produit);
+            
+            // Debug: afficher l'état des filtres pour les produits
+            print('🔍 [FilterDebug] Produit: $produit');
+            print('🔍 [FilterDebug] isExcluded: $isExcluded');
+            print('🔍 [FilterDebug] isIncluded: $isIncluded');
+            print('🔍 [FilterDebug] produitsExclus: ${currentCriteria.produitsExclus}');
+            print('🔍 [FilterDebug] produitsInclus: ${currentCriteria.produitsInclus}');
             
             return FilterChip(
               label: Text(produit),
               selected: isExcluded || isIncluded,
               onSelected: (selected) {
-                if (isExcluded) {
+                // Re-lire les critères actuels pour avoir les valeurs les plus récentes
+                final currentCriteria = ref.read(searchCriteriaProvider);
+                final isCurrentlyExcluded = currentCriteria.produitsExclus.contains(produit);
+                final isCurrentlyIncluded = currentCriteria.produitsInclus.contains(produit);
+                
+                if (isCurrentlyExcluded) {
                   // Retirer de la liste d'exclusion
                   _updateSearchCriteria(
-                    produitsExclus: currentSearchCriteria.produitsExclus
+                    produitsExclus: currentCriteria.produitsExclus
                         .where((p) => p != produit)
                         .toList(),
                   );
-                } else if (isIncluded) {
+                } else if (isCurrentlyIncluded) {
                   // Retirer de la liste d'inclusion
                   _updateSearchCriteria(
-                    produitsInclus: currentSearchCriteria.produitsInclus
+                    produitsInclus: currentCriteria.produitsInclus
                         .where((p) => p != produit)
                         .toList(),
                   );
                 } else {
                   // Ajouter à la liste d'exclusion par défaut
                   _updateSearchCriteria(
-                    produitsExclus: [...currentSearchCriteria.produitsExclus, produit],
+                    produitsExclus: [...currentCriteria.produitsExclus, produit],
                   );
                 }
               },
@@ -972,12 +1026,8 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                   : isIncluded 
                       ? Colors.green.shade100 
                       : Colors.grey.shade100,
-              selectedColor: isExcluded 
-                  ? Colors.red.shade200 
-                  : Colors.green.shade200,
-              checkmarkColor: isExcluded 
-                  ? Colors.red.shade700 
-                  : Colors.green.shade700,
+              selectedColor: isExcluded ? Colors.red.shade200 : Colors.green.shade200,
+              checkmarkColor: isExcluded ? Colors.red.shade700 : Colors.green.shade700,
               avatar: Icon(
                 isExcluded 
                     ? Icons.block 
@@ -1007,8 +1057,9 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           spacing: 8,
           runSpacing: 4,
           children: produits.map((produit) {
-            final isIncluded = currentSearchCriteria.produitsInclus.contains(produit);
-            final isExcluded = currentSearchCriteria.produitsExclus.contains(produit);
+            final currentCriteria = ref.watch(searchCriteriaProvider);
+            final isIncluded = currentCriteria.produitsInclus.contains(produit);
+            final isExcluded = currentCriteria.produitsExclus.contains(produit);
             
             return FilterChip(
               label: Text(produit),
@@ -1017,22 +1068,22 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                 if (isIncluded) {
                   // Retirer de la liste d'inclusion
                   _updateSearchCriteria(
-                    produitsInclus: currentSearchCriteria.produitsInclus
+                    produitsInclus: currentCriteria.produitsInclus
                         .where((p) => p != produit)
                         .toList(),
                   );
                 } else if (isExcluded) {
                   // Retirer de l'exclusion et ajouter à l'inclusion
                   _updateSearchCriteria(
-                    produitsExclus: currentSearchCriteria.produitsExclus
+                    produitsExclus: currentCriteria.produitsExclus
                         .where((p) => p != produit)
                         .toList(),
-                    produitsInclus: [...currentSearchCriteria.produitsInclus, produit],
+                    produitsInclus: [...currentCriteria.produitsInclus, produit],
                   );
                 } else {
                   // Ajouter à la liste d'inclusion
                   _updateSearchCriteria(
-                    produitsInclus: [...currentSearchCriteria.produitsInclus, produit],
+                    produitsInclus: [...currentCriteria.produitsInclus, produit],
                   );
                 }
               },
@@ -1066,12 +1117,12 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
     final currentCriteria = ref.read(searchCriteriaProvider);
     
     ref.read(searchCriteriaProvider.notifier).state = currentCriteria.copyWith(
-      titre: titre ?? (titre == '' ? null : currentCriteria.titre),
-      restaurantId: restaurantId ?? currentCriteria.restaurantId,
-      allergenesExclus: allergenesExclus ?? currentCriteria.allergenesExclus,
-      allergenesInclus: allergenesInclus ?? currentCriteria.allergenesInclus,
-      produitsExclus: produitsExclus ?? currentCriteria.produitsExclus,
-      produitsInclus: produitsInclus ?? currentCriteria.produitsInclus,
+      titre: titre,
+      restaurantId: restaurantId,
+      allergenesExclus: allergenesExclus,
+      allergenesInclus: allergenesInclus,
+      produitsExclus: produitsExclus,
+      produitsInclus: produitsInclus,
     );
   }
 

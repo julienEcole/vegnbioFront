@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/restaurant.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/restaurant_provider.dart';
 import 'restaurant_images_widget.dart';
 
@@ -10,26 +12,35 @@ class PublicRestaurantView extends ConsumerWidget {
   
   const PublicRestaurantView({super.key, this.highlightRestaurantId});
 
+  /// Gérer la connexion
+  void _handleLogin(BuildContext context) {
+    // Rediriger vers l'écran de connexion
+    context.go('/profil?view=login');
+  }
+
+  /// Gérer la déconnexion
+  void _handleLogout(WidgetRef ref) {
+    ref.read(authProvider.notifier).logout();
+    print('🚪 [PublicRestaurantView] Déconnexion effectuée');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final restaurantsAsync = ref.watch(restaurantsProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Restaurants - Vue Publique'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          // Bouton de connexion/déconnexion dynamique
           ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implémenter la navigation vers la connexion
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fonctionnalité de connexion à implémenter')),
-              );
-            },
-            icon: const Icon(Icons.login),
-            label: const Text('Se connecter'),
+            onPressed: authState.isAuthenticated ? () => _handleLogout(ref) : () => _handleLogin(context),
+            icon: Icon(authState.isAuthenticated ? Icons.logout : Icons.login),
+            label: Text(authState.isAuthenticated ? 'Se déconnecter' : 'Se connecter'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: authState.isAuthenticated ? Colors.red : Colors.green,
               foregroundColor: Colors.white,
             ),
           ),
@@ -37,8 +48,9 @@ class PublicRestaurantView extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Message informatif
-          Container(
+          // Message informatif adaptatif
+          if (!authState.isAuthenticated)
+            Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             margin: const EdgeInsets.all(16),
@@ -147,6 +159,8 @@ class PublicRestaurantView extends ConsumerWidget {
                       topRight: Radius.circular(12),
                     ),
                     fit: BoxFit.cover,
+                    showMultipleImages: true,
+                    enableHorizontalScroll: true,
                   ),
                 ),
               ),
