@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/simple_auth_provider.dart';
+import '../providers/auth_provider.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 
 /// Factory pour gérer l'affichage des vues de tableau de bord
@@ -11,7 +11,7 @@ class DashboardViewFactory {
   static Widget createDashboardView(WidgetRef ref) {
     print('📊 [DashboardViewFactory] createDashboardView appelé');
     
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     print('📊 [DashboardViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Vérifier si l'utilisateur est authentifié
@@ -63,7 +63,7 @@ class DashboardViewFactory {
   
   /// Obtenir le type de tableau de bord recommandé selon le rôle
   static DashboardViewType getRecommendedDashboardType(WidgetRef ref) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (!authState.isAuthenticated) {
       return DashboardViewType.defaultView;
@@ -87,7 +87,7 @@ class DashboardViewFactory {
   
   /// Vérifier si l'utilisateur a accès au tableau de bord
   static bool canAccessDashboard(WidgetRef ref, DashboardViewType type) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (!authState.isAuthenticated) {
       return type == DashboardViewType.defaultView;

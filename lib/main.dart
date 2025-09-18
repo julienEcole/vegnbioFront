@@ -35,6 +35,8 @@ class MyApp extends ConsumerWidget {
 
 final _router = GoRouter(
   initialLocation: '/',
+  // Note: La logique de navigation et d'authentification est maintenant centralisée
+  // dans CustomNavigationBar pour une meilleure gestion globale
   routes: [
     GoRoute(
       path: '/',

@@ -5,15 +5,13 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
+import '../config/app_config.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Configuration unifiée de l'URL pour tous les environnements
-  static String get baseUrl {
-    // URL corrigée pour pointer vers le bon port de l'API
-    return 'http://localhost:3001/api';
-  }
+  static String get baseUrl => AppConfig.apiBaseUrl;
   
   // Configuration pour les requêtes HTTP
   static const Map<String, String> headers = {
@@ -559,7 +557,11 @@ class ApiService {
     String? description,
     required DateTime date,
     required List<String> allergenes,
+    required List<String> produits,
     required int restaurantId,
+    required double prix,
+    required bool disponible,
+    String? imageUrl,
   }) async {
     try {
       final authHeaders = headers;
@@ -571,7 +573,11 @@ class ApiService {
           'description': description,
           'date': date.toIso8601String().split('T')[0],
           'allergenes': allergenes,
+          'produits': produits,
           'restaurant_id': restaurantId,
+          'prix': prix,
+          'disponible': disponible,
+          'imageUrl': imageUrl,
         }),
       );
 
@@ -594,7 +600,11 @@ class ApiService {
     String? description,
     DateTime? date,
     List<String>? allergenes,
+    List<String>? produits,
     int? restaurantId,
+    double? prix,
+    bool? disponible,
+    String? imageUrl,
   }) async {
     try {
       print('🔄 API: Début updateMenu pour ID $id');
@@ -605,7 +615,11 @@ class ApiService {
       if (description != null) updateData['description'] = description;
       if (date != null) updateData['date'] = date.toIso8601String().split('T')[0];
       if (allergenes != null) updateData['allergenes'] = allergenes;
+      if (produits != null) updateData['produits'] = produits;
       if (restaurantId != null) updateData['restaurant_id'] = restaurantId;
+      if (prix != null) updateData['prix'] = prix;
+      if (disponible != null) updateData['disponible'] = disponible;
+      if (imageUrl != null) updateData['imageUrl'] = imageUrl;
 
       print('📤 API: Données à envoyer: $updateData');
 

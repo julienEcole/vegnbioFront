@@ -6,6 +6,7 @@ import 'restaurant_view_factory.dart';
 import 'event_view_factory.dart';
 import 'service_view_factory.dart';
 import 'dashboard_view_factory.dart';
+import '../providers/auth_provider.dart';
 
 /// Factory principale qui orchestre toutes les autres factories
 /// Responsabilité unique : router vers la bonne factory selon le type de vue demandé
@@ -85,7 +86,12 @@ class ViewFactory {
     final restaurantId = params?['restaurantId'] as int?;
     final menuId = params?['menuId'] as int?;
     
-    return MenuViewFactory.createSpecificMenuView(menuType, ref, 
+    // Si aucun type spécifique n'est demandé, utiliser la logique automatique
+    final effectiveMenuType = menuType == MenuViewType.publicList && params == null 
+        ? MenuViewFactory.getAutoViewType(ref)
+        : menuType;
+    
+    return MenuViewFactory.createSpecificMenuView(effectiveMenuType, ref, 
         restaurantId: restaurantId, menuId: menuId);
   }
   
@@ -93,7 +99,12 @@ class ViewFactory {
     final restaurantType = _getRestaurantViewType(params);
     final restaurantId = params?['restaurantId'] as int?;
     
-    return RestaurantViewFactory.createSpecificRestaurantView(restaurantType, ref, 
+    // Si aucun type spécifique n'est demandé, utiliser la logique automatique
+    final effectiveRestaurantType = restaurantType == RestaurantViewType.publicList && params == null 
+        ? RestaurantViewFactory.getAutoViewType(ref)
+        : restaurantType;
+    
+    return RestaurantViewFactory.createSpecificRestaurantView(effectiveRestaurantType, ref, 
         restaurantId: restaurantId);
   }
   
@@ -143,8 +154,28 @@ class ViewFactory {
     if (requiredRoles.isEmpty) return true;
     
     // Vérifier l'authentification
-    // TODO: Implémenter la vérification des rôles
-    return true; // Temporaire
+    final authState = ref.read(authProvider);
+    
+    if (!authState.isAuthenticated) {
+      print('🚫 [ViewFactory] Accès refusé: utilisateur non authentifié');
+      return false;
+    }
+    
+    final userRole = authState.role?.toLowerCase();
+    if (userRole == null) {
+      print('🚫 [ViewFactory] Accès refusé: rôle utilisateur non défini');
+      return false;
+    }
+    
+    final hasPermission = requiredRoles.any((role) => role.toLowerCase() == userRole);
+    
+    if (hasPermission) {
+      print('✅ [ViewFactory] Accès autorisé pour le rôle: $userRole');
+    } else {
+      print('🚫 [ViewFactory] Accès refusé: rôle $userRole non autorisé (requis: $requiredRoles)');
+    }
+    
+    return hasPermission;
   }
 }
 

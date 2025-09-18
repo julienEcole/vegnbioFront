@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/simple_auth_provider.dart';
+import '../../providers/auth_provider.dart';
 
 /// Écran de profil utilisateur
 class AuthProfileScreen extends ConsumerStatefulWidget {
@@ -14,20 +14,22 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
-  final _telephoneController = TextEditingController();
-  final _currentPasswordController = TextEditingController();
+  final _emailController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   
   bool _isEditing = false;
   bool _isChangingPassword = false;
-  bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
     super.initState();
+    // Déclencher le chargement du profil complet de l'utilisateur
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authProvider.notifier).loadUserProfile();
+    });
     _loadUserData();
   }
 
@@ -35,30 +37,35 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
   void dispose() {
     _nomController.dispose();
     _prenomController.dispose();
-    _telephoneController.dispose();
-    _currentPasswordController.dispose();
+    _emailController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
   void _loadUserData() {
-    final authState = ref.read(simpleAuthProvider);
+    final authState = ref.read(authProvider);
     if (authState.userData != null) {
       _nomController.text = authState.userData!['nom'] ?? '';
       _prenomController.text = authState.userData!['prenom'] ?? '';
-      _telephoneController.text = authState.userData!['telephone'] ?? '';
+      _emailController.text = authState.userData!['email'] ?? '';
+    }
+  }
+
+  void _updateControllersFromAuthState(AuthState authState) {
+    if (authState.userData != null) {
+      _nomController.text = authState.userData!['nom'] ?? '';
+      _prenomController.text = authState.userData!['prenom'] ?? '';
+      _emailController.text = authState.userData!['email'] ?? '';
     }
   }
 
   Future<void> _handleUpdateProfile() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(simpleAuthProvider.notifier).updateProfile(
+      await ref.read(authProvider.notifier).updateProfile(
         nom: _nomController.text.trim(),
         prenom: _prenomController.text.trim(),
-        telephone: _telephoneController.text.trim().isEmpty 
-            ? null 
-            : _telephoneController.text.trim(),
+        email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
       );
       
       setState(() {
@@ -69,15 +76,13 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
 
   Future<void> _handleChangePassword() async {
     if (_formKey.currentState!.validate()) {
-      final success = await ref.read(simpleAuthProvider.notifier).changePassword(
-        _currentPasswordController.text,
+      final success = await ref.read(authProvider.notifier).changePassword(
         _newPasswordController.text,
       );
       
       if (success) {
         setState(() {
           _isChangingPassword = false;
-          _currentPasswordController.clear();
           _newPasswordController.clear();
           _confirmPasswordController.clear();
         });
@@ -114,17 +119,21 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
     );
 
     if (confirmed == true) {
-      await ref.read(simpleAuthProvider.notifier).logout();
-      if (mounted) {
-        Navigator.pop(context); // Retourner à l'écran précédent
-      }
+      await ref.read(authProvider.notifier).logout();
+      // La déconnexion gère automatiquement la redirection
+      // Pas besoin de Navigator.pop() car l'utilisateur sera redirigé
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     final userData = authState.userData;
+    
+    // Mettre à jour les contrôleurs quand les données utilisateur changent
+    if (userData != null) {
+      _updateControllersFromAuthState(authState);
+    }
     
     if (userData == null) {
       return const Scaffold(
@@ -251,16 +260,24 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
                       ),
                       const SizedBox(height: 16),
                       
-                      // Champ téléphone
+                      // Champ email
                       TextFormField(
-                        controller: _telephoneController,
+                        controller: _emailController,
                         enabled: _isEditing,
-                        keyboardType: TextInputType.phone,
+                        keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
-                          labelText: 'Téléphone',
-                          prefixIcon: Icon(Icons.phone_outlined),
+                          labelText: 'Email',
+                          prefixIcon: Icon(Icons.email_outlined),
                           border: OutlineInputBorder(),
                         ),
+                        validator: (value) {
+                          if (_isEditing && value != null && value.isNotEmpty) {
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                              return 'Format d\'email invalide';
+                            }
+                          }
+                          return null;
+                        },
                       ),
                       
                       // Boutons d'édition
@@ -326,40 +343,12 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
                       if (_isChangingPassword) ...[
                         const SizedBox(height: 16),
                         
-                        // Mot de passe actuel
-                        TextFormField(
-                          controller: _currentPasswordController,
-                          obscureText: _obscureCurrentPassword,
-                          decoration: InputDecoration(
-                            labelText: 'Mot de passe actuel',
-                            prefixIcon: const Icon(Icons.lock_outlined),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureCurrentPassword ? Icons.visibility : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureCurrentPassword = !_obscureCurrentPassword;
-                                });
-                              },
-                            ),
-                            border: const OutlineInputBorder(),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Mot de passe actuel requis';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        
                         // Nouveau mot de passe
                         TextFormField(
                           controller: _newPasswordController,
                           obscureText: _obscureNewPassword,
                           decoration: InputDecoration(
-                            labelText: 'Nouveau mot de passe',
+                            labelText: 'Nouveau mot de passe (min. 8 caractères)',
                             prefixIcon: const Icon(Icons.lock_outlined),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -377,8 +366,8 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
                             if (value == null || value.isEmpty) {
                               return 'Nouveau mot de passe requis';
                             }
-                            if (value.length < 6) {
-                              return 'Le mot de passe doit contenir au moins 6 caractères';
+                            if (value.length < 8) {
+                              return 'Le mot de passe doit contenir au moins 8 caractères';
                             }
                             return null;
                           },
@@ -424,7 +413,6 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
                                 onPressed: () {
                                   setState(() {
                                     _isChangingPassword = false;
-                                    _currentPasswordController.clear();
                                     _newPasswordController.clear();
                                     _confirmPasswordController.clear();
                                   });

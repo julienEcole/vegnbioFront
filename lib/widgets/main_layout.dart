@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../widgets/navigation_bar.dart';
+import '../providers/auth_provider.dart';
 
 class MainLayout extends ConsumerStatefulWidget {
   final Widget child;
@@ -18,6 +18,21 @@ class MainLayout extends ConsumerStatefulWidget {
 }
 
 class _MainLayoutState extends ConsumerState<MainLayout> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialiser l'authentification au démarrage du layout
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isInitialized) {
+        print('🔐 [MainLayout] Initialisation de l\'authentification...');
+        ref.read(authProvider.notifier).checkAuthStatus();
+        _isInitialized = true;
+      }
+    });
+  }
+
   int _getSelectedIndex() {
     switch (widget.currentRoute) {
       case '/':
@@ -36,23 +51,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
   }
 
   void _onDestinationSelected(int index) {
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/menus');
-        break;
-      case 2:
-        context.go('/restaurants');
-        break;
-      case 3:
-        context.go('/evenements');
-        break;
-      case 4:
-        context.go('/profil');
-        break;
-    }
+    // La navigation est maintenant gérée par CustomNavigationBar
+    // Cette méthode est conservée pour la compatibilité mais ne fait rien
   }
 
   @override

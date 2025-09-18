@@ -11,64 +11,117 @@ class HomeScreen extends ConsumerWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Veg\'N Bio'),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.person, color: Colors.green),
             onPressed: () => context.go('/profil'),
           ),
         ],
       ),
-      body: const Center(
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.home, size: 64, color: Colors.green),
-            SizedBox(height: 16),
-            Text(
-              'Bienvenue sur Veg\'N Bio !',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            // Header avec titre VegnBio
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: const BoxDecoration(
+                color: Colors.green,
+              ),
+              child: const Center(
+                child: Text(
+                  'VegnBio',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-            SizedBox(height: 8),
-            Text('L\'application fonctionne correctement'),
-            SizedBox(height: 32),
-            Text(
-              'Navigation disponible :',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            
+            const SizedBox(height: 30),
+            
+            // Section À propos de VegnBio
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'À propos de VegnBio',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'VegnBio est votre magasin bio de confiance, proposant une large gamme de produits biologiques et locaux.',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 16),
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [
-                _NavigationButton(
-                  label: 'Dashboard',
-                  icon: Icons.dashboard,
-                  route: '/dashboard',
-                ),
-                _NavigationButton(
-                  label: 'Événements',
-                  icon: Icons.event,
-                  route: '/evenements',
-                ),
-                _NavigationButton(
-                  label: 'Restaurants',
-                  icon: Icons.restaurant,
-                  route: '/restaurants',
-                ),
-                _NavigationButton(
-                  label: 'Menus',
-                  icon: Icons.menu_book,
-                  route: '/menus',
-                ),
-                _NavigationButton(
-                  label: 'Services',
-                  icon: Icons.room_service,
-                  route: '/services',
-                ),
-              ],
+            
+            const SizedBox(height: 30),
+            
+            // Section Nos Horaires
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Nos Horaires',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Carte des horaires
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _HourRow(day: 'Lundi', hours: '9h00 - 19h00'),
+                        _HourRow(day: 'Mardi', hours: '9h00 - 19h00'),
+                        _HourRow(day: 'Mercredi', hours: '9h00 - 19h00'),
+                        _HourRow(day: 'Jeudi', hours: '9h00 - 19h00'),
+                        _HourRow(day: 'Vendredi', hours: '9h00 - 19h00'),
+                        _HourRow(day: 'Samedi', hours: '9h00 - 18h00'),
+                        _HourRow(day: 'Dimanche', hours: 'Fermé'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+            
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -76,26 +129,38 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _NavigationButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final String route;
+class _HourRow extends StatelessWidget {
+  final String day;
+  final String hours;
 
-  const _NavigationButton({
-    required this.label,
-    required this.icon,
-    required this.route,
+  const _HourRow({
+    required this.day,
+    required this.hours,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: () => context.go(route),
-      icon: Icon(icon),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            day,
+            style: const TextStyle(
+              color: Colors.green,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            hours,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }

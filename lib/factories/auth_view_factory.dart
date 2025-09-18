@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/simple_auth_provider.dart';
+import '../providers/auth_provider.dart';
 import '../screens/auth/auth_default_screen.dart';
 import '../screens/auth/auth_login_screen.dart';
 import '../screens/auth/auth_register_screen.dart';
-import '../screens/simple_profile_screen.dart';
+import '../screens/auth/auth_profile_screen.dart';
 
 /// Factory pour gérer l'affichage des écrans d'authentification
 /// Responsabilité unique : déterminer quel écran d'auth afficher selon l'état
@@ -14,7 +14,7 @@ class AuthViewFactory {
   static Widget createAuthView(WidgetRef ref, {AuthViewType? forcedType}) {
     print('🏗️ [AuthViewFactory] createAuthView appelé');
     
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     print('🏗️ [AuthViewFactory] AuthState: ${authState.status}');
     
     // Si un type est forcé, l'utiliser directement
@@ -24,7 +24,7 @@ class AuthViewFactory {
     }
     
     // Si l'état est non authentifié, afficher directement l'écran par défaut
-    if (authState.status == SimpleAuthStatus.unauthenticated) {
+    if (authState.status == AuthStatus.unauthenticated) {
       print('🏗️ [AuthViewFactory] État non authentifié - Affichage écran par défaut');
       return const AuthDefaultScreen();
     }
@@ -37,7 +37,7 @@ class AuthViewFactory {
     
     if (authState.isAuthenticated) {
       print('🏗️ [AuthViewFactory] État: Authenticated - Affichage SimpleProfileScreen');
-      return const SimpleProfileScreen();
+      return const AuthProfileScreen();
     }
     
     if (authState.hasError) {
@@ -62,7 +62,7 @@ class AuthViewFactory {
       case AuthViewType.register:
         return const AuthRegisterScreen();
       case AuthViewType.profile:
-        return const SimpleProfileScreen(); // Utiliser SimpleProfileScreen
+        return const AuthProfileScreen(); // Utiliser SimpleProfileScreen
     }
   }
   

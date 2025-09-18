@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/simple_auth_provider.dart';
+import '../providers/auth_provider.dart';
 import '../factories/auth_view_factory.dart';
 import '../screens/auth/auth_login_screen.dart';
 import '../screens/auth/auth_register_screen.dart';
@@ -13,7 +13,7 @@ class AuthNavigationService {
   static void navigateToAuth(BuildContext context, WidgetRef ref) {
     print('🔐 [AuthNavigationService] navigateToAuth appelé');
     
-    final authState = ref.read(simpleAuthProvider);
+    final authState = ref.read(authProvider);
     print('🔐 [AuthNavigationService] État auth actuel: ${authState.status}');
     
     // Toujours naviguer vers /profil

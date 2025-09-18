@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
 
-class CustomNavigationBar extends StatelessWidget {
+class CustomNavigationBar extends ConsumerWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
 
@@ -10,48 +13,71 @@ class CustomNavigationBar extends StatelessWidget {
     required this.onDestinationSelected,
   });
 
+  void _handleNavigation(BuildContext context, WidgetRef ref, int index) {
+    final authState = ref.read(authProvider);
+    
+    switch (index) {
+      case 0:
+        context.go('/');
+        break;
+      case 1:
+        context.go('/menus');
+        break;
+      case 2:
+        context.go('/restaurants');
+        break;
+      case 3:
+        context.go('/evenements');
+        break;
+      case 4:
+        // Navigation intelligente vers le profil selon l'état d'authentification
+        if (authState.isAuthenticated) {
+          context.go('/profil?view=profile');
+        } else {
+          context.go('/profil');
+        }
+        break;
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
-    // Suppression temporaire de la logique d'authentification pour tester
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Surveiller l'état d'authentification pour mettre à jour l'interface
+    final authState = ref.watch(authProvider);
     
     return NavigationBar(
       backgroundColor: Colors.green,
       indicatorColor: Colors.white,
       elevation: 8,
-      destinations: const [
-        NavigationDestination(
+      destinations: [
+        const NavigationDestination(
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home),
           label: 'Accueil',
         ),
-        NavigationDestination(
+        const NavigationDestination(
           icon: Icon(Icons.restaurant_menu_outlined),
           selectedIcon: Icon(Icons.restaurant_menu),
           label: 'Menus',
         ),
-        NavigationDestination(
+        const NavigationDestination(
+          icon: Icon(Icons.location_on_outlined),
+          selectedIcon: Icon(Icons.location_on),
+          label: 'Restaurants',
+        ),
+        const NavigationDestination(
           icon: Icon(Icons.event_outlined),
           selectedIcon: Icon(Icons.event),
           label: 'Événements',
         ),
         NavigationDestination(
-          icon: Icon(Icons.room_service_outlined),
-          selectedIcon: Icon(Icons.room_service),
-          label: 'Services',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.location_on_outlined),
-          selectedIcon: Icon(Icons.location_on),
-          label: 'Restaurants',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.login_outlined),
-          selectedIcon: Icon(Icons.login),
-          label: 'Connexion',
+          icon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
+          selectedIcon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
+          label: authState.isAuthenticated ? 'Profil' : 'Connexion',
         ),
       ],
       selectedIndex: selectedIndex,
-      onDestinationSelected: onDestinationSelected,
+      onDestinationSelected: (index) => _handleNavigation(context, ref, index),
     );
   }
 }

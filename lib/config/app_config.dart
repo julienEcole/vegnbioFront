@@ -18,7 +18,7 @@ class AppConfig {
   static const String themeColorHex = "#4CAF50";
   
   // Configuration de l'API
-  static const String apiBaseUrl = "http://localhost:3000/api";
+  static const String apiBaseUrl = "http://127.0.0.1:3001/api";
   static const String apiVersion = "v1";
   
   // Configuration des routes

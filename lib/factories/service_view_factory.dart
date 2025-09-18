@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/simple_auth_provider.dart';
+import '../providers/auth_provider.dart';
 import '../screens/service/services_screen.dart';
 import '../widgets/services/public_services_view.dart';
 
@@ -13,7 +13,7 @@ class ServiceViewFactory {
     print('🛠️ [ServiceViewFactory] createServiceView appelé');
     print('🛠️ [ServiceViewFactory] serviceId: $serviceId');
     
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     print('🛠️ [ServiceViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Pour l'instant, tous les utilisateurs voient la même vue
@@ -45,7 +45,7 @@ class ServiceViewFactory {
   
   /// Obtenir le type de vue recommandé selon l'état d'authentification
   static ServiceViewType getRecommendedViewType(WidgetRef ref) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (authState.isAuthenticated && _hasAdminPermissions(authState.role)) {
       return ServiceViewType.adminList;
@@ -56,7 +56,7 @@ class ServiceViewFactory {
   
   /// Vérifier si l'utilisateur peut créer des services
   static bool canCreateServices(WidgetRef ref) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (!authState.isAuthenticated) return false;
     
@@ -66,7 +66,7 @@ class ServiceViewFactory {
   
   /// Vérifier si l'utilisateur peut gérer un service spécifique
   static bool canManageService(WidgetRef ref, int serviceId) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (!authState.isAuthenticated) return false;
     

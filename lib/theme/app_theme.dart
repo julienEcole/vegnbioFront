@@ -6,24 +6,24 @@ class AppTheme {
     return ThemeData(
       primarySwatch: Colors.green,
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+      scaffoldBackgroundColor: const Color(0xFFF1F8E9),
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF4CAF50),
-        primary: const Color(0xFF4CAF50), // Vert principal
-        secondary: const Color(0xFF81C784), // Vert clair
-        tertiary: const Color(0xFFC8E6C9), // Vert très clair
-        background: const Color(0xFFF8F9FA),
-        surface: Colors.white,
+        seedColor: const Color(0xFF2E7D32), // Vert feuille profond
+        primary: const Color(0xFF2E7D32), // Vert feuille principal
+        secondary: const Color(0xFF4CAF50), // Vert légume
+        tertiary: const Color(0xFFA5D6A7), // Vert feuille clair
+        background: const Color(0xFFF1F8E9), // Vert très pâle, presque blanc
+        surface: const Color(0xFFFAFAFA), // Blanc cassé
       ),
       cardTheme: const CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
-        color: Colors.white,
+        color: Color(0xFFFAFAFA), // Blanc cassé doux
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF2E7D32), // Vert feuille profond
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
@@ -39,7 +39,7 @@ class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF2E7D32), // Vert feuille profond
         indicatorColor: Colors.white.withOpacity(0.2),
         labelTextStyle: WidgetStateProperty.all(
           GoogleFonts.roboto(
@@ -80,7 +80,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4CAF50),
+          backgroundColor: const Color(0xFF2E7D32), // Vert feuille profond
           foregroundColor: Colors.white,
           textStyle: GoogleFonts.roboto(
             fontWeight: FontWeight.w600,

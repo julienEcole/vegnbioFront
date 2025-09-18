@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/simple_auth_provider.dart';
+import '../providers/auth_provider.dart';
 import '../screens/events/events_screen.dart';
 import '../widgets/events/public_events_view.dart';
 
@@ -13,7 +13,7 @@ class EventViewFactory {
     print('🎉 [EventViewFactory] createEventView appelé');
     print('🎉 [EventViewFactory] eventId: $eventId');
     
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     print('🎉 [EventViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Pour l'instant, tous les utilisateurs voient la même vue
@@ -45,7 +45,7 @@ class EventViewFactory {
   
   /// Obtenir le type de vue recommandé selon l'état d'authentification
   static EventViewType getRecommendedViewType(WidgetRef ref) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (authState.isAuthenticated && _hasAdminPermissions(authState.role)) {
       return EventViewType.adminList;
@@ -56,7 +56,7 @@ class EventViewFactory {
   
   /// Vérifier si l'utilisateur peut créer des événements
   static bool canCreateEvents(WidgetRef ref) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (!authState.isAuthenticated) return false;
     
@@ -66,7 +66,7 @@ class EventViewFactory {
   
   /// Vérifier si l'utilisateur peut gérer un événement spécifique
   static bool canManageEvent(WidgetRef ref, int eventId) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     if (!authState.isAuthenticated) return false;
     

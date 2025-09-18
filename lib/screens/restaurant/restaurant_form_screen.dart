@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../widgets/image_upload_widget.dart';
 import '../../models/restaurant.dart';
+import '../../services/api_service.dart';
 
-class AdminRestaurantScreen extends ConsumerStatefulWidget {
+/// Écran de formulaire pour créer ou modifier un restaurant
+/// Utilisé par les restaurateurs et admins pour gérer les restaurants
+class RestaurantFormScreen extends ConsumerStatefulWidget {
   final Restaurant? restaurantToEdit;
   
-  const AdminRestaurantScreen({super.key, this.restaurantToEdit});
+  const RestaurantFormScreen({super.key, this.restaurantToEdit});
 
   @override
-  ConsumerState<AdminRestaurantScreen> createState() => _AdminRestaurantScreenState();
+  ConsumerState<RestaurantFormScreen> createState() => _RestaurantFormScreenState();
 }
 
-class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
+class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nomController = TextEditingController();
   final _quartierController = TextEditingController();
@@ -322,30 +325,28 @@ class _AdminRestaurantScreenState extends ConsumerState<AdminRestaurantScreen> {
     });
 
     try {
-      final restaurant = Restaurant(
-        id: widget.restaurantToEdit?.id ?? 0,
-        nom: _nomController.text.trim(),
-        quartier: _quartierController.text.trim(),
-        adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
-        imageUrl: _imageUrl,
-        images: null, // TODO: Gérer les images multiples
-        imagesCount: 0,
-        horaires: _horaires,
-        equipements: _selectedEquipements.map((nom) => Equipement(
-          id: 0,
-          nom: nom,
-        )).toList(),
-      );
-
+      final apiService = ApiService();
+      
       if (widget.restaurantToEdit != null) {
-        // TODO: Implémenter la modification via le provider
-        // await ref.read(restaurantProvider.notifier).updateRestaurant(restaurant);
+        // Modification d'un restaurant existant
+        await apiService.updateRestaurant(
+          id: widget.restaurantToEdit!.id,
+          nom: _nomController.text.trim(),
+          quartier: _quartierController.text.trim(),
+          adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
+        );
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Restaurant modifié avec succès')),
         );
       } else {
-        // TODO: Implémenter la création via le provider
-        // await ref.read(restaurantProvider.notifier).createRestaurant(restaurant);
+        // Création d'un nouveau restaurant
+        await apiService.createRestaurant(
+          nom: _nomController.text.trim(),
+          quartier: _quartierController.text.trim(),
+          adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
+        );
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Restaurant créé avec succès')),
         );

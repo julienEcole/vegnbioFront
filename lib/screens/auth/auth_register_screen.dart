@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/simple_auth_provider.dart';
-import '../../services/auth_navigation_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/vegetal_form_widgets.dart';
 
-/// Écran d'inscription
+/// Écran d'inscription simplifié
 class AuthRegisterScreen extends ConsumerStatefulWidget {
   const AuthRegisterScreen({super.key});
 
@@ -18,7 +18,6 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
-  final _telephoneController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -29,13 +28,12 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
     _confirmPasswordController.dispose();
     _nomController.dispose();
     _prenomController.dispose();
-    _telephoneController.dispose();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(simpleAuthProvider.notifier).register(
+      await ref.read(authProvider.notifier).register(
         nom: _nomController.text.trim(),
         prenom: _prenomController.text.trim(),
         email: _emailController.text.trim(),
@@ -44,7 +42,7 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
       );
       
       // Vérifier le résultat
-      final authState = ref.read(simpleAuthProvider);
+      final authState = ref.read(authProvider);
       if (authState.isAuthenticated) {
         if (mounted) {
           Navigator.pop(context); // Retourner à l'écran précédent
@@ -55,9 +53,10 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(simpleAuthProvider);
+    final authState = ref.watch(authProvider);
     
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Inscription'),
         leading: IconButton(
@@ -74,21 +73,25 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
             children: [
               const SizedBox(height: 16),
               
+              // Logo ou icône
+              Center(
+                child: VegetalIconContainer(
+                  icon: Icons.person_add,
+                ),
+              ),
+              const SizedBox(height: 24),
+              
               // Titre
               Text(
-                'Inscription',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                'Rejoignez Veg\'N Bio',
+                style: Theme.of(context).textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               
               Text(
-                'Créez votre compte Veg\'N Bio',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                'Créez votre compte en quelques étapes',
+                style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
@@ -97,17 +100,13 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
-                      controller: _prenomController,
-                      decoration: const InputDecoration(
-                        labelText: 'Prénom',
-                        hintText: 'Votre prénom',
-                        prefixIcon: Icon(Icons.person_outlined),
-                        border: OutlineInputBorder(),
-                      ),
+                    child: VegetalTextField(
+                      controller: _nomController,
+                      labelText: 'Nom',
+                      prefixIcon: Icons.person_outline,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Prénom requis';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Le nom est requis';
                         }
                         return null;
                       },
@@ -115,16 +114,13 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: TextFormField(
-                      controller: _nomController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nom',
-                        hintText: 'Votre nom',
-                        border: OutlineInputBorder(),
-                      ),
+                    child: VegetalTextField(
+                      controller: _prenomController,
+                      labelText: 'Prénom',
+                      prefixIcon: Icons.person_outline,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Nom requis';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Le prénom est requis';
                         }
                         return null;
                       },
@@ -134,64 +130,41 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Champ email
-              TextFormField(
+              // Email
+              VegetalTextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'votre@email.com',
-                  prefixIcon: Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(),
-                ),
+                labelText: 'Email',
+                prefixIcon: Icons.email_outlined,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir votre email';
+                  if (value == null || value.trim().isEmpty) {
+                    return 'L\'email est requis';
                   }
                   if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                    return 'Veuillez saisir un email valide';
+                    return 'Veuillez entrer un email valide';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               
-              // Champ téléphone (optionnel)
-              TextFormField(
-                controller: _telephoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Téléphone (optionnel)',
-                  hintText: '06 12 34 56 78',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Champ mot de passe
-              TextFormField(
+              // Mot de passe
+              VegetalTextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Mot de passe',
-                  hintText: 'Au moins 6 caractères',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                  border: const OutlineInputBorder(),
+                labelText: 'Mot de passe',
+                prefixIcon: Icons.lock_outline,
+                suffixIcon: IconButton(
+                  icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Veuillez saisir un mot de passe';
+                    return 'Le mot de passe est requis';
                   }
                   if (value.length < 6) {
                     return 'Le mot de passe doit contenir au moins 6 caractères';
@@ -201,29 +174,23 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Champ confirmation mot de passe
-              TextFormField(
+              // Confirmation mot de passe
+              VegetalTextField(
                 controller: _confirmPasswordController,
                 obscureText: _obscureConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: 'Confirmer le mot de passe',
-                  hintText: 'Répétez votre mot de passe',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
-                  ),
-                  border: const OutlineInputBorder(),
+                labelText: 'Confirmer le mot de passe',
+                prefixIcon: Icons.lock_outline,
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () {
+                    setState(() {
+                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                    });
+                  },
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Veuillez confirmer votre mot de passe';
+                    return 'La confirmation du mot de passe est requise';
                   }
                   if (value != _passwordController.text) {
                     return 'Les mots de passe ne correspondent pas';
@@ -231,60 +198,31 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
+              
+              // Bouton d'inscription
+              VegetalButton(
+                text: 'Créer mon compte',
+                onPressed: authState.isLoading ? null : _handleRegister,
+                isLoading: authState.isLoading,
+              ),
+              const SizedBox(height: 16),
               
               // Message d'erreur
-              if (authState.hasError) ...[
+              if (authState.hasError)
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.red[50],
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.red[200]!),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red[600]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          authState.errorMessage!,
-                          style: TextStyle(color: Colors.red[600]),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    authState.errorMessage ?? 'Une erreur est survenue',
+                    style: TextStyle(color: Colors.red[700]),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
-              
-              // Bouton d'inscription
-              SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: authState.isLoading ? null : _handleRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: authState.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'S\'inscrire',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                ),
-              ),
               const SizedBox(height: 24),
               
               // Lien vers la connexion
@@ -293,13 +231,19 @@ class _AuthRegisterScreenState extends ConsumerState<AuthRegisterScreen> {
                 children: [
                   Text(
                     'Déjà un compte ? ',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   TextButton(
                     onPressed: () {
-                      AuthNavigationService.navigateToLogin(context);
+                      Navigator.pop(context);
                     },
-                    child: const Text('Se connecter'),
+                    child: Text(
+                      'Se connecter',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
