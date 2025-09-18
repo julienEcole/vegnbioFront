@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../widgets/navigation_bar.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+/// Vue publique de la page d'accueil
+class PublicHomeView extends StatelessWidget {
+  const PublicHomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const CustomNavigationBar(),
     );
   }
 

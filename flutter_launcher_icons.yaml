@@ -1,0 +1,23 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web: true
+  
+  # Icône source (doit être au moins 1024x1024)
+  image_path: "assets/icon/playstore.png"
+  
+  # Configuration Android
+  android_adaptive_icon_background: "#4CAF50"
+  android_adaptive_icon_foreground: "assets/icon/playstore.png"
+  
+  # Configuration iOS
+  ios_content_mode: scaleAspectFit
+  
+  # Configuration Web
+  web_generate: true
+  web_image_path: "assets/icon/web.jpg"
+  web_background_color: "#4CAF50"
+  web_theme_color: "#4CAF50"
+  
+  # Taille minimale pour Android
+  min_sdk_android: 21

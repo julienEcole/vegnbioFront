@@ -1,90 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/auth_provider.dart';
 
-class CustomNavigationBar extends StatelessWidget {
-  const CustomNavigationBar({super.key});
+class CustomNavigationBar extends ConsumerWidget {
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
+
+  const CustomNavigationBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  void _handleNavigation(BuildContext context, WidgetRef ref, int index) {
+    final authState = ref.read(authProvider);
+    
+    switch (index) {
+      case 0:
+        context.go('/');
+        break;
+      case 1:
+        context.go('/menus');
+        break;
+      case 2:
+        context.go('/restaurants');
+        break;
+      case 3:
+        context.go('/evenements');
+        break;
+      case 4:
+        // Navigation intelligente vers le profil selon l'état d'authentification
+        if (authState.isAuthenticated) {
+          context.go('/profil?view=profile');
+        } else {
+          context.go('/profil');
+        }
+        break;
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final String currentLocation = GoRouterState.of(context).uri.path;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Surveiller l'état d'authentification pour mettre à jour l'interface
+    final authState = ref.watch(authProvider);
     
     return NavigationBar(
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined, color: Colors.white),
-          selectedIcon: Icon(Icons.home, color: Colors.white),
+      backgroundColor: Colors.green,
+      indicatorColor: Colors.white,
+      elevation: 8,
+      destinations: [
+        const NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
           label: 'Accueil',
         ),
-        NavigationDestination(
-          icon: Icon(Icons.restaurant_menu_outlined, color: Colors.white),
-          selectedIcon: Icon(Icons.restaurant_menu, color: Colors.white),
+        const NavigationDestination(
+          icon: Icon(Icons.restaurant_menu_outlined),
+          selectedIcon: Icon(Icons.restaurant_menu),
           label: 'Menus',
         ),
-        NavigationDestination(
-          icon: Icon(Icons.event_outlined, color: Colors.white),
-          selectedIcon: Icon(Icons.event, color: Colors.white),
+        const NavigationDestination(
+          icon: Icon(Icons.location_on_outlined),
+          selectedIcon: Icon(Icons.location_on),
+          label: 'Restaurants',
+        ),
+        const NavigationDestination(
+          icon: Icon(Icons.event_outlined),
+          selectedIcon: Icon(Icons.event),
           label: 'Événements',
         ),
         NavigationDestination(
-          icon: Icon(Icons.room_service_outlined, color: Colors.white),
-          selectedIcon: Icon(Icons.room_service, color: Colors.white),
-          label: 'Services',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.location_on_outlined, color: Colors.white),
-          selectedIcon: Icon(Icons.location_on, color: Colors.white),
-          label: 'Restaurants',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline, color: Colors.white),
-          selectedIcon: Icon(Icons.person, color: Colors.white),
-          label: 'Profil',
+          icon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
+          selectedIcon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
+          label: authState.isAuthenticated ? 'Profil' : 'Connexion',
         ),
       ],
-      selectedIndex: _getSelectedIndex(currentLocation),
-      onDestinationSelected: (int index) {
-        switch (index) {
-          case 0:
-            context.go('/');
-            break;
-          case 1:
-            context.go('/menus');
-            break;
-          case 2:
-            context.go('/evenements');
-            break;
-          case 3:
-            context.go('/services');
-            break;
-          case 4:
-            context.go('/restaurants');
-            break;
-          case 5:
-            context.go('/profil');
-            break;
-        }
-      },
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      selectedIndex: selectedIndex,
+      onDestinationSelected: (index) => _handleNavigation(context, ref, index),
     );
-  }
-
-  int _getSelectedIndex(String location) {
-    switch (location) {
-      case '/':
-        return 0;
-      case '/menus':
-        return 1;
-      case '/evenements':
-        return 2;
-      case '/services':
-        return 3;
-      case '/restaurants':
-        return 4;
-      case '/profil':
-        return 5;
-      default:
-        return 0;
-    }
   }
 }

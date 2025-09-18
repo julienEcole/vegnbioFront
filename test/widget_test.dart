@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vegnbio_front/main.dart';
-import 'package:vegnbio_front/screens/home_screen.dart';
+import 'package:vegnbio_front/screens/home/home_screen.dart';
 
 void main() {
   testWidgets('App should render home screen', (WidgetTester tester) async {
