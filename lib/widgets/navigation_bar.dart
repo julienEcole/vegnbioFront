@@ -37,6 +37,10 @@ class CustomNavigationBar extends ConsumerWidget {
           context.go('/profil');
         }
         break;
+      case 5:
+        // Bouton "Mes commandes" - seulement visible pour les clients connectés
+        context.go('/commandes');
+        break;
     }
   }
 
@@ -45,37 +49,51 @@ class CustomNavigationBar extends ConsumerWidget {
     // Surveiller l'état d'authentification pour mettre à jour l'interface
     final authState = ref.watch(authProvider);
     
+    // Créer la liste des destinations selon l'état d'authentification
+    final List<NavigationDestination> destinations = [
+      const NavigationDestination(
+        icon: Icon(Icons.home_outlined),
+        selectedIcon: Icon(Icons.home),
+        label: 'Accueil',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.restaurant_menu_outlined),
+        selectedIcon: Icon(Icons.restaurant_menu),
+        label: 'Menus',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.location_on_outlined),
+        selectedIcon: Icon(Icons.location_on),
+        label: 'Restaurants',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.event_outlined),
+        selectedIcon: Icon(Icons.event),
+        label: 'Événements',
+      ),
+      NavigationDestination(
+        icon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
+        selectedIcon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
+        label: authState.isAuthenticated ? 'Profil' : 'Connexion',
+      ),
+    ];
+
+    // Ajouter le bouton "Mes commandes" seulement pour les clients connectés
+    if (authState.isAuthenticated && authState.role?.toLowerCase() == 'client') {
+      destinations.add(
+        const NavigationDestination(
+          icon: Icon(Icons.shopping_bag_outlined),
+          selectedIcon: Icon(Icons.shopping_bag),
+          label: 'Commandes',
+        ),
+      );
+    }
+
     return NavigationBar(
       backgroundColor: Colors.green,
       indicatorColor: Colors.white,
       elevation: 8,
-      destinations: [
-        const NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Accueil',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.restaurant_menu_outlined),
-          selectedIcon: Icon(Icons.restaurant_menu),
-          label: 'Menus',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.location_on_outlined),
-          selectedIcon: Icon(Icons.location_on),
-          label: 'Restaurants',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.event_outlined),
-          selectedIcon: Icon(Icons.event),
-          label: 'Événements',
-        ),
-        NavigationDestination(
-          icon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
-          selectedIcon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
-          label: authState.isAuthenticated ? 'Profil' : 'Connexion',
-        ),
-      ],
+      destinations: destinations,
       selectedIndex: selectedIndex,
       onDestinationSelected: (index) => _handleNavigation(context, ref, index),
     );

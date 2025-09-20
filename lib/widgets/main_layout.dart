@@ -45,6 +45,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
         return 3;
       case '/profil':
         return 4;
+      case '/commandes':
+        return 5; // Index pour les commandes (visible seulement pour les clients)
       default:
         return 0;
     }

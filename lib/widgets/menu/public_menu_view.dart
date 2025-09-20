@@ -8,6 +8,8 @@ import '../../models/search_criteria.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/menu_provider.dart';
 import '../../providers/restaurant_provider.dart';
+import '../../providers/cart_provider.dart';
+import '../cart/cart_widgets.dart';
 import 'menu_image_widget.dart';
 
 /// Provider pour sauvegarder les filtres avant la redirection vers la connexion
@@ -129,62 +131,68 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Message informatif adaptatif
-          if (!authState.isAuthenticated)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Vue publique des menus',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Connectez-vous pour accéder aux fonctionnalités complètes',
-                          style: TextStyle(
-                            color: Colors.blue.shade600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
+          Column(
+            children: [
+              // Message informatif adaptatif
+              if (!authState.isAuthenticated)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
                   ),
-                ],
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Vue publique des menus',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Connectez-vous pour accéder aux fonctionnalités complètes',
+                              style: TextStyle(
+                                color: Colors.blue.shade600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              // Affichage des filtres actifs
+              _buildActiveFiltersDisplay(),
+              // Liste des menus
+              Expanded(
+                child: menusAsync.when(
+                  data: (menus) => restaurantsAsync.when(
+                    data: (restaurants) => _buildPublicMenusList(menus, restaurants),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => _buildErrorWidget(error, ref),
+                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => _buildErrorWidget(error, ref),
+                ),
               ),
-            ),
-          // Affichage des filtres actifs
-          _buildActiveFiltersDisplay(),
-          // Liste des menus
-          Expanded(
-            child: menusAsync.when(
-              data: (menus) => restaurantsAsync.when(
-                data: (restaurants) => _buildPublicMenusList(menus, restaurants),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => _buildErrorWidget(error, ref),
-              ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => _buildErrorWidget(error, ref),
-            ),
+            ],
           ),
+          // Bouton flottant du panier
+          const CartFloatingButton(),
         ],
       ),
     );
@@ -385,6 +393,9 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                         }).toList(),
                       ),
                     ],
+                    // Bouton d'ajout au panier (seulement si connecté)
+                    const SizedBox(height: 16),
+                    _buildAddToCartButton(menu, restaurant.id),
                   ],
                 ),
               ),
@@ -1165,6 +1176,131 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
           ),
         ],
       ),
+    );
+  }
+
+  /// Construire le bouton d'ajout au panier
+  Widget _buildAddToCartButton(Menu menu, int restaurantId) {
+    final authState = ref.watch(authProvider);
+    
+    // Si l'utilisateur n'est pas connecté, afficher un bouton pour se connecter
+    if (!authState.isAuthenticated) {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () {
+            // Sauvegarder les filtres actuels avant la redirection
+            final currentFilters = ref.read(searchCriteriaProvider);
+            ref.read(savedFiltersProvider.notifier).state = currentFilters;
+            
+            // Rediriger vers la connexion
+            context.go('/profil?view=login');
+          },
+          icon: const Icon(Icons.login),
+          label: const Text('Se connecter pour commander'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.primary,
+            side: BorderSide(color: Theme.of(context).colorScheme.primary),
+          ),
+        ),
+      );
+    }
+
+    // Si l'utilisateur est connecté, afficher le bouton d'ajout au panier
+    final cartNotifier = ref.read(cartProvider.notifier);
+    final hasItem = cartNotifier.hasItem(menu, restaurantId);
+    final itemQuantity = cartNotifier.getItemQuantity(menu, restaurantId);
+
+    return Row(
+      children: [
+        // Bouton de diminution (si l'item est dans le panier)
+        if (hasItem) ...[
+          IconButton(
+            onPressed: () {
+              cartNotifier.updateItemQuantity(menu, restaurantId, itemQuantity - 1);
+            },
+            icon: const Icon(Icons.remove),
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+        
+        // Bouton principal d'ajout au panier
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              if (hasItem) {
+                // Si l'item est déjà dans le panier, augmenter la quantité
+                cartNotifier.updateItemQuantity(menu, restaurantId, itemQuantity + 1);
+                
+                // Afficher un message de confirmation
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Quantité mise à jour: ${itemQuantity + 1}'),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                // Ajouter l'item au panier
+                cartNotifier.addItem(menu, restaurantId);
+                
+                // Vérifier s'il y a une erreur
+                final cartState = ref.read(cartProvider);
+                if (cartState.error != null) {
+                  // Afficher le message d'erreur
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(cartState.error!),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                } else {
+                  // Afficher un message de confirmation
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${menu.titre} ajouté au panier'),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              }
+            },
+            icon: Icon(hasItem ? Icons.add_shopping_cart : Icons.shopping_cart),
+            label: Text(
+              hasItem 
+                ? 'Quantité: $itemQuantity'
+                : 'Ajouter au panier',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hasItem 
+                ? Colors.orange 
+                : Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+        
+        // Bouton d'augmentation (si l'item est dans le panier)
+        if (hasItem) ...[
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () {
+              cartNotifier.updateItemQuantity(menu, restaurantId, itemQuantity + 1);
+            },
+            icon: const Icon(Icons.add),
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
