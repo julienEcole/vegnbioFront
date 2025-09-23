@@ -15,4 +15,5 @@ export 'restaurant_view_factory.dart';
 export 'event_view_factory.dart';
 export 'service_view_factory.dart';
 export 'dashboard_view_factory.dart';
+export 'stripe_factory.dart';
 

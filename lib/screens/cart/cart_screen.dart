@@ -7,7 +7,7 @@ import '../../models/cart_item.dart';
 import '../../services/api_service.dart';
 import '../../models/commande.dart';
 import '../../widgets/delivery_time_selector.dart';
-import '../../widgets/payment/payment_modal.dart';
+import '../../widgets/payment/stripe_payment_modal_elements.dart';
 
 class CartPage extends ConsumerStatefulWidget {
   const CartPage({super.key});
@@ -705,8 +705,8 @@ class _CartPageState extends ConsumerState<CartPage> {
       return;
     }
 
-    // Ouvrir le modal de paiement
-    final paymentResult = await PaymentModal.showPaymentModal(
+    // Ouvrir le modal de paiement Stripe
+    final paymentResult = await StripePaymentModalElements.showPaymentModal(
       context: context,
       amount: totalTTC,
       currency: 'EUR',
@@ -718,12 +718,12 @@ class _CartPageState extends ConsumerState<CartPage> {
       return;
     }
 
-    if (!paymentResult.isSuccess) {
+    if (!paymentResult.success) {
       // Le paiement a échoué
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Paiement échoué: ${paymentResult.errorMessage}'),
+            content: Text('Paiement échoué: ${paymentResult.error}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),
@@ -810,8 +810,8 @@ class _CartPageState extends ConsumerState<CartPage> {
       return;
     }
 
-    // Ouvrir le modal de paiement
-    final paymentResult = await PaymentModal.showPaymentModal(
+    // Ouvrir le modal de paiement Stripe
+    final paymentResult = await StripePaymentModalElements.showPaymentModal(
       context: context,
       amount: totalTTC,
       currency: 'EUR',
@@ -823,12 +823,12 @@ class _CartPageState extends ConsumerState<CartPage> {
       return;
     }
 
-    if (!paymentResult.isSuccess) {
+    if (!paymentResult.success) {
       // Le paiement a échoué
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Paiement échoué: ${paymentResult.errorMessage}'),
+            content: Text('Paiement échoué: ${paymentResult.error}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),

@@ -734,8 +734,11 @@ class ApiService {
     try {
       print('🛒 [ApiService] Création d\'une commande pour le restaurant $restaurantId');
       
-      // Convertir les CartItem en format attendu par le backend
-      final commandeItems = items.map((item) => item.toCommandeItemJson()).toList();
+      // Envoyer seulement les menuId et quantités - les prix seront récupérés côté backend
+      final commandeItems = items.map((item) => {
+        'menuId': item.menu.id,
+        'quantite': item.quantite,
+      }).toList();
       
       final body = {
         'restaurantId': restaurantId,
