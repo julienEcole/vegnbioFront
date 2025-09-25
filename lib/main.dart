@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'config/app_config.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/cart/cart_screen.dart';
 import 'screens/orders/orders_screen.dart';
@@ -12,8 +13,12 @@ import 'factories/menu_view_factory.dart';
 import 'factories/service_view_factory.dart';
 import 'widgets/main_layout.dart';
 
-void main() {
+void main() async {
   print('🚀 MAIN START');
+  
+  // Charger les variables d'environnement
+  await AppConfig.loadEnv();
+  
   runApp(const ProviderScope(child: MyApp()));
 }
 

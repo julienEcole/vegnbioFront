@@ -59,8 +59,10 @@ class RealAuthService {
   Future<void> _testConnectivity() async {
     try {
       print('🔍 [RealAuthService] Test de connectivité...');
+      // Utiliser l'URL de base configurée au lieu de l'URL codée en dur
+      final healthUrl = baseUrl.replaceAll('/api', '/health');
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:3001/health'),
+        Uri.parse(healthUrl),
         headers: headers,
       ).timeout(const Duration(seconds: 10));
       
@@ -68,7 +70,7 @@ class RealAuthService {
       print('📄 [RealAuthService] Réponse santé: ${response.body}');
     } catch (e) {
       print('⚠️ [RealAuthService] Test de connectivité échoué: $e');
-      print('🔧 [RealAuthService] Vérifiez que le backend est démarré sur http://127.0.0.1:3001');
+      print('🔧 [RealAuthService] Vérifiez que le backend est démarré sur $baseUrl');
     }
   }
 

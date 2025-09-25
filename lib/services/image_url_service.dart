@@ -1,7 +1,10 @@
 
 
+import '../config/app_config.dart';
+
 class ImageUrlService {
-  static const String _baseUrl = 'http://localhost:3001/api/images';
+  // Utiliser l'URL de base configurée au lieu de l'URL codée en dur
+  static String get _baseUrl => '${AppConfig.apiBaseUrl}/images';
 
   /// Construit une URL d'image redimensionnée pour un restaurant
   /// 
