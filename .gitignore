@@ -65,7 +65,7 @@ coverage/
 **/ios/Runner/GeneratedPluginRegistrant.*
 
 # Web related
-**/web/icons/
+# **/web/icons/
 **/web/canvaskit/
 
 # Fichiers de configuration sensibles
