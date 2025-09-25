@@ -1,0 +1,6 @@
+[build]
+  publish = "build/web"
+  command = "chmod +x build.sh && ./build.sh"
+
+[build.environment]
+  FLUTTER_VERSION = "3.24.0"
