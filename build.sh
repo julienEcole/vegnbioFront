@@ -9,6 +9,14 @@ wget -O flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/rele
 tar xf flutter.tar.xz
 export PATH="$PATH:`pwd`/flutter/bin"
 
+# Create .env file from environment variables
+echo "Creating .env file..."
+echo "API_BASE_URL=${API_BASE_URL}" > .env
+echo "STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}" >> .env
+echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
+echo "Created .env file with:"
+cat .env
+
 # Install dependencies
 echo "Installing dependencies..."
 flutter pub get
