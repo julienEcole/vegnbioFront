@@ -9,13 +9,12 @@ wget -O flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/rele
 tar xf flutter.tar.xz
 export PATH="$PATH:`pwd`/flutter/bin"
 
-# Create .env file from environment variables
-echo "Creating .env file..."
-echo "API_BASE_URL=${API_BASE_URL}" > .env
-echo "STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}" >> .env
-echo "ENVIRONMENT=${ENVIRONMENT}" >> .env
-echo "Created .env file with:"
-cat .env
+# Note: Environment variables are handled directly by Flutter web
+# No need to create .env file as we use environment variables directly
+echo "Using environment variables:"
+echo "API_BASE_URL=${API_BASE_URL}"
+echo "STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}"
+echo "ENVIRONMENT=${ENVIRONMENT}"
 
 # Install dependencies
 echo "Installing dependencies..."
@@ -23,6 +22,9 @@ flutter pub get
 
 # Build for web
 echo "Building for web..."
-flutter build web --release --web-renderer html
+flutter build web --release --web-renderer html \
+  --dart-define=API_BASE_URL="${API_BASE_URL}" \
+  --dart-define=STRIPE_PUBLISHABLE_KEY="${STRIPE_PUBLISHABLE_KEY}" \
+  --dart-define=ENVIRONMENT="${ENVIRONMENT}"
 
 echo "Build completed successfully!"

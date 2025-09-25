@@ -20,14 +20,35 @@ class AppConfig {
   static const String themeColorHex = "#4CAF50";
   
   // Configuration de l'API (depuis les variables d'environnement)
-  static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? "http://127.0.0.1:3001/api";
+  static String get apiBaseUrl {
+    // Essayer d'abord les variables d'environnement système (pour la production)
+    const apiUrl = String.fromEnvironment('API_BASE_URL');
+    if (apiUrl.isNotEmpty) return apiUrl;
+    
+    // Sinon utiliser dotenv (pour le développement local)
+    return dotenv.env['API_BASE_URL'] ?? "http://127.0.0.1:3001/api";
+  }
   static const String apiVersion = "v1";
   
   // Configuration Stripe (depuis les variables d'environnement)
-  static String get stripePublicKey => dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? "";
+  static String get stripePublicKey {
+    // Essayer d'abord les variables d'environnement système (pour la production)
+    const stripeKey = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
+    if (stripeKey.isNotEmpty) return stripeKey;
+    
+    // Sinon utiliser dotenv (pour le développement local)
+    return dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? "";
+  }
   
   // Configuration de l'environnement
-  static String get environment => dotenv.env['ENVIRONMENT'] ?? "development";
+  static String get environment {
+    // Essayer d'abord les variables d'environnement système (pour la production)
+    const env = String.fromEnvironment('ENVIRONMENT');
+    if (env.isNotEmpty) return env;
+    
+    // Sinon utiliser dotenv (pour le développement local)
+    return dotenv.env['ENVIRONMENT'] ?? "development";
+  }
   
   // Configuration des routes
   static const String homeRoute = "/";
@@ -47,7 +68,7 @@ class AppConfig {
   static Future<void> loadEnv() async {
     try {
       await dotenv.load(fileName: ".env");
-      print('✅ [AppConfig] Variables d\'environnement chargées');
+      print('✅ [AppConfig] Variables d\'environnement chargées depuis .env');
       print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
       print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
       print('🌍 [AppConfig] Environment: $environment');
@@ -58,9 +79,10 @@ class AppConfig {
         print('   $key = $value');
       });
     } catch (e) {
-      print('❌ [AppConfig] Erreur lors du chargement des variables d\'environnement: $e');
-      print('⚠️  [AppConfig] Utilisation des valeurs par défaut');
+      print('⚠️  [AppConfig] Fichier .env non trouvé, utilisation des valeurs par défaut');
       print('🔗 [AppConfig] API Base URL par défaut: $apiBaseUrl');
+      print('🔑 [AppConfig] Stripe Public Key par défaut: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
+      print('🌍 [AppConfig] Environment par défaut: $environment');
     }
   }
 }
