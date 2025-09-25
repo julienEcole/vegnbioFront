@@ -5,9 +5,10 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
+import '../models/commande.dart';
+import '../models/cart_item.dart';
 import '../config/app_config.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Configuration unifiée de l'URL pour tous les environnements
@@ -462,7 +463,6 @@ class ApiService {
     String? adresse,
   }) async {
     try {
-      final authHeaders = headers;
       final response = await http.post(
         Uri.parse('$baseUrl/restaurants'),
         headers: headers,
@@ -494,7 +494,6 @@ class ApiService {
   }) async {
     try {
       print('🔄 API: Début updateRestaurant pour ID $id');
-      final authHeaders = headers;
       final Map<String, dynamic> updateData = {};
       
       if (nom != null) updateData['nom'] = nom;
@@ -531,7 +530,6 @@ class ApiService {
   /// Supprimer un restaurant
   Future<bool> deleteRestaurant(int id) async {
     try {
-      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/restaurants/$id'),
         headers: headers,
@@ -564,7 +562,6 @@ class ApiService {
     String? imageUrl,
   }) async {
     try {
-      final authHeaders = headers;
       final response = await http.post(
         Uri.parse('$baseUrl/menus'),
         headers: headers,
@@ -608,7 +605,6 @@ class ApiService {
   }) async {
     try {
       print('🔄 API: Début updateMenu pour ID $id');
-      final authHeaders = headers;
       final Map<String, dynamic> updateData = {};
       
       if (titre != null) updateData['titre'] = titre;
@@ -651,7 +647,6 @@ class ApiService {
   /// Supprimer un menu
   Future<bool> deleteMenu(int id) async {
     try {
-      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/menus/$id'),
         headers: headers,
@@ -674,7 +669,6 @@ class ApiService {
   /// Supprimer une image de restaurant
   Future<bool> deleteRestaurantImage(int restaurantId, int imageId) async {
     try {
-      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId'),
         headers: headers,
@@ -689,7 +683,6 @@ class ApiService {
   /// Supprimer une image de menu
   Future<bool> deleteMenuImage(int menuId, int imageId) async {
     try {
-      final authHeaders = headers;
       final response = await http.delete(
         Uri.parse('$baseUrl/images/menu/$menuId/$imageId'),
         headers: headers,
@@ -704,7 +697,6 @@ class ApiService {
   /// Définir une image comme principale pour un restaurant
   Future<bool> setRestaurantPrimaryImage(int restaurantId, int imageId) async {
     try {
-      final authHeaders = headers;
       final response = await http.put(
         Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId/primary'),
         headers: headers,
@@ -719,7 +711,6 @@ class ApiService {
   /// Définir une image comme principale pour un menu
   Future<bool> setMenuPrimaryImage(int menuId, int imageId) async {
     try {
-      final authHeaders = headers;
       final response = await http.put(
         Uri.parse('$baseUrl/images/menu/$menuId/$imageId/primary'),
         headers: headers,
@@ -727,6 +718,191 @@ class ApiService {
 
       return response.statusCode == 200;
     } catch (e) {
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  // ===== MÉTHODES POUR LES COMMANDES =====
+
+  /// Créer une nouvelle commande
+  Future<Commande> createCommande({
+    required int restaurantId,
+    required List<CartItem> items,
+    double tvaRate = 20.0,
+    String currency = 'EUR',
+  }) async {
+    try {
+      print('🛒 [ApiService] Création d\'une commande pour le restaurant $restaurantId');
+      
+      // Convertir les CartItem en format attendu par le backend
+      final commandeItems = items.map((item) => item.toCommandeItemJson()).toList();
+      
+      final body = {
+        'restaurantId': restaurantId,
+        'items': commandeItems,
+        'tvaRate': tvaRate,
+        'currency': currency,
+      };
+
+      print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/commandes'),
+        headers: headers,
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 30));
+
+      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      print('📄 [ApiService] Corps de réponse: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final commande = Commande.fromJson(jsonData);
+        print('✅ [ApiService] Commande créée avec succès: ID ${commande.id}');
+        return commande;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Erreur lors de la création de la commande: ${errorData['error'] ?? 'Erreur inconnue'}');
+      }
+    } catch (e) {
+      print('❌ [ApiService] Erreur lors de la création de la commande: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Récupérer une commande par son ID
+  Future<Commande> getCommandeById(int commandeId) async {
+    try {
+      print('🔍 [ApiService] Récupération de la commande $commandeId');
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/commandes/$commandeId'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final commande = Commande.fromJson(jsonData);
+        print('✅ [ApiService] Commande récupérée: ${commande.id}');
+        return commande;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Erreur lors de la récupération de la commande: ${errorData['error'] ?? 'Erreur inconnue'}');
+      }
+    } catch (e) {
+      print('❌ [ApiService] Erreur lors de la récupération de la commande: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Récupérer toutes les commandes
+  Future<List<Commande>> getAllCommandes() async {
+    try {
+      print('📋 [ApiService] Récupération de toutes les commandes');
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/commandes'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        final List<Commande> commandes = jsonData
+            .map((data) => Commande.fromJson(data as Map<String, dynamic>))
+            .toList();
+        print('✅ [ApiService] ${commandes.length} commandes récupérées');
+        return commandes;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Erreur lors de la récupération des commandes: ${errorData['error'] ?? 'Erreur inconnue'}');
+      }
+    } catch (e) {
+      print('❌ [ApiService] Erreur lors de la récupération des commandes: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Remplacer les items d'une commande
+  Future<Commande> replaceCommandeItems({
+    required int commandeId,
+    required List<CartItem> items,
+    double? tvaRate,
+  }) async {
+    try {
+      print('🔄 [ApiService] Remplacement des items de la commande $commandeId');
+      
+      // Convertir les CartItem en format attendu par le backend
+      final commandeItems = items.map((item) => item.toCommandeItemJson()).toList();
+      
+      final body = {
+        'items': commandeItems,
+        if (tvaRate != null) 'tvaRate': tvaRate,
+      };
+
+      print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/commandes/items/$commandeId'),
+        headers: headers,
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 30));
+
+      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      print('📄 [ApiService] Corps de réponse: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final commande = Commande.fromJson(jsonData);
+        print('✅ [ApiService] Items de la commande remplacés: ID ${commande.id}');
+        return commande;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Erreur lors du remplacement des items: ${errorData['error'] ?? 'Erreur inconnue'}');
+      }
+    } catch (e) {
+      print('❌ [ApiService] Erreur lors du remplacement des items: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Mettre à jour le statut d'une commande
+  Future<Commande> updateCommandeStatut({
+    required int commandeId,
+    required CommandeStatut statut,
+  }) async {
+    try {
+      print('📊 [ApiService] Mise à jour du statut de la commande $commandeId: ${statut.value}');
+      
+      final body = {
+        'statut': statut.value,
+      };
+
+      print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/commandes/statut/$commandeId'),
+        headers: headers,
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      print('📄 [ApiService] Corps de réponse: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final commande = Commande.fromJson(jsonData);
+        print('✅ [ApiService] Statut de la commande mis à jour: ${commande.statut.value}');
+        return commande;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Erreur lors de la mise à jour du statut: ${errorData['error'] ?? 'Erreur inconnue'}');
+      }
+    } catch (e) {
+      print('❌ [ApiService] Erreur lors de la mise à jour du statut: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }

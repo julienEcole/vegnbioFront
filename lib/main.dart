@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'screens/home/home_screen.dart';
+import 'screens/cart/cart_screen.dart';
+import 'screens/orders/orders_screen.dart';
 import 'factories/auth_view_factory.dart';
 import 'factories/dashboard_view_factory.dart';
 import 'factories/event_view_factory.dart';
@@ -120,6 +122,20 @@ final _router = GoRouter(
             return ServiceViewFactory.createServiceView(ref);
           },
         ),
+      ),
+    ),
+    GoRoute(
+      path: '/panier',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/panier',
+        child: const CartPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/commandes',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/commandes',
+        child: const OrdersScreen(),
       ),
     ),
   ],

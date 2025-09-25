@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 
 /// Écran de profil utilisateur
@@ -189,6 +190,23 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
                       userData['email'] ?? '',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // Bouton pour accéder aux commandes
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          context.go('/commandes');
+                        },
+                        icon: const Icon(Icons.shopping_bag_outlined),
+                        label: const Text('Mes commandes'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                       ),
                     ),
                   ],

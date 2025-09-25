@@ -27,6 +27,7 @@ class AppConfig {
   static const String restaurantsRoute = "/restaurants";
   static const String profileRoute = "/profil";
   static const String dashboardRoute = "/dashboard";
+  static const String cartRoute = "/panier";
   
   // Configuration des permissions
   static const List<String> adminRoles = ["admin"];
