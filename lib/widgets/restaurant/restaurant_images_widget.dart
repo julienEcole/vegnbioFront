@@ -88,9 +88,9 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
     }
     
     final borderRadius = widget.borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = widget.shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.15),
+      color: Colors.black.withOpacity(0.15),
       blurRadius: 12,
       offset: const Offset(0, 4),
       spreadRadius: 1,
@@ -215,7 +215,7 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.7),
+                              color: Colors.black.withOpacity(0.7),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Icon(
@@ -249,7 +249,7 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.7),
+                              color: Colors.black.withOpacity(0.7),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Icon(
@@ -305,7 +305,7 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: i == selectedImageIndex ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                            color: i == selectedImageIndex ? Colors.white : Colors.white.withOpacity(0.5),
                           ),
                         ),
                       ),
@@ -338,9 +338,9 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
 
   Widget _buildMultipleImages(BuildContext context) {
     final borderRadius = widget.borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = widget.shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.15),
+      color: Colors.black.withOpacity(0.15),
       blurRadius: 12,
       offset: const Offset(0, 4),
       spreadRadius: 1,
@@ -380,12 +380,12 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                   color: Colors.black87,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity(0.3),
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -466,9 +466,9 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
 
   Widget _buildFallback(BuildContext context) {
     final borderRadius = widget.borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = widget.shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
+      color: Colors.black.withOpacity(0.1),
       blurRadius: 8,
       offset: const Offset(0, 2),
     );

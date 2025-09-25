@@ -62,7 +62,7 @@ class MenuImageWidget extends StatelessWidget {
       borderRadius: borderRadius ?? BorderRadius.circular(16),
       fallbackIcon: fallbackIcon,
       showBorder: showBorder,
-      borderColor: borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+      borderColor: borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.4),
       borderWidth: borderWidth,
       onTap: onTap,
     );
@@ -71,9 +71,9 @@ class MenuImageWidget extends StatelessWidget {
   // Widget spécialisé pour les images de menus avec meilleur centrage
   Widget _buildMenuImageCard(BuildContext context) {
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.4);
+    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.4);
     final effectiveShadow = shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.2),
+      color: Colors.black.withOpacity(0.2),
       blurRadius: 15,
       offset: const Offset(0, 6),
       spreadRadius: 2,
@@ -349,9 +349,9 @@ class MenuImageWidget extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
+      color: Colors.black.withOpacity(0.1),
       blurRadius: 8,
       offset: const Offset(0, 2),
     );

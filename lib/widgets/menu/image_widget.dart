@@ -54,9 +54,9 @@ class ImageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderRadius = this.borderRadius ?? BorderRadius.circular(12);
-    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
+      color: Colors.black.withOpacity(0.1),
       blurRadius: 8,
       offset: const Offset(0, 2),
     );

@@ -51,9 +51,9 @@ class RestaurantGalleryWidget extends StatelessWidget {
 
   Widget _buildHorizontalGallery(BuildContext context) {
     final borderRadius = this.borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.15),
+      color: Colors.black.withOpacity(0.15),
       blurRadius: 12,
       offset: const Offset(0, 4),
       spreadRadius: 1,
@@ -116,7 +116,7 @@ class RestaurantGalleryWidget extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.3),
+                                        color: Colors.black.withOpacity(0.3),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
@@ -192,7 +192,7 @@ class RestaurantGalleryWidget extends StatelessWidget {
                       color: Colors.black87,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: Colors.white.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
@@ -242,9 +242,9 @@ class RestaurantGalleryWidget extends StatelessWidget {
 
   Widget _buildFallback(BuildContext context) {
     final borderRadius = this.borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withValues(alpha: 0.3);
+    final effectiveBorderColor = borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
     final effectiveShadow = shadow ?? BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
+      color: Colors.black.withOpacity(0.1),
       blurRadius: 8,
       offset: const Offset(0, 2),
     );

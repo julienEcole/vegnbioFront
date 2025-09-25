@@ -3,7 +3,7 @@ set -e
 
 # Install Flutter
 echo "Installing Flutter..."
-FLUTTER_VERSION=${FLUTTER_VERSION:-"3.32.8"}
+FLUTTER_VERSION=${FLUTTER_VERSION:-"3.24.5"}
 echo "Using Flutter version: $FLUTTER_VERSION"
 wget -O flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz
 tar xf flutter.tar.xz

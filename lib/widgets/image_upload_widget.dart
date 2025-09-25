@@ -41,7 +41,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.3),
+          color: Colors.grey.withOpacity(0.3),
           width: 2,
           style: BorderStyle.solid,
         ),
@@ -108,7 +108,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.1),
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
       ),
       child: Column(
@@ -117,13 +117,13 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
           Icon(
             widget.uploadType == 'restaurant' ? Icons.restaurant : Icons.restaurant_menu,
             size: 48,
-            color: Colors.grey.withValues(alpha: 0.6),
+            color: Colors.grey.withOpacity(0.6),
           ),
           const SizedBox(height: 8),
           Text(
             'Aucune image',
             style: TextStyle(
-              color: Colors.grey.withValues(alpha: 0.6),
+              color: Colors.grey.withOpacity(0.6),
               fontSize: 14,
             ),
           ),
@@ -137,7 +137,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
-          color: Colors.black.withValues(alpha: 0.3),
+          color: Colors.black.withOpacity(0.3),
         ),
         child: Center(
           child: Row(
@@ -196,7 +196,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
-          color: Colors.black.withValues(alpha: 0.7),
+          color: Colors.black.withOpacity(0.7),
         ),
         child: const Center(
           child: Column(
