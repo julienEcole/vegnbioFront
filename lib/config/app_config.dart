@@ -66,9 +66,24 @@ class AppConfig {
   
   // Méthode pour initialiser les variables d'environnement
   static Future<void> loadEnv() async {
+    // Vérifier si nous sommes en production (variables d'environnement système disponibles)
+    const apiUrl = String.fromEnvironment('API_BASE_URL');
+    const stripeKey = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
+    const env = String.fromEnvironment('ENVIRONMENT');
+    
+    if (apiUrl.isNotEmpty || stripeKey.isNotEmpty || env.isNotEmpty) {
+      // Production : utiliser les variables d'environnement système
+      print('✅ [AppConfig] Mode production - utilisation des variables d\'environnement système');
+      print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
+      print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
+      print('🌍 [AppConfig] Environment: $environment');
+      return;
+    }
+    
+    // Développement local : essayer de charger le fichier .env
     try {
       await dotenv.load(fileName: ".env");
-      print('✅ [AppConfig] Variables d\'environnement chargées depuis .env');
+      print('✅ [AppConfig] Mode développement - variables d\'environnement chargées depuis .env');
       print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
       print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
       print('🌍 [AppConfig] Environment: $environment');
