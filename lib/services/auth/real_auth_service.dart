@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../config/app_config.dart';
+import '../../config/app_config.dart';
 
 /// Service d'authentification réel qui communique avec l'API backend
 class RealAuthService {

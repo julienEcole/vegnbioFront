@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'payment_form_widget.dart';
-import '../../services/payment_service.dart';
+import '../../factories/payment_form_factory.dart';
+import '../../services/payement/unified_payment_service.dart';
 
-class PaymentModal extends StatefulWidget {
+/// Modal de paiement unifié utilisant la factory
+class UnifiedPaymentModal extends StatefulWidget {
   final double amount;
   final String currency;
   final String description;
-  final Function(PaymentResult) onPaymentResult;
+  final Function(StripePaymentResult) onPaymentResult;
 
-  const PaymentModal({
+  const UnifiedPaymentModal({
     super.key,
     required this.amount,
     required this.currency,
@@ -17,20 +18,21 @@ class PaymentModal extends StatefulWidget {
   });
 
   @override
-  State<PaymentModal> createState() => _PaymentModalState();
+  State<UnifiedPaymentModal> createState() => _UnifiedPaymentModalState();
 
-  static Future<PaymentResult?> showPaymentModal({
+  /// Méthode statique pour afficher le modal de paiement
+  static Future<StripePaymentResult?> showPaymentModal({
     required BuildContext context,
     required double amount,
     required String currency,
     required String description,
   }) async {
-    PaymentResult? result;
+    StripePaymentResult? result;
     
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => PaymentModal(
+      builder: (context) => UnifiedPaymentModal(
         amount: amount,
         currency: currency,
         description: description,
@@ -44,7 +46,7 @@ class PaymentModal extends StatefulWidget {
   }
 }
 
-class _PaymentModalState extends State<PaymentModal> {
+class _UnifiedPaymentModalState extends State<UnifiedPaymentModal> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -58,7 +60,12 @@ class _PaymentModalState extends State<PaymentModal> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                  ],
+                ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
@@ -77,7 +84,7 @@ class _PaymentModalState extends State<PaymentModal> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Paiement',
+                          'Paiement sécurisé',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -108,7 +115,7 @@ class _PaymentModalState extends State<PaymentModal> {
             // Contenu du formulaire de paiement
             Flexible(
               child: SingleChildScrollView(
-                child: PaymentFormWidget(
+                child: PaymentFormFactory.createPaymentForm(
                   amount: widget.amount,
                   currency: widget.currency,
                   description: widget.description,

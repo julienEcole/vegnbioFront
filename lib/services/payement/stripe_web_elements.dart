@@ -1,6 +1,7 @@
 // Implémentation Stripe Elements pour le web (sécurisée)
+import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 import 'dart:js' as js;
 
 class StripeWebElements {
@@ -15,20 +16,31 @@ class StripeWebElements {
     
     try {
       // Charger Stripe.js si pas déjà chargé
-      final existingScript = html.document.querySelector('script[src*="js.stripe.com"]');
+      final existingScript = web.document.querySelector('script[src*="js.stripe.com"]');
       if (existingScript == null) {
-        final script = html.ScriptElement()
-          ..src = 'https://js.stripe.com/v3/'
-          ..type = 'text/javascript';
+        print('🔄 [StripeWebElements] Chargement de Stripe.js...');
         
-        html.document.head!.append(script);
+        final script = web.document.createElement('script');
+        script.setAttribute('src', 'https://js.stripe.com/v3/');
+        script.setAttribute('type', 'text/javascript');
         
-        // Attendre que le script soit chargé
-        await Future.delayed(const Duration(milliseconds: 1000));
+        // Attendre que le script soit chargé avec une Promise
+        final scriptLoaded = _waitForScriptLoad(script);
+        web.document.head!.append(script);
+        
+        // Attendre que le script soit complètement chargé
+        await scriptLoaded;
+        print('✅ [StripeWebElements] Script Stripe.js chargé');
+      } else {
+        print('✅ [StripeWebElements] Script Stripe.js déjà présent');
       }
+      
+      // Attendre un peu plus pour s'assurer que Stripe est disponible
+      await Future.delayed(const Duration(milliseconds: 500));
       
       // Vérifier que Stripe est disponible
       if (js.context['Stripe'] == null) {
+        print('❌ [StripeWebElements] Stripe non disponible dans js.context');
         throw Exception('Stripe.js n\'est pas chargé');
       }
       
@@ -41,6 +53,37 @@ class StripeWebElements {
       print('❌ [StripeWebElements] Erreur lors de l\'initialisation: $e');
       rethrow;
     }
+  }
+
+  /// Attendre qu'un script soit chargé
+  static Future<void> _waitForScriptLoad(web.Element script) async {
+    final completer = Completer<void>();
+    
+    // Créer un callback JavaScript pour détecter le chargement
+    final onLoadCallback = js.allowInterop((_) {
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    });
+    
+    final onErrorCallback = js.allowInterop((_) {
+      if (!completer.isCompleted) {
+        completer.completeError(Exception('Erreur lors du chargement du script Stripe'));
+      }
+    });
+    
+    // Attacher les événements
+    script.addEventListener('load', onLoadCallback as web.EventListener);
+    script.addEventListener('error', onErrorCallback as web.EventListener);
+    
+    // Timeout de sécurité
+    Timer(const Duration(seconds: 10), () {
+      if (!completer.isCompleted) {
+        completer.completeError(Exception('Timeout lors du chargement du script Stripe'));
+      }
+    });
+    
+    return completer.future;
   }
 
   /// Créer un élément de carte Stripe
@@ -80,7 +123,7 @@ class StripeWebElements {
     }
 
     try {
-      final container = html.document.getElementById(containerId);
+      final container = web.document.getElementById(containerId);
       if (container == null) {
         throw Exception('Conteneur avec l\'ID $containerId non trouvé');
       }
@@ -93,21 +136,53 @@ class StripeWebElements {
     }
   }
 
-  /// Créer un PaymentMethod avec Stripe Elements
-  static Future<String> createPaymentMethod({
+  /// Créer un PaymentMethod avec Stripe Elements (approche avec montage)
+  static Future<String> createPaymentMethodWithElements({
     required String cardholderName,
+    required String cardNumber,
+    required int expMonth,
+    required int expYear,
+    required String cvc,
   }) async {
-    if (_stripe == null || _cardElement == null) {
-      throw Exception('Stripe ou CardElement n\'est pas initialisé');
+    if (_stripe == null) {
+      throw Exception('Stripe n\'est pas initialisé');
     }
 
+    // Créer un conteneur temporaire
+    final containerId = 'stripe-temp-${DateTime.now().millisecondsSinceEpoch}';
+    final container = web.document.createElement('div');
+    container.setAttribute('id', containerId);
+    container.setAttribute('style', 'position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none;');
+    web.document.body!.append(container);
+
     try {
-      print('🔄 [StripeWebElements] Création du PaymentMethod...');
+      print('🔄 [StripeWebElements] Création du PaymentMethod avec Elements...');
       
-      // Créer le PaymentMethod avec l'élément de carte
+      // Créer les Elements si pas déjà fait
+      if (_elements == null) {
+        _elements = _stripe!.callMethod('elements');
+      }
+      
+      // Créer un élément de carte
+      final cardElement = _elements!.callMethod('create', ['card', js.JsObject.jsify({
+        'style': {
+          'base': {
+            'fontSize': '16px',
+            'color': '#424770',
+          },
+        },
+      })]);
+      
+      // Monter l'élément dans le conteneur temporaire
+      cardElement.callMethod('mount', ['#$containerId']);
+      
+      // Attendre que l'élément soit monté
+      await Future.delayed(const Duration(milliseconds: 1000));
+      
+      // Créer le PaymentMethod avec l'élément monté
       final paymentMethodParams = js.JsObject.jsify({
         'type': 'card',
-        'card': _cardElement,
+        'card': cardElement,
         'billing_details': {
           'name': cardholderName,
         },
@@ -136,9 +211,22 @@ class StripeWebElements {
       return paymentMethodId;
     } catch (e) {
       print('❌ [StripeWebElements] Erreur lors de la création du PaymentMethod: $e');
+      
+      // Si c'est un problème d'AdBlocker, propager l'erreur avec un message spécifique
+      if (e.toString().contains('ERR_BLOCKED_BY_CLIENT') || 
+          e.toString().contains('Failed to fetch') ||
+          e.toString().contains('ERR_BLOCKED_BY_ADBLOCKER') ||
+          e.toString().contains('net::ERR_BLOCKED_BY_CLIENT')) {
+        throw Exception('ERR_BLOCKED_BY_CLIENT: Stripe bloqué par AdBlocker');
+      }
+      
       rethrow;
+    } finally {
+      // Nettoyer le conteneur temporaire
+      container.remove();
     }
   }
+
 
   /// Attendre qu'une Promise JavaScript se résolve
   static Future<dynamic> _waitForPromise(js.JsObject promise) async {

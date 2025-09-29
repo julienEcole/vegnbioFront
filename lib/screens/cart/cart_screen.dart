@@ -7,7 +7,7 @@ import '../../models/cart_item.dart';
 import '../../services/api_service.dart';
 import '../../models/commande.dart';
 import '../../widgets/delivery_time_selector.dart';
-import '../../widgets/payment/stripe_payment_modal_elements.dart';
+import '../../widgets/payment/unified_payment_modal.dart';
 
 class CartPage extends ConsumerStatefulWidget {
   const CartPage({super.key});
@@ -705,11 +705,11 @@ class _CartPageState extends ConsumerState<CartPage> {
       return;
     }
 
-    // Ouvrir le modal de paiement Stripe
-    final paymentResult = await StripePaymentModalElements.showPaymentModal(
+    // Ouvrir le modal de paiement unifié
+    final paymentResult = await UnifiedPaymentModal.showPaymentModal(
       context: context,
       amount: totalTTC,
-      currency: 'EUR',
+      currency: 'eur',
       description: 'Commande restaurant $restaurantId (${items.length} article${items.length > 1 ? 's' : ''})',
     );
 
@@ -810,11 +810,11 @@ class _CartPageState extends ConsumerState<CartPage> {
       return;
     }
 
-    // Ouvrir le modal de paiement Stripe
-    final paymentResult = await StripePaymentModalElements.showPaymentModal(
+    // Ouvrir le modal de paiement unifié
+    final paymentResult = await UnifiedPaymentModal.showPaymentModal(
       context: context,
       amount: totalTTC,
-      currency: 'EUR',
+      currency: 'eur',
       description: 'Commande globale (${cartState.restaurantCount} restaurant${cartState.restaurantCount > 1 ? 's' : ''}, ${cartState.items.length} article${cartState.items.length > 1 ? 's' : ''})',
     );
 
