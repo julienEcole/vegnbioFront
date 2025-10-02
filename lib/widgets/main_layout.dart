@@ -34,6 +34,8 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
   }
 
   int _getSelectedIndex() {
+    final authState = ref.watch(authProvider);
+    
     switch (widget.currentRoute) {
       case '/':
         return 0;
@@ -46,7 +48,14 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
       case '/profil':
         return 4;
       case '/commandes':
-        return 5; // Index pour les commandes (visible seulement pour les clients)
+        // Vérifier si l'utilisateur est connecté
+        if (authState.isAuthenticated) {
+          final role = authState.role?.toLowerCase();
+          if (role == 'client' || role == 'restaurateur' || role == 'fournisseur' || role == 'admin') {
+            return 5; // Index pour les commandes
+          }
+        }
+        return 4; // Rediriger vers le profil si pas connecté
       default:
         return 0;
     }

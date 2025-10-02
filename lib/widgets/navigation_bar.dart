@@ -78,15 +78,18 @@ class CustomNavigationBar extends ConsumerWidget {
       ),
     ];
 
-    // Ajouter le bouton "Mes commandes" seulement pour les clients connectés
-    if (authState.isAuthenticated && authState.role?.toLowerCase() == 'client') {
-      destinations.add(
-        const NavigationDestination(
-          icon: Icon(Icons.shopping_bag_outlined),
-          selectedIcon: Icon(Icons.shopping_bag),
-          label: 'Commandes',
-        ),
-      );
+    // Ajouter le bouton "Mes commandes" pour les utilisateurs connectés (clients, restaurateurs, fournisseurs)
+    if (authState.isAuthenticated) {
+      final role = authState.role?.toLowerCase();
+      if (role == 'client' || role == 'restaurateur' || role == 'fournisseur' || role == 'admin') {
+        destinations.add(
+          const NavigationDestination(
+            icon: Icon(Icons.shopping_bag_outlined),
+            selectedIcon: Icon(Icons.shopping_bag),
+            label: 'Commandes',
+          ),
+        );
+      }
     }
 
     return NavigationBar(

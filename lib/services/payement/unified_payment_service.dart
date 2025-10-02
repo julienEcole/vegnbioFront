@@ -482,17 +482,23 @@ class StripeCardDetails {
 class StripePaymentResult {
   final bool success;
   final String? paymentIntentId;
+  final String? paymentMethodId;
   final String? status;
   final int? amount;
   final String? currency;
+  final String? cardBrand;
+  final String? cardLast4;
   final String? error;
 
   StripePaymentResult({
     required this.success,
     this.paymentIntentId,
+    this.paymentMethodId,
     this.status,
     this.amount,
     this.currency,
+    this.cardBrand,
+    this.cardLast4,
     this.error,
   });
 
@@ -500,9 +506,12 @@ class StripePaymentResult {
     return StripePaymentResult(
       success: json['success'] ?? false,
       paymentIntentId: json['paymentIntentId'],
+      paymentMethodId: json['paymentMethodId'],
       status: json['status'],
       amount: json['amount'],
       currency: json['currency'],
+      cardBrand: json['card']?['brand'],
+      cardLast4: json['card']?['last4'],
       error: json['error'],
     );
   }

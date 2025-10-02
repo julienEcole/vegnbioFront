@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/cart/cart_screen.dart';
-import 'screens/orders/orders_screen.dart';
 import 'factories/auth_view_factory.dart';
 import 'factories/dashboard_view_factory.dart';
 import 'factories/event_view_factory.dart';
 import 'factories/restaurant_view_factory.dart';
 import 'factories/menu_view_factory.dart';
 import 'factories/service_view_factory.dart';
+import 'factories/commande_view_factory.dart';
 import 'widgets/main_layout.dart';
+import 'providers/auth_provider.dart';
+import 'services/auth/real_auth_service.dart';
 
 void main() {
   print('🚀 MAIN START');
@@ -135,7 +137,36 @@ final _router = GoRouter(
       path: '/commandes',
       builder: (context, state) => MainLayout(
         currentRoute: '/commandes',
-        child: const OrdersScreen(),
+        child: Consumer(
+          builder: (context, ref, child) {
+            final authState = ref.watch(authProvider);
+            
+            if (!authState.isAuthenticated || authState.userData == null) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('Mes commandes'),
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                body: const Center(
+                  child: Text('Connexion requise pour voir les commandes'),
+                ),
+              );
+            }
+            
+            final authService = RealAuthService();
+            final role = authState.role ?? 'client';
+            final userId = authState.userData!['id'] as int;
+            final token = authService.token;
+            
+            return CommandeViewFactory.createCommandeView(
+              userRole: role,
+              userId: userId,
+              restaurantId: null, // TODO: à implémenter pour les restaurateurs
+              token: token,
+            );
+          },
+        ),
       ),
     ),
   ],

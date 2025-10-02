@@ -5,7 +5,9 @@ import '../../providers/cart_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/cart_item.dart';
 import '../../services/api_service.dart';
-import '../../models/commande.dart';
+import '../../services/auth/real_auth_service.dart';
+import '../../services/commande.service.dart';
+import '../../models/commande.model.dart';
 import '../../widgets/delivery_time_selector.dart';
 import '../../widgets/payment/unified_payment_modal.dart';
 
@@ -742,15 +744,45 @@ class _CartPageState extends ConsumerState<CartPage> {
       print('🛒 [CartPage] Traitement de la commande pour le restaurant $restaurantId');
       print('🕐 [CartPage] Horaire de réception sélectionné: $_selectedDeliveryTime');
       
-      // Créer la commande via l'API
+      // Récupérer le token d'authentification
+      final authService = RealAuthService();
+      final token = authService.token;
+      
+      print('🔑 [CartPage] Token: ${token != null ? 'Présent' : 'Absent'}');
+      
+      // Créer la commande via l'API (userId sera extrait du token côté backend)
       final commande = await ApiService().createCommande(
         restaurantId: restaurantId,
         items: items,
         tvaRate: 20.0,
         currency: 'EUR',
+        token: token,
       );
 
       print('✅ [CartPage] Commande créée avec succès: ID ${commande.id}');
+      
+      // Finaliser le paiement en ajoutant les informations Stripe et de livraison
+      print('💳 [CartPage] Finalisation du paiement avec Stripe...');
+      final paymentResult2 = await CommandeService.completePayment(
+        commandeId: commande.id!,
+        paymentIntentId: paymentResult.paymentIntentId ?? '',
+        paymentMethodId: paymentResult.paymentMethodId ?? '',
+        amount: totalTTC,
+        currency: 'EUR',
+        cardBrand: paymentResult.cardBrand,
+        cardLast4: paymentResult.cardLast4,
+        deliveryInfo: {
+          'type': 'pickup',
+          'estimatedTime': _selectedDeliveryTime?.toIso8601String(),
+        },
+        token: token,
+      );
+      
+      if (!paymentResult2['success']) {
+        throw Exception(paymentResult2['error']);
+      }
+      
+      print('✅ [CartPage] Paiement finalisé avec succès');
       
       // Supprimer les items de ce restaurant du panier
       final itemsToRemove = List<CartItem>.from(items);
@@ -847,6 +879,12 @@ class _CartPageState extends ConsumerState<CartPage> {
       print('🛒 [CartPage] Traitement de toutes les commandes (${cartState.restaurantCount} restaurants)');
       print('🕐 [CartPage] Horaire de réception sélectionné: $_selectedDeliveryTime');
       
+      // Récupérer le token d'authentification
+      final authService = RealAuthService();
+      final token = authService.token;
+      
+      print('🔑 [CartPage] Token: ${token != null ? 'Présent' : 'Absent'}');
+      
       final itemsByRestaurant = cartState.itemsByRestaurant;
       final List<Commande> commandesCreees = [];
       final List<CartItem> itemsToRemove = [];
@@ -858,18 +896,43 @@ class _CartPageState extends ConsumerState<CartPage> {
         
         print('🛒 [CartPage] Traitement du restaurant $restaurantId (${items.length} items)');
         
-        // Créer la commande pour ce restaurant
+        // Créer la commande pour ce restaurant (userId sera extrait du token côté backend)
         final commande = await ApiService().createCommande(
           restaurantId: restaurantId,
           items: items,
           tvaRate: 20.0,
           currency: 'EUR',
+          token: token,
         );
+
+          print('✅ [CartPage] Commande créée pour le restaurant $restaurantId: ID ${commande.id}');
+        
+        // Finaliser le paiement en ajoutant les informations Stripe et de livraison
+        print('💳 [CartPage] Finalisation du paiement pour la commande ${commande.id}...');
+        final paymentResult2 = await CommandeService.completePayment(
+          commandeId: commande.id!,
+          paymentIntentId: paymentResult.paymentIntentId ?? '',
+          paymentMethodId: paymentResult.paymentMethodId ?? '',
+          amount: commande.totalTTC,
+          currency: 'EUR',
+          cardBrand: paymentResult.cardBrand,
+          cardLast4: paymentResult.cardLast4,
+          deliveryInfo: {
+            'type': 'pickup',
+            'estimatedTime': _selectedDeliveryTime?.toIso8601String(),
+          },
+          token: token,
+        );
+        
+        if (!paymentResult2['success']) {
+          throw Exception(paymentResult2['error']);
+        }
+        
+        print('✅ [CartPage] Paiement finalisé pour la commande ${commande.id}');
 
         commandesCreees.add(commande);
         // Ajouter les items à la liste de suppression
         itemsToRemove.addAll(items);
-        print('✅ [CartPage] Commande créée pour le restaurant $restaurantId: ID ${commande.id}');
       }
       
       // Supprimer uniquement les items des commandes réussies
