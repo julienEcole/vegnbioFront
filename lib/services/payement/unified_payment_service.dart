@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:js' as js;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -31,18 +30,9 @@ class UnifiedPaymentService {
   /// Initialisation pour le web
   static Future<void> _initializeStripeWeb() async {
     try {
-      // Attendre que Stripe.js soit chargé
-      int attempts = 0;
-      while (js.context['Stripe'] == null && attempts < 50) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        attempts++;
-      }
-      
-      if (js.context['Stripe'] == null) {
-        throw Exception('Stripe.js n\'est pas chargé après 5 secondes');
-      }
-      
-      print('🌐 [UnifiedPaymentService] Stripe.js détecté pour le web');
+      // Pour le web, on utilise l'API backend pour créer les PaymentMethods
+      // Pas besoin d'accéder directement à Stripe.js
+      print('🌐 [UnifiedPaymentService] Mode web - utilisation de l\'API backend pour Stripe');
     } catch (e) {
       print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation web: $e');
       rethrow;
