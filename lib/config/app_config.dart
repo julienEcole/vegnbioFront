@@ -12,6 +12,7 @@ class AppConfig {
   static const String iconPathAndroid = "assets/icon/playstore.png";
   static const String iconPathIOS = "assets/icon/appstore.png";
   static const String iconPathWeb = "assets/icon/web.jpg";
+  static const String stripePublicKey = "pk_test_51RlyHn2YwVRe9o01EpfpyAFyRj7dKZIQnL2Kqa4yYBe2ysoqGD61MOqiE5zC8K6Bts7VGMMxUF2e3tRCJjbI0k1B00MtSYa7MB";
   
   // Couleurs de l'application
   static const String primaryColorHex = "#4CAF50";

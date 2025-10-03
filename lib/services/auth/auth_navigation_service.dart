@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/auth_provider.dart';
-import '../factories/auth_view_factory.dart';
-import '../screens/auth/auth_login_screen.dart';
-import '../screens/auth/auth_register_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../factories/auth_view_factory.dart';
+import '../../screens/auth/auth_login_screen.dart';
+import '../../screens/auth/auth_register_screen.dart';
 
 /// Service pour gérer la navigation liée à l'authentification
 class AuthNavigationService {

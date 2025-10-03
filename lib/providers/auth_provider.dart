@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/real_auth_service.dart';
+import '../services/auth/real_auth_service.dart';
 import '../config/app_config.dart';
 
 // États d'authentification

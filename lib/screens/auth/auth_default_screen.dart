@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_navigation_service.dart';
+import '../../services/auth/auth_navigation_service.dart';
 
 /// Écran par défaut d'authentification
 /// Affiche les boutons de connexion et d'inscription

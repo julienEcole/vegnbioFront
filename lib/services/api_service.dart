@@ -5,7 +5,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../models/restaurant.dart';
 import '../models/menu.dart';
-import '../models/commande.dart';
+import '../models/commande.model.dart';
 import '../models/cart_item.dart';
 import '../config/app_config.dart';
 
@@ -730,12 +730,17 @@ class ApiService {
     required List<CartItem> items,
     double tvaRate = 20.0,
     String currency = 'EUR',
+    String? token,
   }) async {
     try {
       print('🛒 [ApiService] Création d\'une commande pour le restaurant $restaurantId');
+      print('🔑 [ApiService] Token: ${token != null ? 'Présent' : 'Absent'}');
       
-      // Convertir les CartItem en format attendu par le backend
-      final commandeItems = items.map((item) => item.toCommandeItemJson()).toList();
+      // Envoyer seulement les menuId et quantités - les prix seront récupérés côté backend
+      final commandeItems = items.map((item) => {
+        'menuId': item.menu.id,
+        'quantite': item.quantite,
+      }).toList();
       
       final body = {
         'restaurantId': restaurantId,
@@ -743,6 +748,11 @@ class ApiService {
         'tvaRate': tvaRate,
         'currency': currency,
       };
+
+      // Ajouter le token si fourni - le userId sera extrait du token côté backend
+      if (token != null) {
+        body['token'] = token;
+      }
 
       print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
 
@@ -771,13 +781,19 @@ class ApiService {
   }
 
   /// Récupérer une commande par son ID
-  Future<Commande> getCommandeById(int commandeId) async {
+  Future<Commande> getCommandeById(int commandeId, {String? token}) async {
     try {
       print('🔍 [ApiService] Récupération de la commande $commandeId');
       
-      final response = await http.get(
+      final body = <String, dynamic>{};
+      if (token != null) {
+        body['token'] = token;
+      }
+      
+      final response = await http.post(
         Uri.parse('$baseUrl/commandes/$commandeId'),
         headers: headers,
+        body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
       print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
@@ -797,14 +813,20 @@ class ApiService {
     }
   }
 
-  /// Récupérer toutes les commandes
-  Future<List<Commande>> getAllCommandes() async {
+  /// Récupérer toutes les commandes (admin uniquement)
+  Future<List<Commande>> getAllCommandes({String? token}) async {
     try {
       print('📋 [ApiService] Récupération de toutes les commandes');
       
-      final response = await http.get(
+      final body = <String, dynamic>{};
+      if (token != null) {
+        body['token'] = token;
+      }
+      
+      final response = await http.post(
         Uri.parse('$baseUrl/commandes'),
         headers: headers,
+        body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
       print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
@@ -815,6 +837,44 @@ class ApiService {
             .map((data) => Commande.fromJson(data as Map<String, dynamic>))
             .toList();
         print('✅ [ApiService] ${commandes.length} commandes récupérées');
+        return commandes;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Erreur lors de la récupération des commandes: ${errorData['error'] ?? 'Erreur inconnue'}');
+      }
+    } catch (e) {
+      print('❌ [ApiService] Erreur lors de la récupération des commandes: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  /// Récupérer les commandes d'un utilisateur
+  Future<List<Commande>> getUserCommandes({
+    required int userId,
+    String? token,
+  }) async {
+    try {
+      print('📋 [ApiService] Récupération des commandes de l\'utilisateur $userId');
+      
+      final body = <String, dynamic>{};
+      if (token != null) {
+        body['token'] = token;
+      }
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/commandes/user/$userId'),
+        headers: headers,
+        body: json.encode(body),
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final List<Commande> commandes = (data['commandes'] as List)
+            .map((item) => Commande.fromJson(item as Map<String, dynamic>))
+            .toList();
+        print('✅ [ApiService] ${commandes.length} commandes récupérées pour l\'utilisateur $userId');
         return commandes;
       } else {
         final errorData = json.decode(response.body);
@@ -872,13 +932,15 @@ class ApiService {
   /// Mettre à jour le statut d'une commande
   Future<Commande> updateCommandeStatut({
     required int commandeId,
-    required CommandeStatut statut,
+    required String statut,
+    String? token,
   }) async {
     try {
-      print('📊 [ApiService] Mise à jour du statut de la commande $commandeId: ${statut.value}');
+      print('📊 [ApiService] Mise à jour du statut de la commande $commandeId: $statut');
       
       final body = {
-        'statut': statut.value,
+        'statut': statut,
+        if (token != null) 'token': token,
       };
 
       print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
@@ -895,7 +957,7 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final commande = Commande.fromJson(jsonData);
-        print('✅ [ApiService] Statut de la commande mis à jour: ${commande.statut.value}');
+        print('✅ [ApiService] Statut de la commande mis à jour: ${commande.statut}');
         return commande;
       } else {
         final errorData = json.decode(response.body);
