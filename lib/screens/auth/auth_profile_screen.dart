@@ -452,6 +452,57 @@ class _AuthProfileScreenState extends ConsumerState<AuthProfileScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              
+              // Section de gestion des données
+              Card(
+                color: Colors.red[50],
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.shield, color: Colors.red[700]),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Gestion de mes données',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Vous avez le contrôle de vos données personnelles. '
+                        'Vous pouvez les supprimer ou supprimer votre compte à tout moment.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            context.go('/account-deletion');
+                          },
+                          icon: Icon(Icons.delete_outline, color: Colors.red[700]),
+                          label: Text(
+                            'Gérer mes données personnelles',
+                            style: TextStyle(color: Colors.red[700]),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.red[700]!),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               
               // Message d'erreur
               if (authState.hasError) ...[

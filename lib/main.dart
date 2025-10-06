@@ -5,6 +5,7 @@ import 'config/app_config.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/cart/cart_screen.dart';
 import 'screens/privacy/privacy_policy_screen.dart';
+import 'screens/privacy/account_deletion_screen.dart';
 import 'factories/auth_view_factory.dart';
 import 'factories/dashboard_view_factory.dart';
 import 'factories/event_view_factory.dart';
@@ -178,6 +179,13 @@ final _router = GoRouter(
     GoRoute(
       path: '/privacy-policy',
       builder: (context, state) => const PrivacyPolicyScreen(),
+    ),
+    GoRoute(
+      path: '/account-deletion',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/account-deletion',
+        child: const AccountDeletionScreen(),
+      ),
     ),
   ],
 );
