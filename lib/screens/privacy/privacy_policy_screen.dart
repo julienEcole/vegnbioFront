@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -66,6 +67,60 @@ class PrivacyPolicyScreen extends StatelessWidget {
               '• Portabilité : recevoir vos données dans un format structuré\n'
               '• Opposition : vous opposer au traitement de vos données\n'
               '• Limitation : demander la limitation du traitement',
+            ),
+            
+            // Bouton vers la page de suppression de compte
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red[200]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.shield, color: Colors.red[700], size: 24),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Supprimer mon compte ou mes données',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Pour exercer votre droit à l\'effacement (droit à l\'oubli), consultez notre page dédiée.',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        context.go('/data-deletion-info');
+                      },
+                      icon: Icon(Icons.arrow_forward, color: Colors.red[700]),
+                      label: Text(
+                        'Comment supprimer mon compte ?',
+                        style: TextStyle(color: Colors.red[700]),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.red[700]!),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             _buildSection(
               '8. Cookies et technologies de suivi',
