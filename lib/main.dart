@@ -7,12 +7,15 @@ import 'screens/cart/cart_screen.dart';
 import 'screens/privacy/privacy_policy_screen.dart';
 import 'screens/privacy/account_deletion_screen.dart';
 import 'screens/privacy/data_deletion_info_screen.dart';
+import 'screens/orders/orders_screen.dart';
 import 'factories/auth_view_factory.dart';
 import 'factories/dashboard_view_factory.dart';
 import 'factories/event_view_factory.dart';
 import 'factories/restaurant_view_factory.dart';
 import 'factories/menu_view_factory.dart';
 import 'factories/service_view_factory.dart';
+import 'screens/events/events_admin_dashboard.dart';
+import 'screens/offres/mes_offres_screen.dart';
 import 'factories/commande_view_factory.dart';
 import 'widgets/main_layout.dart';
 import 'providers/auth_provider.dart';
@@ -113,6 +116,17 @@ final _router = GoRouter(
       ),
     ),
     GoRoute(
+      path: '/evenements-gestions',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/evenements-gestions',
+        child: Consumer(
+          builder: (context, ref, child) {
+            return const EventAdminDashboard();
+          },
+        ),
+      ),
+    ),
+    GoRoute(
       path: '/menus',
       builder: (context, state) => MainLayout(
         currentRoute: '/menus',
@@ -148,7 +162,7 @@ final _router = GoRouter(
         child: Consumer(
           builder: (context, ref, child) {
             final authState = ref.watch(authProvider);
-            
+
             if (!authState.isAuthenticated || authState.userData == null) {
               return Scaffold(
                 appBar: AppBar(
@@ -161,12 +175,12 @@ final _router = GoRouter(
                 ),
               );
             }
-            
+
             final authService = RealAuthService();
             final role = authState.role ?? 'client';
             final userId = authState.userData!['id'] as int;
             final token = authService.token;
-            
+
             return CommandeViewFactory.createCommandeView(
               userRole: role,
               userId: userId,
@@ -190,6 +204,13 @@ final _router = GoRouter(
       builder: (context, state) => MainLayout(
         currentRoute: '/account-deletion',
         child: const AccountDeletionScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/mes-offres',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/mes-offres',
+        child: const MesOffresScreen(),
       ),
     ),
   ],

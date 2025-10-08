@@ -17,21 +17,54 @@ class AuthState {
   });
 
   const AuthState.unauthenticated() : this(status: AuthStatus.unauthenticated);
-  const AuthState.authenticated(Map<String, dynamic> userData) : this(
-    status: AuthStatus.authenticated,
-    userData: userData,
-  );
+  const AuthState.authenticated(Map<String, dynamic> userData)
+      : this(status: AuthStatus.authenticated, userData: userData);
   const AuthState.loading() : this(status: AuthStatus.loading);
-  const AuthState.error(String message) : this(
-    status: AuthStatus.error,
-    errorMessage: message,
-  );
+  const AuthState.error(String message)
+      : this(status: AuthStatus.error, errorMessage: message);
 
+  // --- EXISTANT (inchangé) ---
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get isLoading => status == AuthStatus.loading;
   bool get hasError => status == AuthStatus.error;
+
+  // Ces deux getters existent déjà dans votre base: on les garde pour compat.
   String? get userRole => userData?['role'];
   String? get role => userData?['role'];
+
+  // --- AJOUTS NON-RUPTURE pour "offres" ---
+
+  /// Rôle "effectif" plus robuste (si le back envoie d'autres clés)
+  String? get effectiveRole {
+    final r = userData?['role'] ??
+        userData?['nameRole'] ??
+        userData?['profil']?['role'];
+    return r?.toString();
+  }
+
+  /// ID utilisateur (tolérant: id | userId | _id, string ou int)
+  int? get userId {
+    final v = userData?['id'] ?? userData?['userId'] ?? userData?['_id'];
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v);
+    return null;
+  }
+
+  /// Alias clair pour lier une offre à son propriétaire côté client
+  int? get fournisseurId => userId;
+
+  // alias pour compat avec le code existant (offres_provider.dart lit me.id)
+  int? get id => userId;
+
+  /// Email utilisateur (tolérant sur la clé)
+  String? get email => userData?['email'] ?? userData?['mail'];
+
+  /// Token actuel (conservé dans le service)
+  String? get token => RealAuthService().token;
+
+  /// Helpers pratiques pour les gardes d’accès
+  bool get isFournisseur => (effectiveRole?.toLowerCase() == 'fournisseur');
+  bool get isAdmin => (effectiveRole?.toLowerCase() == 'admin');
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {

@@ -589,10 +589,12 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
     );
   }
 
+// Remplacez la méthode _buildFiltersModal() par celle-ci :
+
   Widget _buildFiltersModal() {
     final currentSearchCriteria = ref.watch(searchCriteriaProvider);
     final restaurantsAsync = ref.watch(restaurantsProvider);
-    
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
@@ -603,6 +605,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // AJOUT IMPORTANT
         children: [
           // En-tête du modal
           Container(
@@ -634,120 +637,120 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
               ],
             ),
           ),
-          
-          // Contenu du formulaire
+
+          // Contenu du formulaire avec contraintes fixes
           Expanded(
-            child: SingleChildScrollView(
+            child: ListView( // Remplacé SingleChildScrollView par ListView
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Ligne 1: Titre et Restaurant
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _titreController,
+              children: [
+                // Ligne 1: Titre et Restaurant
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _titreController,
+                        decoration: const InputDecoration(
+                          labelText: 'Titre du menu',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => _updateSearchCriteria(titre: value),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: restaurantsAsync.when(
+                        data: (restaurants) => DropdownButtonFormField<int>(
+                          value: currentSearchCriteria.restaurantId,
                           decoration: const InputDecoration(
-                            labelText: 'Titre du menu',
-                            prefixIcon: Icon(Icons.search),
+                            labelText: '🏪 Restaurant',
+                            prefixIcon: Icon(Icons.restaurant),
                             border: OutlineInputBorder(),
                           ),
-                          onChanged: (value) => _updateSearchCriteria(titre: value),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: restaurantsAsync.when(
-                          data: (restaurants) => DropdownButtonFormField<int>(
-                            value: currentSearchCriteria.restaurantId,
-                            decoration: const InputDecoration(
-                              labelText: '🏪 Restaurant',
-                              prefixIcon: Icon(Icons.restaurant),
-                              border: OutlineInputBorder(),
+                          items: [
+                            const DropdownMenuItem<int>(
+                              value: null,
+                              child: Text('Tous les restaurants'),
                             ),
-                            items: [
-                              const DropdownMenuItem<int>(
-                                value: null,
-                                child: Text('Tous les restaurants'),
-                              ),
-                              ...restaurants.map((restaurant) => DropdownMenuItem<int>(
-                                value: restaurant.id,
-                                child: Text(restaurant.nom),
-                              )),
-                            ],
-                            onChanged: (value) {
-                              ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria(
-                                titre: currentSearchCriteria.titre,
-                                restaurantId: value,
-                              );
-                            },
-                          ),
-                          loading: () => const SizedBox(height: 56, child: Center(child: CircularProgressIndicator())),
-                          error: (_, __) => const SizedBox(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Section Allergènes
-                  _buildAllergenesSection(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Section Produits
-                  _buildProduitsSection(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Boutons d'action
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _titreController.clear();
-                            ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
+                            ...restaurants.map((restaurant) => DropdownMenuItem<int>(
+                              value: restaurant.id,
+                              child: Text(restaurant.nom),
+                            )),
+                          ],
+                          onChanged: (value) {
+                            ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria(
+                              titre: currentSearchCriteria.titre,
+                              restaurantId: value,
+                            );
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade300,
-                            foregroundColor: Colors.grey.shade700,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Text('Effacer tout'),
+                        ),
+                        loading: () => const SizedBox(
+                          height: 56,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (_, __) => const SizedBox(),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Section Allergènes
+                _buildAllergenesSection(),
+
+                const SizedBox(height: 20),
+
+                // Section Produits
+                _buildProduitsSection(),
+
+                const SizedBox(height: 20),
+
+                // Boutons d'action
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _titreController.clear();
+                          ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade300,
+                          foregroundColor: Colors.grey.shade700,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: const Text('Effacer tout'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.search, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Rechercher',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.search, size: 18),
-                              SizedBox(width: 8),
-                              Text(
-                                'Rechercher',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
