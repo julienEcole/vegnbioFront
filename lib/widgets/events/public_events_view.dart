@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vegnbio_front/models/event_model.dart';
 import 'package:vegnbio_front/providers/events_provider.dart';
+import 'package:vegnbio_front/providers/auth_provider.dart';
 import 'package:vegnbio_front/widgets/events/reservation_modal.dart';
 import 'package:vegnbio_front/widgets/common/report_event_modal.dart';
 
@@ -9,9 +11,13 @@ import 'package:vegnbio_front/widgets/common/report_event_modal.dart';
 class PublicEventsView extends ConsumerWidget {
   const PublicEventsView({super.key});
 
+  void _handleLogin(BuildContext context) => context.go('/profil?view=login');
+  void _handleLogout(WidgetRef ref) => ref.read(authProvider.notifier).logout();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(publicEventsProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -19,18 +25,11 @@ class PublicEventsView extends ConsumerWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implémenter la navigation vers la connexion
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fonctionnalité de connexion à implémenter'),
-                ),
-              );
-            },
-            icon: const Icon(Icons.login),
-            label: const Text('Se connecter'),
+            onPressed: authState.isAuthenticated ? () => _handleLogout(ref) : () => _handleLogin(context),
+            icon: Icon(authState.isAuthenticated ? Icons.logout : Icons.login),
+            label: Text(authState.isAuthenticated ? 'Se déconnecter' : 'Se connecter'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: authState.isAuthenticated ? Colors.red : Colors.green,
               foregroundColor: Colors.white,
             ),
           ),
@@ -43,11 +42,11 @@ class PublicEventsView extends ConsumerWidget {
         child: Column(
           children: [
             // Message informatif
-            _buildInfoBanner(context),
+            _buildInfoBanner(context, authState),
             // Contenu des événements
             Expanded(
               child: eventsAsync.when(
-                data: (events) => _buildEventsContent(context, events),
+                data: (events) => _buildEventsContent(context, events, authState),
                 loading: () => _buildLoadingState(),
                 error: (error, stack) => _buildErrorState(context, error),
               ),
@@ -79,7 +78,12 @@ class PublicEventsView extends ConsumerWidget {
   }
 
   /// Bannière d'information en haut de page
-  Widget _buildInfoBanner(BuildContext context) {
+  Widget _buildInfoBanner(BuildContext context, AuthState authState) {
+    // Ne pas afficher la bannière si l'utilisateur est authentifié
+    if (authState.isAuthenticated) {
+      return const SizedBox.shrink();
+    }
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -188,7 +192,7 @@ class PublicEventsView extends ConsumerWidget {
   }
 
   /// Contenu principal avec la liste des événements
-  Widget _buildEventsContent(BuildContext context, List<Event> events) {
+  Widget _buildEventsContent(BuildContext context, List<Event> events, AuthState authState) {
     if (events.isEmpty) {
       return _buildEmptyState(context);
     }
@@ -218,25 +222,20 @@ class PublicEventsView extends ConsumerWidget {
           child: _buildEventCard(context, event),
         )),
         const SizedBox(height: 16),
-        Center(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implémenter la navigation vers la connexion
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fonctionnalité de connexion à implémenter'),
-                ),
-              );
-            },
-            icon: const Icon(Icons.login),
-            label: const Text('Se connecter pour plus d\'informations'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        // Afficher le bouton de connexion seulement si l'utilisateur n'est pas authentifié
+        if (!authState.isAuthenticated)
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () => _handleLogin(context),
+              icon: const Icon(Icons.login),
+              label: const Text('Se connecter pour plus d\'informations'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
             ),
           ),
-        ),
       ],
     );
   }

@@ -48,18 +48,13 @@ class NavigationDestinations {
     ),
     NavDestination(
       route: '/market',
-      icon: Icons.event_outlined,
-      selectedIcon: Icons.event,
+      icon: Icons.shopping_cart_outlined,
+      selectedIcon: Icons.shopping_cart,
       label: 'Place de marché',
       requiredRoles: ['restaurateur'],
     ),
-    NavDestination(
-      route: '/evenements-gestions',
-      icon: Icons.event_outlined,
-      selectedIcon: Icons.event,
-      label: 'Gestions des evenements',
-      requiredRoles: ['restaurateur','admin'],
-    ),
+    // Note: "Gestion des événements" est géré automatiquement par /evenements avec EventViewFactory
+    // qui affiche EventAdminDashboard pour les admins/restaurateurs
     NavDestination(
       route: '/mes-offres',
       icon: Icons.event_outlined,

@@ -112,7 +112,12 @@ class ViewFactory {
     final eventType = _getEventViewType(params);
     final eventId = params?['eventId'] as int?;
     
-    return EventViewFactory.createSpecificEventView(eventType, ref, eventId: eventId);
+    // Si aucun type spécifique n'est demandé, utiliser la logique automatique
+    final effectiveEventType = eventType == EventViewType.publicList && params == null 
+        ? EventViewFactory.getAutoViewType(ref)
+        : eventType;
+    
+    return EventViewFactory.createSpecificEventView(effectiveEventType, ref, eventId: eventId);
   }
   
   static Widget _createServiceView(WidgetRef ref, Map<String, dynamic>? params) {

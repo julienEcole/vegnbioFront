@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../screens/events/events_screen.dart';
+import '../screens/events/events_admin_dashboard.dart';
 import '../widgets/events/public_events_view.dart';
 
 /// Factory pour gérer l'affichage des vues d'événements
@@ -16,9 +17,14 @@ class EventViewFactory {
     final authState = ref.watch(authProvider);
     print('🎉 [EventViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
-    // Pour l'instant, tous les utilisateurs voient la même vue
-    // TODO: Implémenter une vue admin pour les événements si nécessaire
-    print('🎉 [EventViewFactory] Affichage: EventsScreen');
+    // Si l'utilisateur est authentifié et a les permissions d'administration
+    if (authState.isAuthenticated && _hasAdminPermissions(authState.role)) {
+      print('🎉 [EventViewFactory] Affichage: EventAdminDashboard (Admin/Restaurateur)');
+      return const EventAdminDashboard();
+    }
+    
+    // Sinon, afficher la vue publique
+    print('🎉 [EventViewFactory] Affichage: EventsScreen (Public)');
     return const EventsScreen();
   }
   
@@ -30,8 +36,7 @@ class EventViewFactory {
       case EventViewType.publicList:
         return const EventsScreen();
       case EventViewType.adminList:
-        // TODO: Implémenter AdminEventScreen si nécessaire
-        return const EventsScreen();
+        return const EventAdminDashboard();
       case EventViewType.publicWidget:
         return const PublicEventsView();
     }
@@ -40,7 +45,7 @@ class EventViewFactory {
   /// Vérifier si l'utilisateur a les permissions d'administration pour les événements
   static bool _hasAdminPermissions(String? role) {
     if (role == null) return false;
-    return ['admin'].contains(role.toLowerCase());
+    return ['admin', 'restaurateur'].contains(role.toLowerCase());
   }
   
   /// Obtenir le type de vue recommandé selon l'état d'authentification
@@ -51,6 +56,25 @@ class EventViewFactory {
       return EventViewType.adminList;
     }
     
+    return EventViewType.publicList;
+  }
+  
+  /// Obtenir le type de vue automatique selon le rôle de l'utilisateur
+  static EventViewType getAutoViewType(WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    
+    if (!authState.isAuthenticated) {
+      return EventViewType.publicList;
+    }
+    
+    final role = authState.role?.toLowerCase();
+    
+    // Les utilisateurs avec permissions d'administration voient l'interface admin
+    if (_hasAdminPermissions(role)) {
+      return EventViewType.adminList;
+    }
+    
+    // Par défaut, vue publique
     return EventViewType.publicList;
   }
   

@@ -25,8 +25,17 @@ class AppConfig {
     const apiUrl = String.fromEnvironment('API_BASE_URL');
     if (apiUrl.isNotEmpty) return apiUrl;
     
-    // Sinon utiliser dotenv (pour le développement local)
-    return dotenv.env['API_BASE_URL'] ?? "http://127.0.0.1:3001/api";
+    // Sinon utiliser dotenv (pour le développement local) si initialisé
+    try {
+      if (dotenv.isInitialized) {
+        return dotenv.env['API_BASE_URL'] ?? "http://10.0.2.2:3001/api";
+      }
+    } catch (e) {
+      // Dotenv non initialisé, utiliser la valeur par défaut
+    }
+    
+    // Valeur par défaut pour Android émulateur (10.0.2.2 = localhost de la machine hôte)
+    return "http://10.0.2.2:3001/api";
   }
   static const String apiVersion = "v1";
   
@@ -36,8 +45,18 @@ class AppConfig {
     const stripeKey = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
     if (stripeKey.isNotEmpty) return stripeKey;
     
-    // Sinon utiliser dotenv (pour le développement local)
-    return dotenv.env['STRIPE_PUBLISHABLE_KEY'] ?? "";
+    // Sinon utiliser dotenv (pour le développement local) si initialisé
+    try {
+      if (dotenv.isInitialized) {
+        final key = dotenv.env['STRIPE_PUBLISHABLE_KEY'];
+        if (key != null && key.isNotEmpty) return key;
+      }
+    } catch (e) {
+      // Dotenv non initialisé
+    }
+    
+    // Valeur par défaut vide (la clé doit être dans .env ou les variables système)
+    return "";
   }
   
   // Configuration de l'environnement
@@ -46,8 +65,16 @@ class AppConfig {
     const env = String.fromEnvironment('ENVIRONMENT');
     if (env.isNotEmpty) return env;
     
-    // Sinon utiliser dotenv (pour le développement local)
-    return dotenv.env['ENVIRONMENT'] ?? "development";
+    // Sinon utiliser dotenv (pour le développement local) si initialisé
+    try {
+      if (dotenv.isInitialized) {
+        return dotenv.env['ENVIRONMENT'] ?? "development";
+      }
+    } catch (e) {
+      // Dotenv non initialisé, retourner développement
+    }
+    
+    return "development";
   }
   
   // Configuration des routes

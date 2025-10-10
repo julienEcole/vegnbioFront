@@ -256,7 +256,7 @@ final _router = GoRouter(
     GoRoute(
       path: '/market',
       builder: (context, state) => MainLayout(
-        currentRoute: '/mes-offres',
+        currentRoute: '/market',
         child: const RestaurateurMarketplaceScreen(),
       ),
     ),

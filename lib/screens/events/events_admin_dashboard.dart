@@ -170,7 +170,6 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
     final now = DateTime.now();
     final isUpcoming = event.startAt.isAfter(now);
     final isOngoing = event.startAt.isBefore(now) && event.endAt.isAfter(now);
-    final isPast = event.endAt.isBefore(now);
 
     Color statusColor = Colors.grey;
     String statusText = 'Passé';
