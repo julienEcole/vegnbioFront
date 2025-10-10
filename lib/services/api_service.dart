@@ -131,7 +131,7 @@ class ApiService {
       String filename,
       ) async {
     try {
-      final uri = Uri.parse('$baseUrl/restaurants/$restaurantId/image');
+      final uri = Uri.parse('$baseUrl/restaurants/$restaurantId/images');
       final request = http.MultipartRequest('POST', uri);
 
       final mimeType = lookupMimeType(filename) ?? 'image/jpeg';
@@ -511,7 +511,7 @@ class ApiService {
   // Upload d'image pour un restaurant
   Future<Map<String, dynamic>> uploadRestaurantImage(int restaurantId, File imageFile) async {
     try {
-      final uri = Uri.parse('$baseUrl/restaurants/$restaurantId/image');
+      final uri = Uri.parse('$baseUrl/restaurants/$restaurantId/images');
       final request = http.MultipartRequest('POST', uri);
       
       // Déterminer le type MIME du fichier
@@ -591,16 +591,22 @@ class ApiService {
     required String nom,
     required String quartier,
     String? adresse,
+    List<int>? equipementIds,
+    List<Map<String, dynamic>>? horaires,
   }) async {
     try {
+      final body = {
+        'nom': nom,
+        'quartier': quartier,
+        if (adresse != null) 'adresse': adresse,
+        if (equipementIds != null) 'equipementIds': equipementIds,
+        if (horaires != null) 'horaires': horaires,
+      };
+      
       final response = await http.post(
         Uri.parse('$baseUrl/restaurants'),
         headers: headers,
-        body: json.encode({
-          'nom': nom,
-          'quartier': quartier,
-          'adresse': adresse,
-        }),
+        body: json.encode(body),
       );
 
       if (response.statusCode == 201) {
@@ -621,6 +627,8 @@ class ApiService {
     String? nom,
     String? quartier,
     String? adresse,
+    List<int>? equipementIds,
+    List<Map<String, dynamic>>? horaires,
   }) async {
     try {
       print('🔄 API: Début updateRestaurant pour ID $id');
@@ -629,6 +637,8 @@ class ApiService {
       if (nom != null) updateData['nom'] = nom;
       if (quartier != null) updateData['quartier'] = quartier;
       if (adresse != null) updateData['adresse'] = adresse;
+      if (equipementIds != null) updateData['equipementIds'] = equipementIds;
+      if (horaires != null) updateData['horaires'] = horaires;
 
       print('📤 API: Données à envoyer: $updateData');
 
@@ -673,6 +683,27 @@ class ApiService {
       }
     } catch (e) {
       print('❌ Exception suppression restaurant: $e');
+      throw Exception('Erreur de connexion: $e');
+    }
+  }
+
+  // ===== EQUIPEMENTS =====
+  
+  /// Récupérer tous les équipements
+  Future<List<Equipement>> getEquipements() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/equipements'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        return jsonList.map((json) => Equipement.fromJson(json)).toList();
+      } else {
+        throw Exception('Erreur lors de la récupération des équipements');
+      }
+    } catch (e) {
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -800,7 +831,7 @@ class ApiService {
   Future<bool> deleteRestaurantImage(int restaurantId, int imageId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId'),
+        Uri.parse('$baseUrl/restaurants/$restaurantId/images/$imageId'),
         headers: headers,
       );
 
@@ -828,8 +859,9 @@ class ApiService {
   Future<bool> setRestaurantPrimaryImage(int restaurantId, int imageId) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/images/restaurant/$restaurantId/$imageId/primary'),
+        Uri.parse('$baseUrl/restaurants/$restaurantId/images/$imageId/primary'),
         headers: headers,
+        body: json.encode({}),
       );
 
       return response.statusCode == 200;

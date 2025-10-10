@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../widgets/image_upload_widget.dart';
+import '../../widgets/restaurant/restaurant_images_manager.dart';
 import '../../models/restaurant.dart';
 import '../../services/api_service.dart';
 
@@ -21,16 +21,11 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   final _quartierController = TextEditingController();
   final _adresseController = TextEditingController();
 
-  List<String> _selectedEquipements = [];
+  List<int> _selectedEquipementIds = [];
+  List<Equipement> _availableEquipements = [];
   List<Horaire> _horaires = [];
-  String? _imageUrl;
   bool _isLoading = false;
-
-  // Équipements disponibles
-  final List<String> _availableEquipements = [
-    'Terrasse', 'Parking', 'Accessible PMR', 'WiFi', 'Climatisation',
-    'Chauffage', 'Toilettes', 'Baby-foot', 'Jeux pour enfants'
-  ];
+  bool _isLoadingEquipements = true;
 
   // Jours de la semaine
   final List<String> _joursSemaine = [
@@ -40,6 +35,7 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   @override
   void initState() {
     super.initState();
+    _loadEquipements();
     if (widget.restaurantToEdit != null) {
       _initializeFormWithRestaurant(widget.restaurantToEdit!);
     } else {
@@ -47,14 +43,31 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
     }
   }
 
+  Future<void> _loadEquipements() async {
+    try {
+      final apiService = ApiService();
+      final equipements = await apiService.getEquipements();
+      setState(() {
+        _availableEquipements = equipements;
+        _isLoadingEquipements = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingEquipements = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors du chargement des équipements: $e')),
+        );
+      }
+    }
+  }
+
   void _initializeFormWithRestaurant(Restaurant restaurant) {
     _nomController.text = restaurant.nom;
     _quartierController.text = restaurant.quartier;
     _adresseController.text = restaurant.adresse ?? '';
-    _imageUrl = restaurant.imageUrl;
 
     if (restaurant.equipements != null) {
-      _selectedEquipements = restaurant.equipements!.map((e) => e.nom).toList();
+      _selectedEquipementIds = restaurant.equipements!.map((e) => e.id).toList();
     }
 
     if (restaurant.horaires != null) {
@@ -170,18 +183,20 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: _availableEquipements.map((equipement) {
-                        final selected = _selectedEquipements.contains(equipement);
+                      children: _isLoadingEquipements
+                          ? [const CircularProgressIndicator()]
+                          : _availableEquipements.map((equipement) {
+                        final selected = _selectedEquipementIds.contains(equipement.id);
                         return FilterChip(
-                          label: Text(equipement),
+                          label: Text(equipement.nom),
                           selected: selected,
                           selectedColor: Colors.green.withOpacity(.15),
                           onSelected: (v) {
                             setState(() {
                               if (v) {
-                                _selectedEquipements.add(equipement);
+                                _selectedEquipementIds.add(equipement.id);
                               } else {
-                                _selectedEquipements.remove(equipement);
+                                _selectedEquipementIds.remove(equipement.id);
                               }
                             });
                           },
@@ -197,30 +212,12 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
                   child: _buildHorairesSection(),
                 ),
 
-                // ——— SECTION : image
+                // ——— SECTION : images (gestion multiple)
                 _SectionCard(
-                  title: 'Image du restaurant',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(.2)),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ImageUploadWidget(
-                            currentImageUrl: _imageUrl,
-                            onImageUploaded: (imageUrl) => setState(() => _imageUrl = imageUrl),
-                            uploadType: 'restaurant',
-                            itemId: widget.restaurantToEdit?.id ?? 0,
-                            width: double.infinity,
-                            height: 220,
-                          ),
-                        ),
-                      ),
-                    ],
+                  title: 'Images du restaurant',
+                  child: RestaurantImagesManager(
+                    restaurantId: widget.restaurantToEdit?.id ?? 0,
+                    initialImages: widget.restaurantToEdit?.images,
                   ),
                 ),
 
@@ -353,12 +350,21 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
     try {
       final apiService = ApiService();
 
+      // Préparer les horaires au bon format
+      final horairesData = _horaires.map((h) => {
+        'jour': h.jour,
+        'ouverture': h.ouverture,
+        'fermeture': h.fermeture,
+      }).toList();
+
       if (widget.restaurantToEdit != null) {
         await apiService.updateRestaurant(
           id: widget.restaurantToEdit!.id,
           nom: _nomController.text.trim(),
           quartier: _quartierController.text.trim(),
           adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
+          equipementIds: _selectedEquipementIds,
+          horaires: horairesData,
         );
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -369,6 +375,8 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
           nom: _nomController.text.trim(),
           quartier: _quartierController.text.trim(),
           adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
+          equipementIds: _selectedEquipementIds,
+          horaires: horairesData,
         );
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

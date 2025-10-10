@@ -5,7 +5,7 @@ class RestaurantImage {
   final String imageUrl;
   final String? description;
   final int ordre;
-  final bool isPrimary;
+  bool isPrimary; // Mutable pour pouvoir mettre à jour localement
 
   RestaurantImage({
     required this.id,
