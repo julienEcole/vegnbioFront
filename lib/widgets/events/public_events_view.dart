@@ -218,25 +218,6 @@ class PublicEventsView extends ConsumerWidget {
           child: _buildEventCard(context, event),
         )),
         const SizedBox(height: 16),
-        Center(
-          child: ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Implémenter la navigation vers la connexion
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fonctionnalité de connexion à implémenter'),
-                ),
-              );
-            },
-            icon: const Icon(Icons.login),
-            label: const Text('Se connecter pour plus d\'informations'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-        ),
       ],
     );
   }

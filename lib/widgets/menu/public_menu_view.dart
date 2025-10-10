@@ -280,7 +280,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                             menu.formattedDate,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.green.shade700,
+                              color: const Color(0xFF387D35),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -322,7 +322,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green.shade700,
+                            color: const Color(0xFF387D35),
                           ),
                         ),
                       ],
@@ -434,7 +434,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                 'Filtres actifs :',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.green.shade700,
+                  color: const Color(0xFF387D35),
                 ),
               ),
               const Spacer(),
@@ -443,7 +443,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                 icon: const Icon(Icons.edit, size: 16),
                 label: const Text('Modifier'),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.green.shade700,
+                  foregroundColor: const Color(0xFF387D35),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 ),
               ),

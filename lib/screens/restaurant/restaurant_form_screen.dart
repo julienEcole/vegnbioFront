@@ -5,10 +5,10 @@ import '../../models/restaurant.dart';
 import '../../services/api_service.dart';
 
 /// Écran de formulaire pour créer ou modifier un restaurant
-/// Utilisé par les restaurateurs et admins pour gérer les restaurants
+/// (UI améliorée uniquement – logique inchangée)
 class RestaurantFormScreen extends ConsumerStatefulWidget {
   final Restaurant? restaurantToEdit;
-  
+
   const RestaurantFormScreen({super.key, this.restaurantToEdit});
 
   @override
@@ -20,19 +20,19 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   final _nomController = TextEditingController();
   final _quartierController = TextEditingController();
   final _adresseController = TextEditingController();
-  
+
   List<String> _selectedEquipements = [];
   List<Horaire> _horaires = [];
   String? _imageUrl;
   bool _isLoading = false;
-  
-  // Liste des équipements disponibles
+
+  // Équipements disponibles
   final List<String> _availableEquipements = [
     'Terrasse', 'Parking', 'Accessible PMR', 'WiFi', 'Climatisation',
     'Chauffage', 'Toilettes', 'Baby-foot', 'Jeux pour enfants'
   ];
 
-  // Liste des jours de la semaine
+  // Jours de la semaine
   final List<String> _joursSemaine = [
     'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'
   ];
@@ -52,11 +52,11 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
     _quartierController.text = restaurant.quartier;
     _adresseController.text = restaurant.adresse ?? '';
     _imageUrl = restaurant.imageUrl;
-    
+
     if (restaurant.equipements != null) {
       _selectedEquipements = restaurant.equipements!.map((e) => e.nom).toList();
     }
-    
+
     if (restaurant.horaires != null) {
       _horaires = List.from(restaurant.horaires!);
     } else {
@@ -65,13 +65,15 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   }
 
   void _initializeDefaultHoraires() {
-    _horaires = _joursSemaine.map((jour) => Horaire(
+    _horaires = _joursSemaine
+        .map((jour) => Horaire(
       id: 0,
       restaurantId: 0,
       jour: jour,
       ouverture: '09:00',
       fermeture: '22:00',
-    )).toList();
+    ))
+        .toList();
   }
 
   @override
@@ -84,9 +86,28 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ——— Shell centré + largeur max (évite le full-width sur le web)
+    Widget wrapShell(Widget child) {
+      const maxContentWidth = 980.0; // ajuste si tu veux
+      final width = MediaQuery.of(context).size.width;
+      final hPad = width >= 1200 ? 32.0 : (width >= 900 ? 24.0 : 16.0);
+
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: maxContentWidth),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 24),
+            child: child,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.restaurantToEdit != null ? 'Modifier le restaurant' : 'Nouveau restaurant'),
+        title: Text(
+          widget.restaurantToEdit != null ? 'Modifier le restaurant' : 'Nouveau restaurant',
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           if (widget.restaurantToEdit != null)
@@ -97,148 +118,148 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
             ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Nom
-              TextFormField(
-                controller: _nomController,
-                decoration: const InputDecoration(
-                  labelText: '🏪 Nom du restaurant *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.restaurant),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le nom est obligatoire';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Quartier
-              TextFormField(
-                controller: _quartierController,
-                decoration: const InputDecoration(
-                  labelText: '📍 Quartier *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_city),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le quartier est obligatoire';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Adresse
-              TextFormField(
-                controller: _adresseController,
-                decoration: const InputDecoration(
-                  labelText: '🏠 Adresse',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_on),
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              
-              // Équipements
-              const Text(
-                '🔧 Équipements disponibles :',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: _availableEquipements.map((equipement) {
-                  final isSelected = _selectedEquipements.contains(equipement);
-                  return FilterChip(
-                    label: Text(equipement),
-                    selected: isSelected,
-                    selectedColor: Colors.green.shade100,
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedEquipements.add(equipement);
-                        } else {
-                          _selectedEquipements.remove(equipement);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              
-              // Horaires
-              const Text(
-                '🕐 Horaires d\'ouverture :',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              _buildHorairesSection(),
-              const SizedBox(height: 16),
-              
-              // Image
-              const Text(
-                '🖼️ Image du restaurant :',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              ImageUploadWidget(
-                currentImageUrl: _imageUrl,
-                onImageUploaded: (imageUrl) {
-                  setState(() {
-                    _imageUrl = imageUrl;
-                  });
-                },
-                uploadType: 'restaurant',
-                itemId: widget.restaurantToEdit?.id ?? 0,
-                width: double.infinity,
-                height: 200,
-              ),
-              const SizedBox(height: 32),
-              
-              // Boutons d'action
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _saveRestaurant,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+      body: wrapShell(
+        Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // ——— SECTION : infos principales
+                _SectionCard(
+                  title: 'Informations générales',
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _nomController,
+                        decoration: const InputDecoration(
+                          labelText: '🏪 Nom du restaurant *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.restaurant),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Le nom est obligatoire' : null,
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(widget.restaurantToEdit != null ? '✏️ Modifier' : '🏪 Créer'),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _quartierController,
+                        decoration: const InputDecoration(
+                          labelText: '📍 Quartier *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.location_city),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Le quartier est obligatoire' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _adresseController,
+                        decoration: const InputDecoration(
+                          labelText: '🏠 Adresse',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.location_on),
+                        ),
+                        maxLines: 2,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ——— SECTION : équipements
+                _SectionCard(
+                  title: 'Équipements disponibles',
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _availableEquipements.map((equipement) {
+                        final selected = _selectedEquipements.contains(equipement);
+                        return FilterChip(
+                          label: Text(equipement),
+                          selected: selected,
+                          selectedColor: Colors.green.withOpacity(.15),
+                          onSelected: (v) {
+                            setState(() {
+                              if (v) {
+                                _selectedEquipements.add(equipement);
+                              } else {
+                                _selectedEquipements.remove(equipement);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isLoading ? null : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+
+                // ——— SECTION : horaires
+                _SectionCard(
+                  title: 'Horaires d\'ouverture',
+                  child: _buildHorairesSection(),
+                ),
+
+                // ——— SECTION : image
+                _SectionCard(
+                  title: 'Image du restaurant',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(.2)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ImageUploadWidget(
+                            currentImageUrl: _imageUrl,
+                            onImageUploaded: (imageUrl) => setState(() => _imageUrl = imageUrl),
+                            uploadType: 'restaurant',
+                            itemId: widget.restaurantToEdit?.id ?? 0,
+                            width: double.infinity,
+                            height: 220,
+                          ),
+                        ),
                       ),
-                      child: const Text('❌ Annuler'),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+
+                // ——— ACTIONS : alignées à gauche, boutons en plein
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: _isLoading ? null : _saveRestaurant,
+                        icon: _isLoading
+                            ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                            : const Icon(Icons.save),
+                        label: Text(widget.restaurantToEdit != null ? 'Enregistrer' : 'Créer'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                      FilledButton.tonalIcon(
+                        onPressed: _isLoading ? null : () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        label: const Text('Annuler'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -246,71 +267,78 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   }
 
   Widget _buildHorairesSection() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       children: _horaires.map((horaire) {
         final index = _horaires.indexOf(horaire);
-        return Card(
+        return Container(
           margin: const EdgeInsets.only(bottom: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                // Jour
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    horaire.jour,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor.withOpacity(.25)),
+          ),
+          child: Row(
+            children: [
+              // Jour
+              SizedBox(
+                width: 110,
+                child: Text(
+                  horaire.jour,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
                   ),
                 ),
-                const SizedBox(width: 16),
-                // Ouverture
-                Expanded(
-                  child: TextFormField(
-                    initialValue: horaire.ouverture,
-                    decoration: const InputDecoration(
-                      labelText: 'Ouverture',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _horaires[index] = Horaire(
-                          id: horaire.id,
-                          restaurantId: horaire.restaurantId,
-                          jour: horaire.jour,
-                          ouverture: value,
-                          fermeture: horaire.fermeture,
-                        );
-                      });
-                    },
+              ),
+              const SizedBox(width: 12),
+              // Ouverture
+              Expanded(
+                child: TextFormField(
+                  initialValue: horaire.ouverture,
+                  decoration: const InputDecoration(
+                    labelText: 'Ouverture',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                   ),
+                  onChanged: (v) {
+                    setState(() {
+                      _horaires[index] = Horaire(
+                        id: horaire.id,
+                        restaurantId: horaire.restaurantId,
+                        jour: horaire.jour,
+                        ouverture: v,
+                        fermeture: horaire.fermeture,
+                      );
+                    });
+                  },
                 ),
-                const SizedBox(width: 8),
-                // Fermeture
-                Expanded(
-                  child: TextFormField(
-                    initialValue: horaire.fermeture,
-                    decoration: const InputDecoration(
-                      labelText: 'Fermeture',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        _horaires[index] = Horaire(
-                          id: horaire.id,
-                          restaurantId: horaire.restaurantId,
-                          jour: horaire.jour,
-                          ouverture: horaire.ouverture,
-                          fermeture: value,
-                        );
-                      });
-                    },
+              ),
+              const SizedBox(width: 10),
+              // Fermeture
+              Expanded(
+                child: TextFormField(
+                  initialValue: horaire.fermeture,
+                  decoration: const InputDecoration(
+                    labelText: 'Fermeture',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                   ),
+                  onChanged: (v) {
+                    setState(() {
+                      _horaires[index] = Horaire(
+                        id: horaire.id,
+                        restaurantId: horaire.restaurantId,
+                        jour: horaire.jour,
+                        ouverture: horaire.ouverture,
+                        fermeture: v,
+                      );
+                    });
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       }).toList(),
@@ -320,47 +348,42 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   Future<void> _saveRestaurant() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final apiService = ApiService();
-      
+
       if (widget.restaurantToEdit != null) {
-        // Modification d'un restaurant existant
         await apiService.updateRestaurant(
           id: widget.restaurantToEdit!.id,
           nom: _nomController.text.trim(),
           quartier: _quartierController.text.trim(),
           adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
         );
-        
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Restaurant modifié avec succès')),
         );
       } else {
-        // Création d'un nouveau restaurant
         await apiService.createRestaurant(
           nom: _nomController.text.trim(),
           quartier: _quartierController.text.trim(),
           adresse: _adresseController.text.trim().isEmpty ? null : _adresseController.text.trim(),
         );
-        
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Restaurant créé avec succès')),
         );
       }
 
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e')),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -369,7 +392,9 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmer la suppression'),
-        content: Text('Êtes-vous sûr de vouloir supprimer le restaurant "${widget.restaurantToEdit!.nom}" ?'),
+        content: Text(
+          'Êtes-vous sûr de vouloir supprimer le restaurant "${widget.restaurantToEdit!.nom}" ?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -391,25 +416,53 @@ class _RestaurantFormScreenState extends ConsumerState<RestaurantFormScreen> {
   Future<void> _deleteRestaurant() async {
     if (widget.restaurantToEdit == null) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
-      // TODO: Implémenter la suppression via le provider
-      // await ref.read(restaurantProvider.notifier).deleteRestaurant(widget.restaurantToEdit!.id);
+      // TODO: appel suppression réel si besoin
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Restaurant supprimé avec succès')),
       );
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors de la suppression: $e')),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+}
+
+/// Petite carte de section, pour structurer le formulaire
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const _SectionCard({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final titleStyle = Theme.of(context)
+        .textTheme
+        .titleMedium
+        ?.copyWith(fontWeight: FontWeight.w800);
+
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: titleStyle),
+            const SizedBox(height: 12),
+            child,
+          ],
+        ),
+      ),
+    );
   }
 }

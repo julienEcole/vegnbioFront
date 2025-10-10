@@ -8,7 +8,7 @@ import '../models/menu.dart';
 import '../models/commande.model.dart';
 import '../models/cart_item.dart';
 import '../config/app_config.dart';
-
+import 'dart:typed_data';
 
 class ApiService {
   // Configuration unifiée de l'URL pour tous les environnements
@@ -92,6 +92,66 @@ class ApiService {
       }
     } else {
       throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadMenuImageBytes(
+      int menuId,
+      Uint8List bytes,
+      String filename,
+      ) async {
+    try {
+      final uri = Uri.parse('$baseUrl/menus/$menuId/image');
+      final request = http.MultipartRequest('POST', uri);
+
+      final mimeType = lookupMimeType(filename) ?? 'image/jpeg';
+      request.files.add(http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: filename,
+        contentType: MediaType.parse(mimeType),
+      ));
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        return json.decode(responseBody);
+      } else {
+        throw Exception('Erreur upload image menu: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      throw Exception('Erreur upload image menu (web): $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadRestaurantImageBytes(
+      int restaurantId,
+      Uint8List bytes,
+      String filename,
+      ) async {
+    try {
+      final uri = Uri.parse('$baseUrl/restaurants/$restaurantId/image');
+      final request = http.MultipartRequest('POST', uri);
+
+      final mimeType = lookupMimeType(filename) ?? 'image/jpeg';
+      request.files.add(http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: filename,
+        contentType: MediaType.parse(mimeType),
+      ));
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        return json.decode(responseBody);
+      } else {
+        throw Exception('Erreur upload image restaurant: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      throw Exception('Erreur upload image restaurant (web): $e');
     }
   }
 
@@ -641,7 +701,7 @@ class ApiService {
           'date': date.toIso8601String().split('T')[0],
           'allergenes': allergenes,
           'produits': produits,
-          'restaurant_id': restaurantId,
+          'restaurantId': restaurantId,
           'prix': prix,
           'disponible': disponible,
           'imageUrl': imageUrl,
