@@ -20,6 +20,10 @@ import 'factories/commande_view_factory.dart';
 import 'widgets/main_layout.dart';
 import 'providers/auth_provider.dart';
 import 'services/auth/real_auth_service.dart';
+import 'screens/restaurant/restaurant_menus_screen.dart';
+import 'screens/offres/marketplace_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:vegnbio_front/widgets/reports_admin_screen.dart';
 
 void main() async {
   print('🚀 MAIN START');
@@ -39,14 +43,29 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Veg\'N Bio',
+      // ✅ Localisation (FR/EN) pour DatePicker/TimePicker & widgets Material
+      supportedLocales: const [
+        Locale('fr'),
+        Locale('en'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: const Locale('fr'),
+
       theme: ThemeData(
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+
+      // ton router existant
       routerConfig: _router,
     );
   }
 }
+
 
 final _router = GoRouter(
   initialLocation: '/',
@@ -70,7 +89,7 @@ final _router = GoRouter(
             builder: (context, ref, child) {
               return AuthViewFactory.createAuthView(
                 ref,
-                forcedType: viewType != null 
+                forcedType: viewType != null
                   ? AuthViewType.values.firstWhere(
                       (e) => e.name == viewType,
                       orElse: () => AuthViewType.defaultView,
@@ -93,6 +112,27 @@ final _router = GoRouter(
         ),
       ),
     ),
+    GoRoute(
+      path: '/restaurants/:id',
+      builder: (context, state) {
+        final idStr = state.pathParameters['id']!;
+        final id = int.tryParse(idStr) ?? 0;
+
+        // on récupère le nom passé en extra si dispo
+        final name = (state.extra is Map && (state.extra as Map).containsKey('name'))
+            ? (state.extra as Map)['name'] as String
+            : 'Restaurant';
+
+        return MainLayout(
+          currentRoute: '/restaurants',
+          child: RestaurantMenusScreen(
+            restaurantId: id,
+            restaurantName: name,
+          ),
+        );
+      },
+    ),
+
     GoRoute(
       path: '/evenements',
       builder: (context, state) => MainLayout(
@@ -211,6 +251,20 @@ final _router = GoRouter(
       builder: (context, state) => MainLayout(
         currentRoute: '/mes-offres',
         child: const MesOffresScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/market',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/mes-offres',
+        child: const RestaurateurMarketplaceScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin/reports',
+      builder: (context, state) => MainLayout(
+        currentRoute: '/admin/reports',
+        child: const ReportsAdminScreen(),
       ),
     ),
   ],

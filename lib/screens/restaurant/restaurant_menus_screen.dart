@@ -6,6 +6,8 @@ import '../../models/menu.dart';
 import '../../providers/menu_provider.dart';
 import '../../providers/cart_provider.dart';
 
+import 'package:vegnbio_front/widgets/cart/cart_floating_button.dart';
+
 /// Page listant les menus d'un restaurant avec recherche + filtres + détail produits.
 class RestaurantMenusScreen extends ConsumerStatefulWidget {
   final int restaurantId;

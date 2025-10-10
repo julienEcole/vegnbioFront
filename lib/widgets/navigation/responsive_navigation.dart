@@ -35,12 +35,6 @@ class NavigationDestinations {
       label: 'Accueil',
     ),
     NavDestination(
-      route: '/menus',
-      icon: Icons.restaurant_menu_outlined,
-      selectedIcon: Icons.restaurant_menu,
-      label: 'Menus',
-    ),
-    NavDestination(
       route: '/restaurants',
       icon: Icons.location_on_outlined,
       selectedIcon: Icons.location_on,
@@ -51,6 +45,13 @@ class NavigationDestinations {
       icon: Icons.event_outlined,
       selectedIcon: Icons.event,
       label: 'Événements',
+    ),
+    NavDestination(
+      route: '/market',
+      icon: Icons.event_outlined,
+      selectedIcon: Icons.event,
+      label: 'Place de marché',
+      requiredRoles: ['restaurateur'],
     ),
     NavDestination(
       route: '/evenements-gestions',
@@ -78,7 +79,14 @@ class NavigationDestinations {
       icon: Icons.shopping_bag_outlined,
       selectedIcon: Icons.shopping_bag,
       label: 'Commandes',
-      requiredRoles: ['client'],
+      requiredRoles: ['client', 'restaurateur','admin'],
+    ),
+    NavDestination(
+      route: '/admin/reports',
+      icon: Icons.person_outlined,
+      selectedIcon: Icons.person,
+      label: 'Gestion des signalement',
+      requiredRoles: ['admin'],
     ),
     NavDestination(
       route: '/profil',

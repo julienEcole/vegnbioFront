@@ -115,20 +115,7 @@ class AuthDefaultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
-            // Lien pour continuer sans compte
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Retourner à l'écran précédent
-              },
-              child: Text(
-                'Continuer sans compte',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
+
           ],
         ),
       ),

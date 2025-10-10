@@ -82,119 +82,108 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
   }
 
   Widget _buildHorizontalGallery(BuildContext context) {
-    // Vérification de sécurité
+    // Sécurité
     if (widget.images == null || widget.images!.isEmpty) {
       return _buildFallback(context);
     }
-    
+
     final borderRadius = widget.borderRadius ?? BorderRadius.circular(16);
-    final effectiveBorderColor = widget.borderColor ?? Theme.of(context).colorScheme.outline.withOpacity(0.3);
-    final effectiveShadow = widget.shadow ?? BoxShadow(
-      color: Colors.black.withOpacity(0.15),
-      blurRadius: 12,
-      offset: const Offset(0, 4),
-      spreadRadius: 1,
-    );
+    final effectiveShadow = widget.shadow ??
+        BoxShadow(
+          color: Colors.black.withOpacity(0.15),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+          spreadRadius: 1,
+        );
 
-    // Calculer la largeur effective pour le scroll
-    final effectiveWidth = widget.width ?? MediaQuery.of(context).size.width;
-    final imageWidth = effectiveWidth == double.infinity ? 300.0 : effectiveWidth;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // width FINIE (évite double.infinity en liste)
+        final effectiveWidth = (widget.width != null && widget.width!.isFinite)
+            ? widget.width!
+            : (constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width);
+        final itemWidth = 280.0; // largeur d’une vignette
+        const itemSpacing = 12.0;
 
-    return Container(
-      width: effectiveWidth,
-      height: widget.height,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: borderRadius,
-          boxShadow: [effectiveShadow],
-        ),
-        child: ClipRRect(
-        borderRadius: borderRadius,
-        child: Column(
-          children: [
-            // Galerie scrollable horizontale avec SingleChildScrollView
-            Expanded(
+        return SizedBox(
+          width: effectiveWidth,
+          height: widget.height, // doit être fixé par le parent
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              boxShadow: [effectiveShadow],
+            ),
+            child: ClipRRect(
+              borderRadius: borderRadius,
               child: Stack(
                 children: [
-                  SingleChildScrollView(
+                  // ✅ Remplacement: ListView.builder horizontal
+                  ListView.builder(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
+                    primary: false,         // important dans une liste parente
+                    shrinkWrap: true,       // borne la taille
                     physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: widget.images!.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final image = entry.value;
-                        final isSelected = selectedImageIndex == index;
-                        
-                        return Container(
-                          width: 280, // Largeur fixe plus petite que l'écran pour permettre le scroll
-                          height: double.infinity,
-                          margin: const EdgeInsets.only(right: 12),
-                          child: Stack(
-                            children: [
-                              MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: InkWell(
-                                  onTap: () {
-                                    // Sélectionner et ouvrir l'image
-                                    setState(() {
-                                      selectedImageIndex = index;
-                                    });
-                                    if (widget.onImageTap != null) {
-                                      widget.onImageTap!(image);
-                                    } else {
-                                      _showImageFullScreen(context, image);
-                                    }
-                                  },
-                                  onLongPress: () {
-                                    // Sélectionner sans ouvrir
-                                    setState(() {
-                                      selectedImageIndex = index;
-                                    });
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  splashColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  child: ResponsiveImageCard(
-                                    imageUrl: image.imageUrl,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    fit: widget.fit ?? BoxFit.cover,
-                                    borderRadius: BorderRadius.circular(8),
-                                    fallbackIcon: Icons.restaurant,
-                                    showBorder: false,
-                                    onTap: null, // Géré par InkWell
-                                    isCircular: false,
+                    padding: EdgeInsets.zero,
+                    itemCount: widget.images!.length,
+                    itemBuilder: (context, index) {
+                      final image = widget.images![index];
+                      final isSelected = selectedImageIndex == index;
+
+                      return Container(
+                        width: itemWidth,
+                        margin: EdgeInsets.only(
+                          right: index == widget.images!.length - 1 ? 0 : itemSpacing,
+                        ),
+                        child: Stack(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() => selectedImageIndex = index);
+                                if (widget.onImageTap != null) {
+                                  widget.onImageTap!(image);
+                                } else {
+                                  _showImageFullScreen(context, image);
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              child: ResponsiveImageCard(
+                                imageUrl: image.imageUrl,
+                                width: itemWidth,
+                                height: double.infinity,
+                                fit: widget.fit ?? BoxFit.cover,
+                                borderRadius: BorderRadius.circular(8),
+                                fallbackIcon: Icons.restaurant,
+                                showBorder: false,
+                                onTap: null, // géré par InkWell
+                                isCircular: false,
+                              ),
+                            ),
+
+                            if (isSelected)
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
+                                  child: const Icon(Icons.check, color: Colors.white, size: 16),
                                 ),
                               ),
-                              
-                              // Indicateur de sélection
-                              if (isSelected)
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  
-                  // Indicateur de scroll vers la droite
+
+                  // Flèche droite
                   if (widget.images!.length > 1)
                     Positioned(
                       right: 8,
@@ -203,10 +192,9 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                       child: Center(
                         child: GestureDetector(
                           onTap: () {
-                            // Scroll vers la droite
                             if (_scrollController.hasClients) {
                               _scrollController.animateTo(
-                                _scrollController.offset + 300,
+                                _scrollController.offset + (itemWidth + itemSpacing),
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
                               );
@@ -218,17 +206,13 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                               color: Colors.black.withOpacity(0.7),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Icon(
-                              Icons.arrow_forward_ios,
-                              color: Colors.white,
-                              size: 16,
-                            ),
+                            child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
                           ),
                         ),
                       ),
                     ),
-                  
-                  // Indicateur de scroll vers la gauche
+
+                  // Flèche gauche
                   if (widget.images!.length > 1)
                     Positioned(
                       left: 8,
@@ -237,10 +221,9 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                       child: Center(
                         child: GestureDetector(
                           onTap: () {
-                            // Scroll vers la gauche
                             if (_scrollController.hasClients) {
                               _scrollController.animateTo(
-                                _scrollController.offset - 300,
+                                (_scrollController.offset - (itemWidth + itemSpacing)).clamp(0.0, double.infinity),
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
                               );
@@ -252,73 +235,66 @@ class _RestaurantImagesWidgetState extends State<RestaurantImagesWidget> {
                               color: Colors.black.withOpacity(0.7),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Icon(
-                              Icons.arrow_back_ios,
-                              color: Colors.white,
-                              size: 16,
-                            ),
+                            child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 16),
                           ),
+                        ),
+                      ),
+                    ),
+
+                  // Indicateurs (facultatif)
+                  if (widget.images!.length > 1)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black54],
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(widget.images!.length, (i) {
+                            final active = i == selectedImageIndex;
+                            return GestureDetector(
+                              onTap: () {
+                                if (_scrollController.hasClients) {
+                                  final target = i * (itemWidth + itemSpacing);
+                                  _scrollController.animateTo(
+                                    target,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                  setState(() => selectedImageIndex = i);
+                                }
+                              },
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: active ? Colors.white : Colors.white.withOpacity(0.5),
+                                ),
+                              ),
+                            );
+                          }),
                         ),
                       ),
                     ),
                 ],
               ),
             ),
-            
-            // Indicateurs de navigation en bas
-            if (widget.images!.length > 1) ...[
-              Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black54,
-                    ],
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (int i = 0; i < widget.images!.length; i++)
-                      GestureDetector(
-                        onTap: () {
-                          // Naviguer vers l'image spécifique
-                          if (_scrollController.hasClients) {
-                            final targetOffset = i * 292.0; // 280 (largeur) + 12 (margin)
-                            _scrollController.animateTo(
-                              targetOffset,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                            // Sélectionner l'image
-                            setState(() {
-                              selectedImageIndex = i;
-                            });
-                          }
-                        },
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: i == selectedImageIndex ? Colors.white : Colors.white.withOpacity(0.5),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+
 
   Widget _buildSingleImage(BuildContext context, RestaurantImage image) {
     return ResponsiveImageCard(

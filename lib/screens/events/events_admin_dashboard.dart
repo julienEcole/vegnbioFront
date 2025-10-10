@@ -1,5 +1,4 @@
-// Placez ce fichier dans : lib/widgets/events/event_admin_dashboard.dart
-
+// lib/widgets/events/event_admin_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vegnbio_front/models/event_model.dart';
@@ -12,7 +11,6 @@ class EventAdminDashboard extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<EventAdminDashboard> createState() => _EventAdminDashboardState();
-
 }
 
 class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
@@ -70,6 +68,27 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
     );
   }
 
+  /// Wrapper centré : largeur max + marges latérales (évite le full-width en web)
+  Widget _pageShell({required Widget child}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const maxWidth = 1100.0;
+        final horizontal = constraints.maxWidth >= 1200
+            ? 32.0
+            : (constraints.maxWidth >= 900 ? 24.0 : 16.0);
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: maxWidth),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: 16),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
@@ -85,70 +104,64 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
     }
 
     if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Erreur lors du chargement',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.red,
+      return _pageShell(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                'Erreur lors du chargement',
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadEvents,
-              child: const Text('Réessayer'),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(onPressed: _loadEvents, child: const Text('Réessayer')),
+            ],
+          ),
         ),
       );
     }
 
     if (_events.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.event, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              'Aucun événement trouvé',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Commencez par créer votre premier événement',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _showCreateEventDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('Créer un événement'),
-            ),
-          ],
+      return _pageShell(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.event, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text('Aucun événement trouvé', style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              const Text('Commencez par créer votre premier événement', textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _showCreateEventDialog,
+                icon: const Icon(Icons.add),
+                label: const Text('Créer un événement'),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadEvents,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _events.length,
-        itemBuilder: (context, index) {
-          final event = _events[index];
-          return _buildEventCard(event);
-        },
+    // Liste scrollable avec RefreshIndicator, enveloppée dans le shell centré/stylé
+    return _pageShell(
+      child: RefreshIndicator(
+        onRefresh: _loadEvents,
+        child: ListView.separated(
+          physics: const AlwaysScrollableScrollPhysics(),
+          itemCount: _events.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 14),
+          itemBuilder: (context, index) => _buildEventCard(_events[index]),
+        ),
       ),
     );
   }
@@ -173,132 +186,112 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
       statusIcon = Icons.event;
     }
 
+    final surface = Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4);
+
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      clipBehavior: Clip.antiAlias, // pour des hit-tests propres
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // En-tête avec statut
+            // En-tête : titre + badges statut & visibilité
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.titre,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(statusIcon, size: 16, color: statusColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            statusText,
-                            style: TextStyle(
-                              color: statusColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          if (event.isPublic)
-                            const Row(
-                              children: [
-                                Icon(Icons.public, size: 16, color: Colors.blue),
-                                SizedBox(width: 4),
-                                Text('Public', style: TextStyle(color: Colors.blue)),
-                              ],
-                            )
-                          else
-                            const Row(
-                              children: [
-                                Icon(Icons.lock, size: 16, color: Colors.grey),
-                                SizedBox(width: 4),
-                                Text('Privé', style: TextStyle(color: Colors.grey)),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ],
+                  child: Text(
+                    event.titre,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                   ),
+                ),
+                // Badges à droite
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _ChipBadge(
+                      icon: statusIcon,
+                      label: statusText,
+                      bg: statusColor.withOpacity(0.12),
+                      fg: statusColor,
+                    ),
+                    _ChipBadge(
+                      icon: event.isPublic ? Icons.public : Icons.lock,
+                      label: event.isPublic ? 'Public' : 'Privé',
+                      bg: (event.isPublic ? Colors.blue : Colors.grey).withOpacity(0.12),
+                      fg: event.isPublic ? Colors.blue : Colors.grey,
+                    ),
+                  ],
                 ),
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
             // Description
-            Text(
-              event.description,
-              style: Theme.of(context).textTheme.bodyMedium,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            Container(
+              decoration: BoxDecoration(
+                color: surface,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                event.description,
+                style: Theme.of(context).textTheme.bodyMedium,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
 
             const SizedBox(height: 12),
 
-            // Informations
-            Row(
+            // Infos temps & capacité
+            Wrap(
+              spacing: 16,
+              runSpacing: 10,
               children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  _formatDate(event.startAt),
-                  style: TextStyle(color: Colors.grey.shade600),
+                _InfoRow(icon: Icons.calendar_today, text: _formatDate(event.startAt)),
+                _InfoRow(
+                  icon: Icons.access_time,
+                  text: '${_formatTime(event.startAt)} - ${_formatTime(event.endAt)}',
                 ),
-                const SizedBox(width: 16),
-                Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  '${_formatTime(event.startAt)} - ${_formatTime(event.endAt)}',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            Row(
-              children: [
-                Icon(Icons.people, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  '${event.capacity} places',
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
+                _InfoRow(icon: Icons.people, text: '${event.capacity} places'),
               ],
             ),
 
             const SizedBox(height: 12),
 
-            // Boutons d'action
+            // Actions : alignées à droite, boutons colorés compacts (ne prennent pas toute la width)
             Row(
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _editEvent(event),
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('Modifier'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    ),
+                const Spacer(),
+                // Modifier (couleur primaire)
+                FilledButton.icon(
+                  onPressed: () => _editEvent(event),
+                  icon: const Icon(Icons.edit, size: 18),
+                  label: const Text('Modifier'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _confirmDelete(event),
-                    icon: const Icon(Icons.delete, size: 16, color: Colors.red),
-                    label: const Text('Supprimer', style: TextStyle(color: Colors.red)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      side: const BorderSide(color: Colors.red),
-                    ),
+                const SizedBox(width: 10),
+                // Supprimer (rouge)
+                FilledButton.icon(
+                  onPressed: () => _confirmDelete(event),
+                  icon: const Icon(Icons.delete, size: 18),
+                  label: const Text('Supprimer'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
@@ -324,18 +317,14 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
   void _showCreateEventDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const EventFormScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const EventFormScreen()),
     ).then((_) => _loadEvents());
   }
 
   void _editEvent(Event event) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => EventFormScreen(eventToEdit: event),
-      ),
+      MaterialPageRoute(builder: (context) => EventFormScreen(eventToEdit: event)),
     ).then((_) => _loadEvents());
   }
 
@@ -344,23 +333,15 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmer la suppression'),
-        content: Text(
-          'Voulez-vous vraiment supprimer l\'événement "${event.titre}" ?\n\nCette action est irréversible.',
-        ),
+        content: Text('Voulez-vous vraiment supprimer l\'événement "${event.titre}" ?\n\nCette action est irréversible.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
-          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Annuler')),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _deleteEvent(event.id);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
             child: const Text('Supprimer'),
           ),
         ],
@@ -371,25 +352,73 @@ class _EventAdminDashboardState extends ConsumerState<EventAdminDashboard> {
   Future<void> _deleteEvent(int eventId) async {
     try {
       await _eventsService.deleteEvent(eventId);
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Événement supprimé avec succès'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Événement supprimé avec succès'), backgroundColor: Colors.green),
         );
         _loadEvents();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Erreur: ${e.toString()}'), backgroundColor: Colors.red),
         );
       }
     }
+  }
+}
+
+/// Petits composants de style (UI only)
+
+class _ChipBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color bg;
+  final Color fg;
+  const _ChipBadge({required this.icon, required this.label, required this.bg, required this.fg});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: fg.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: fg),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.w700, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _InfoRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.grey.shade700),
+          const SizedBox(width: 6),
+          Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
   }
 }

@@ -12,27 +12,21 @@ class RestaurantViewFactory {
   
   /// Créer la vue de restaurant appropriée selon l'état d'authentification et les permissions
   static Widget createRestaurantView(WidgetRef ref, {int? restaurantId}) {
-    print('🏪 [RestaurantViewFactory] createRestaurantView appelé');
-    print('🏪 [RestaurantViewFactory] restaurantId: $restaurantId');
     
     final authState = ref.watch(authProvider);
-    print('🏪 [RestaurantViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
-    
+
     // Si l'utilisateur est authentifié et a les permissions d'administration
     if (authState.isAuthenticated && _hasAdminPermissions(authState.role)) {
-      print('🏪 [RestaurantViewFactory] Affichage: RestaurantAdminDashboard');
       return const RestaurantAdminDashboard();
     }
     
     // Sinon, afficher la vue publique
-    print('🏪 [RestaurantViewFactory] Affichage: RestaurantsScreen (vue publique)');
     return const RestaurantsScreen();
   }
   
   /// Créer une vue de restaurant spécifique
   static Widget createSpecificRestaurantView(RestaurantViewType type, WidgetRef ref, {int? restaurantId}) {
-    print('🏪 [RestaurantViewFactory] createSpecificRestaurantView: $type');
-    
+
     switch (type) {
       case RestaurantViewType.publicList:
         return const RestaurantsScreen();

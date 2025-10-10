@@ -24,6 +24,76 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
+// 🔧 Construit des headers JSON + Authorization (optionnelle)
+  Map<String, String> _jsonHeaders({String? token, Map<String, String>? extra}) {
+    final h = <String, String>{
+      'Content-Type': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+    if (extra != null) h.addAll(extra);
+    return h;
+  }
+
+  /// 🔁 Requête générique JSON (GET/POST/PUT/DELETE)
+  Future<http.Response> request(
+      String path, {
+        String method = 'GET',
+        Map<String, dynamic>? body,
+        String? token, // JWT optionnel
+        Duration timeout = const Duration(seconds: 20),
+      }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final hdrs = _jsonHeaders(token: token);
+
+    http.Response res;
+    switch (method.toUpperCase()) {
+      case 'POST':
+        res = await http
+            .post(uri, headers: hdrs, body: body != null ? json.encode(body) : null)
+            .timeout(timeout);
+        break;
+      case 'PUT':
+        res = await http
+            .put(uri, headers: hdrs, body: body != null ? json.encode(body) : null)
+            .timeout(timeout);
+        break;
+      case 'DELETE':
+        res = await http
+            .delete(uri, headers: hdrs, body: body != null ? json.encode(body) : null)
+            .timeout(timeout);
+        break;
+      default: // GET
+        res = await http.get(uri, headers: hdrs).timeout(timeout);
+    }
+
+    return res;
+  }
+
+  /// ✉️ POST JSON + parse auto en Map/List
+  Future<dynamic> postJson(
+      String path, {
+        Map<String, dynamic>? body,
+        String? token, // JWT optionnel
+        int ok = 201,  // 201 pour création
+      }) async {
+    final res = await request(
+      path,
+      method: 'POST',
+      body: body,
+      token: token,
+    );
+
+    if (res.statusCode == ok || res.statusCode == 200) {
+      if (res.body.isEmpty) return null;
+      try {
+        return json.decode(res.body);
+      } catch (_) {
+        return res.body;
+      }
+    } else {
+      throw Exception('HTTP ${res.statusCode}: ${res.body}');
+    }
+  }
 
   // Récupérer tous les restaurants
   Future<List<Restaurant>> getRestaurants() async {

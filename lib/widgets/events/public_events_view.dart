@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vegnbio_front/models/event_model.dart';
 import 'package:vegnbio_front/providers/events_provider.dart';
 import 'package:vegnbio_front/widgets/events/reservation_modal.dart';
+import 'package:vegnbio_front/widgets/common/report_event_modal.dart';
 
 /// Vue publique des événements
 class PublicEventsView extends ConsumerWidget {
@@ -35,19 +36,44 @@ class PublicEventsView extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Message informatif
-          _buildInfoBanner(context),
-          // Contenu des événements
-          Expanded(
-            child: eventsAsync.when(
-              data: (events) => _buildEventsContent(context, events),
-              loading: () => _buildLoadingState(),
-              error: (error, stack) => _buildErrorState(context, error),
+
+      // ✅ Ajout d'un wrapper responsive pour limiter la largeur et ajouter des marges
+      body: _wrapPage(
+        context: context,
+        child: Column(
+          children: [
+            // Message informatif
+            _buildInfoBanner(context),
+            // Contenu des événements
+            Expanded(
+              child: eventsAsync.when(
+                data: (events) => _buildEventsContent(context, events),
+                loading: () => _buildLoadingState(),
+                error: (error, stack) => _buildErrorState(context, error),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Wrapper responsive : centre le contenu, limite la largeur et ajoute des marges latérales
+  Widget _wrapPage({required BuildContext context, required Widget child}) {
+    final width = MediaQuery.of(context).size.width;
+
+    // Points de rupture simples (tu peux ajuster au besoin)
+    const double maxContentWidth = 1100; // largeur max sur desktop
+    final double horizontalPadding =
+    width >= 1200 ? 32 : (width >= 900 ? 24 : 16);
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: maxContentWidth),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: child,
+        ),
       ),
     );
   }
@@ -57,7 +83,7 @@ class PublicEventsView extends ConsumerWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
         borderRadius: BorderRadius.circular(12),
@@ -188,9 +214,9 @@ class PublicEventsView extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         ...events.map((event) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _buildEventCard(context, event),
-            )),
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _buildEventCard(context, event),
+        )),
         const SizedBox(height: 16),
         Center(
           child: ElevatedButton.icon(
@@ -266,7 +292,7 @@ class PublicEventsView extends ConsumerWidget {
     final endMinute = event.endAt.minute.toString().padLeft(2, '0');
     final formattedTime = '$startHour:$startMinute - $endHour:$endMinute';
 
-    // Icône et couleur basées sur le titre (vous pouvez améliorer cette logique)
+    // Icône et couleur basées sur le titre
     IconData icon = Icons.event;
     Color color = Colors.blue;
 
@@ -278,7 +304,7 @@ class PublicEventsView extends ConsumerWidget {
       icon = Icons.school;
       color = Colors.orange;
     } else if (event.titre.toLowerCase().contains('marché') ||
-               event.titre.toLowerCase().contains('producteur')) {
+        event.titre.toLowerCase().contains('producteur')) {
       icon = Icons.local_grocery_store;
       color = Colors.blue;
     }
@@ -383,6 +409,21 @@ class PublicEventsView extends ConsumerWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Spacer(),
+                            TextButton.icon(
+                              onPressed: () => _showReportModal(context, event),
+                              icon: const Icon(Icons.flag, color: Colors.red),
+                              label: const Text('Signaler'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -426,4 +467,16 @@ class PublicEventsView extends ConsumerWidget {
     ];
     return months[month - 1];
   }
+
+  void _showReportModal(BuildContext context, Event event) {
+    showDialog(
+      context: context,
+      builder: (_) => ReportEventModal(
+        eventId: event.id,                 // assure-toi que Event a bien un id
+        restaurantId: event.restaurantId,  // si dispo dans ton modèle (sinon enlève)
+      ),
+    );
+  }
+
+
 }

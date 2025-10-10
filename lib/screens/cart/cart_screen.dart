@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,189 +28,128 @@ class _CartPageState extends ConsumerState<CartPage> {
     final cartState = ref.watch(cartProvider);
     final authState = ref.watch(authProvider);
 
-    // Vérifier si l'utilisateur est connecté
+    // Non connecté
     if (!authState.isAuthenticated) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Panier'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Colors.white,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.lock_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Connexion requise',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Vous devez être connecté pour passer commande',
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  context.go('/profil?view=login');
-                },
-                child: const Text('Se connecter'),
-              ),
-            ],
+        appBar: _appBar(context),
+        body: _centeredShell(
+          child: _EmptyState(
+            icon: Icons.lock_outline,
+            title: 'Connexion requise',
+            subtitle: 'Vous devez être connecté pour passer commande',
+            actionText: 'Se connecter',
+            onAction: () => context.go('/profil?view=login'),
           ),
         ),
       );
     }
 
-    // Vérifier si le panier est vide
+    // Panier vide
     if (cartState.isEmpty) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Panier'),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Colors.white,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.shopping_cart_outlined,
-                size: 64,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Votre panier est vide',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Ajoutez des menus à votre panier pour commencer',
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  context.go('/menus');
-                },
-                child: const Text('Voir les menus'),
-              ),
-            ],
+        appBar: _appBar(context),
+        body: _centeredShell(
+          child: _EmptyState(
+            icon: Icons.shopping_cart_outlined,
+            title: 'Votre panier est vide',
+            subtitle: 'Ajoutez des menus à votre panier pour commencer',
+            actionText: 'Voir les menus',
+            onAction: () => context.go('/menus'),
           ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panier'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: () {
-              _showClearCartDialog(context);
-            },
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Vider le panier',
-          ),
-        ],
-      ),
+      appBar: _appBar(context),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Message d'erreur si présent
-            if (cartState.error != null)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.warning, color: Colors.red.shade700, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        cartState.error!,
-                        style: TextStyle(
-                          color: Colors.red.shade700,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        print('🔴 [CartPage] Tentative de fermeture du popup d\'erreur');
-                        ref.read(cartProvider.notifier).setError(null);
-                        print('🔴 [CartPage] Popup d\'erreur fermé');
-                      },
-                      icon: Icon(Icons.close, color: Colors.red.shade700, size: 20),
-                      padding: const EdgeInsets.all(4),
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                    ),
-                  ],
+        child: _centeredShell(
+          child: Column(
+            children: [
+              // Bandeau d’erreur
+              if (cartState.error != null) _ErrorBanner(
+                message: cartState.error!,
+                onClose: () => ref.read(cartProvider.notifier).setError(null),
+              ),
+
+              // Sélecteur d’horaire
+              _SectionCard(
+                title: 'Choix de l’horaire',
+                accentColor: Theme.of(context).colorScheme.primary,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: DeliveryTimeSelector(
+                    selectedTime: _selectedDeliveryTime,
+                    onTimeSelected: (time) => setState(() => _selectedDeliveryTime = time),
+                    minMinutesFromNow: 15,
+                  ),
                 ),
               ),
-            
-            // Sélecteur d'horaire de réception
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: DeliveryTimeSelector(
-                selectedTime: _selectedDeliveryTime,
-                onTimeSelected: (time) {
-                  setState(() {
-                    _selectedDeliveryTime = time;
-                  });
-                },
-                minMinutesFromNow: 15,
-              ),
-            ),
-            
-            const SizedBox(height: 8),
-            
-            // Liste des commandes par restaurant
-            _buildRestaurantOrders(cartState),
-            
-            // Résumé et boutons de paiement
-            _buildCartSummary(cartState),
-          ],
+
+              const SizedBox(height: 12),
+
+              // Commandes par restaurant
+              _buildRestaurantOrders(cartState),
+
+              const SizedBox(height: 12),
+
+              // Résumé global : liste des items + TTC gauche / Total global droite
+              _buildCartSummary(cartState),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Construire la liste des commandes groupées par restaurant
+  PreferredSizeWidget _appBar(BuildContext context) {
+    return AppBar(
+      title: const Text('Panier'),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          onPressed: () => _showClearCartDialog(context),
+          icon: const Icon(Icons.delete_outline),
+          tooltip: 'Vider le panier',
+        ),
+      ],
+    );
+  }
+
+  /// Conteneur centré avec largeur max sur web + padding latéral
+  Widget _centeredShell({required Widget child}) {
+    final maxWidth = kIsWeb ? 1100.0 : double.infinity;
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: kIsWeb ? 16 : 8,
+            vertical: 12,
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  /// Liste des commandes groupées par restaurant (UI relookée)
   Widget _buildRestaurantOrders(CartState cartState) {
     final itemsByRestaurant = cartState.itemsByRestaurant;
-    
     if (itemsByRestaurant.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(32),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shopping_cart_outlined, size: 48, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Votre panier est vide',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          ],
+      return _SectionCard(
+        title: 'Votre panier',
+        accentColor: Colors.grey,
+        child: const Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Icon(Icons.shopping_cart_outlined, size: 48, color: Colors.grey),
+              SizedBox(height: 12),
+              Text('Aucun article'),
+            ],
+          ),
         ),
       );
     }
@@ -218,410 +158,145 @@ class _CartPageState extends ConsumerState<CartPage> {
       children: itemsByRestaurant.entries.map((entry) {
         final restaurantId = entry.key;
         final items = entry.value;
-        
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: _buildRestaurantOrderCard(restaurantId, items),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: _RestaurantOrderCard(
+            restaurantId: restaurantId,
+            items: items,
+            onOrderPressed: () {
+              if (_selectedDeliveryTime == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Veuillez sélectionner un horaire de réception valide'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+              _processRestaurantOrder(restaurantId, items);
+            },
+            removeItem: (item) => ref.read(cartProvider.notifier).removeItem(item.menu, item.restaurantId),
+            updateQty: (item, q) => ref.read(cartProvider.notifier).updateItemQuantity(item.menu, item.restaurantId, q),
+          ),
         );
       }).toList(),
     );
   }
 
-  /// Construire une carte de commande pour un restaurant
-  Widget _buildRestaurantOrderCard(int restaurantId, List<CartItem> items) {
-    final totalHT = items.fold(0.0, (sum, item) => sum + item.totalPrice);
-    final totalTVA = totalHT * 0.2;
-    final totalTTC = totalHT + totalTVA;
-    
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // En-tête du restaurant
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.restaurant,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-          Expanded(
-                  child: Text(
-                    'Restaurant ID: $restaurantId',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${items.length} article${items.length > 1 ? 's' : ''}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Liste des items du restaurant
-          ...items.map((item) => _buildCartItemCard(item)).toList(),
-          
-          // Résumé de la commande du restaurant
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(12),
-                bottomRight: Radius.circular(12),
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Sous-total HT:',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '${totalHT.toStringAsFixed(2)} €',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TVA (20%):',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '${totalTVA.toStringAsFixed(2)} €',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Total TTC:',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '${totalTTC.toStringAsFixed(2)} €',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_selectedDeliveryTime == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Veuillez sélectionner un horaire de réception valide'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                        return;
-                      }
-                      _processRestaurantOrder(restaurantId, items);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Commander ce restaurant'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCartItemCard(CartItem item) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 6, left: 8, right: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Nom du menu et restaurant
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                          item.menu.titre,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Restaurant ID: ${item.restaurantId}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    ref.read(cartProvider.notifier).removeItem(
-                      item.menu,
-                      item.restaurantId,
-                    );
-                  },
-                  icon: const Icon(Icons.delete_outline, size: 20),
-                  color: Colors.red,
-                  padding: const EdgeInsets.all(4),
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // Prix unitaire et quantité
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${item.menu.prix.toStringAsFixed(2)} €',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                
-                // Contrôles de quantité
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        ref.read(cartProvider.notifier).updateItemQuantity(
-                          item.menu,
-                          item.restaurantId,
-                          item.quantite - 1,
-                        );
-                      },
-                      icon: const Icon(Icons.remove, size: 18),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        padding: const EdgeInsets.all(4),
-                        minimumSize: const Size(32, 32),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        item.quantite.toString(),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        ref.read(cartProvider.notifier).updateItemQuantity(
-                          item.menu,
-                          item.restaurantId,
-                          item.quantite + 1,
-                        );
-                      },
-                      icon: const Icon(Icons.add, size: 18),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(4),
-                        minimumSize: const Size(32, 32),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 8),
-            
-            // Total de la ligne
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total:',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                Text(
-                  '${item.totalPrice.toStringAsFixed(2)} €',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  /// Résumé global + liste compacte des articles (avec corbeille)
   Widget _buildCartSummary(CartState cartState) {
     final totalHT = cartState.totalPrice;
     final totalTVA = totalHT * 0.2;
     final totalTTC = totalHT + totalTVA;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-          ),
-        ),
-      ),
+    return _SectionCard(
+      title: 'Résumé de votre panier',
+      accentColor: Colors.green,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Résumé global
-          if (cartState.restaurantCount > 1) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.only(bottom: 12),
+          if (cartState.restaurantCount > 1)
+            _InfoBanner(
+              text:
+              '${cartState.restaurantCount} restaurants différents. Chaque restaurant sera commandé séparément.',
+            ),
+
+          // Liste compacte des articles (titre • qty • prix) + corbeille
+          const SizedBox(height: 8),
+          ...cartState.items.map((item) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.blue.shade200),
+                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.45),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.25),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 16),
-                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      '${cartState.restaurantCount} restaurants différents dans votre panier. '
-                      'Chaque restaurant sera commandé séparément.',
-                      style: TextStyle(
-                        color: Colors.blue.shade700,
-                        fontSize: 11,
-                      ),
+                      item.menu.titre,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('x${item.quantite}', style: Theme.of(context).textTheme.bodyMedium),
+                  const SizedBox(width: 12),
+                  Text('${item.totalPrice.toStringAsFixed(2)} €',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+                  IconButton(
+                    onPressed: () => ref.read(cartProvider.notifier).removeItem(item.menu, item.restaurantId),
+                    icon: const Icon(Icons.delete_outline),
+                    color: Colors.red,
+                    tooltip: 'Retirer',
                   ),
                 ],
               ),
-            ),
-          ],
-          
-          // Résumé des prix globaux
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total global HT:',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                '${totalHT.toStringAsFixed(2)} €',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'TVA globale (20%):',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                '${totalTVA.toStringAsFixed(2)} €',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total global TTC:',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '${totalTTC.toStringAsFixed(2)} €',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-          
+            );
+          }).toList(),
+
           const SizedBox(height: 12),
-          
-          // Bouton pour commander tous les restaurants
+          const Divider(),
+
+          // LIGNE SPECIFIQUE DEMANDÉE : TTC à gauche / Total global à droite
+          Row(
+            children: [
+              // Total TTC (gauche)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Total TTC',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${totalTTC.toStringAsFixed(2)} €',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Total global (droite) : détail HT + TVA + Global
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('Total global',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text('HT: ${totalHT.toStringAsFixed(2)} €',
+                        style: Theme.of(context).textTheme.bodyMedium),
+                    Text('TVA (20%): ${totalTVA.toStringAsFixed(2)} €',
+                        style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      'TTC: ${totalTTC.toStringAsFixed(2)} €',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // Commander tous les restaurants (on garde la même méthode)
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isProcessingPayment ? null : () {
+            child: ElevatedButton.icon(
+              onPressed: _isProcessingPayment
+                  ? null
+                  : () {
                 if (_selectedDeliveryTime == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -633,30 +308,25 @@ class _CartPageState extends ConsumerState<CartPage> {
                 }
                 _processAllOrders(cartState);
               },
+              icon: _isProcessingPayment
+                  ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
+              )
+                  : const Icon(Icons.shopping_bag_outlined),
+              label: Text(
+                _isProcessingPayment
+                    ? 'Traitement…'
+                    : 'Commander tous les restaurants (${cartState.restaurantCount})',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: _isProcessingPayment
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Text(
-                      'Commander tous les restaurants (${cartState.restaurantCount})',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
             ),
           ),
         ],
@@ -671,12 +341,7 @@ class _CartPageState extends ConsumerState<CartPage> {
         title: const Text('Vider le panier'),
         content: const Text('Êtes-vous sûr de vouloir vider votre panier ?'),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Annuler'),
-          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Annuler')),
           TextButton(
             onPressed: () {
               ref.read(cartProvider.notifier).clearCart();
@@ -689,68 +354,47 @@ class _CartPageState extends ConsumerState<CartPage> {
     );
   }
 
-  /// Traiter la commande d'un restaurant spécifique
+  // ----- Les méthodes de paiement/commande EXISTANTES (inchangées) -----
   void _processRestaurantOrder(int restaurantId, List<CartItem> items) async {
-    // Calculer le total pour le paiement
     final totalHT = items.fold(0.0, (sum, item) => sum + (item.menu.prix * item.quantite));
     final totalTVA = totalHT * 0.2;
     final totalTTC = totalHT + totalTVA;
 
-    // Vérifier l'horaire de livraison
     if (_selectedDeliveryTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez sélectionner un horaire de livraison'),
-          backgroundColor: Colors.orange,
-        ),
+        const SnackBar(content: Text('Veuillez sélectionner un horaire de livraison'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (totalTTC <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Montant invalide'), backgroundColor: Colors.red),
       );
       return;
     }
 
-    // Ouvrir le modal de paiement unifié
+    // ✅ OUVERTURE DE LA MODALE STRIPE
     final paymentResult = await UnifiedPaymentModal.showPaymentModal(
       context: context,
       amount: totalTTC,
       currency: 'eur',
       description: 'Commande restaurant $restaurantId (${items.length} article${items.length > 1 ? 's' : ''})',
     );
-
-    if (paymentResult == null) {
-      // L'utilisateur a annulé le paiement
-      return;
-    }
-
+    if (paymentResult == null) return;         // fermé par l’utilisateur
     if (!paymentResult.success) {
-      // Le paiement a échoué
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Paiement échoué: ${paymentResult.error}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
+          SnackBar(content: Text('Paiement échoué: ${paymentResult.error}'), backgroundColor: Colors.red),
         );
       }
       return;
     }
 
-    // Le paiement a réussi, procéder à la commande
-    setState(() {
-      _isProcessingPayment = true;
-    });
-
+    setState(() => _isProcessingPayment = true);
     try {
-      print('💳 [CartPage] Paiement réussi: ${paymentResult.paymentIntentId}');
-      print('🛒 [CartPage] Traitement de la commande pour le restaurant $restaurantId');
-      print('🕐 [CartPage] Horaire de réception sélectionné: $_selectedDeliveryTime');
-      
-      // Récupérer le token d'authentification
       final authService = RealAuthService();
       final token = authService.token;
-      
-      print('🔑 [CartPage] Token: ${token != null ? 'Présent' : 'Absent'}');
-      
-      // Créer la commande via l'API (userId sera extrait du token côté backend)
+
       final commande = await ApiService().createCommande(
         restaurantId: restaurantId,
         items: items,
@@ -759,10 +403,6 @@ class _CartPageState extends ConsumerState<CartPage> {
         token: token,
       );
 
-      print('✅ [CartPage] Commande créée avec succès: ID ${commande.id}');
-      
-      // Finaliser le paiement en ajoutant les informations Stripe et de livraison
-      print('💳 [CartPage] Finalisation du paiement avec Stripe...');
       final paymentResult2 = await CommandeService.completePayment(
         commandeId: commande.id!,
         paymentIntentId: paymentResult.paymentIntentId ?? '',
@@ -777,126 +417,81 @@ class _CartPageState extends ConsumerState<CartPage> {
         },
         token: token,
       );
-      
+
       if (!paymentResult2['success']) {
         throw Exception(paymentResult2['error']);
       }
-      
-      print('✅ [CartPage] Paiement finalisé avec succès');
-      
-      // Supprimer les items de ce restaurant du panier
-      final itemsToRemove = List<CartItem>.from(items);
-      for (final item in itemsToRemove) {
-        ref.read(cartProvider.notifier).removeItem(item.menu, item.restaurantId);
+
+      // vider les items de ce resto
+      for (final it in List<CartItem>.from(items)) {
+        ref.read(cartProvider.notifier).removeItem(it.menu, it.restaurantId);
       }
-      
-      print('🗑️ [CartPage] ${itemsToRemove.length} items supprimés du panier pour le restaurant $restaurantId');
-      
-      // Afficher un message de succès
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Commande payée et créée avec succès ! ID: ${commande.id}'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 4),
-          ),
+          SnackBar(content: Text('Commande payée et créée ! ID: ${commande.id}'), backgroundColor: Colors.green),
         );
       }
-      
     } catch (e) {
-      print('❌ [CartPage] Erreur lors de la création de la commande: $e');
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de la création de la commande: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
+          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
-      if (mounted) {
-      setState(() {
-        _isProcessingPayment = false;
-      });
-      }
+      if (mounted) setState(() => _isProcessingPayment = false);
     }
   }
 
-  /// Traiter toutes les commandes (tous les restaurants)
+
   void _processAllOrders(CartState cartState) async {
-    // Calculer le total global pour le paiement
-    final totalHT = cartState.items.fold(0.0, (sum, item) => sum + (item.menu.prix * item.quantite));
+    final totalHT = cartState.items.fold(0.0, (s, it) => s + (it.menu.prix * it.quantite));
     final totalTVA = totalHT * 0.2;
     final totalTTC = totalHT + totalTVA;
 
-    // Vérifier l'horaire de livraison
     if (_selectedDeliveryTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez sélectionner un horaire de livraison'),
-          backgroundColor: Colors.orange,
-        ),
+        const SnackBar(content: Text('Veuillez sélectionner un horaire de livraison'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (totalTTC <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Montant global invalide'), backgroundColor: Colors.red),
       );
       return;
     }
 
-    // Ouvrir le modal de paiement unifié
+    // ✅ OUVERTURE DE LA MODALE STRIPE
     final paymentResult = await UnifiedPaymentModal.showPaymentModal(
       context: context,
       amount: totalTTC,
       currency: 'eur',
-      description: 'Commande globale (${cartState.restaurantCount} restaurant${cartState.restaurantCount > 1 ? 's' : ''}, ${cartState.items.length} article${cartState.items.length > 1 ? 's' : ''})',
+      description:
+      'Commande globale (${cartState.restaurantCount} restaurant${cartState.restaurantCount > 1 ? 's' : ''}, ${cartState.items.length} article${cartState.items.length > 1 ? 's' : ''})',
     );
-
-    if (paymentResult == null) {
-      // L'utilisateur a annulé le paiement
-      return;
-    }
-
+    if (paymentResult == null) return;
     if (!paymentResult.success) {
-      // Le paiement a échoué
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Paiement échoué: ${paymentResult.error}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
+          SnackBar(content: Text('Paiement échoué: ${paymentResult.error}'), backgroundColor: Colors.red),
         );
       }
       return;
     }
 
-    // Le paiement a réussi, procéder aux commandes
-    setState(() {
-      _isProcessingPayment = true;
-    });
-
+    setState(() => _isProcessingPayment = true);
     try {
-      print('💳 [CartPage] Paiement global réussi: ${paymentResult.paymentIntentId}');
-      print('🛒 [CartPage] Traitement de toutes les commandes (${cartState.restaurantCount} restaurants)');
-      print('🕐 [CartPage] Horaire de réception sélectionné: $_selectedDeliveryTime');
-      
-      // Récupérer le token d'authentification
       final authService = RealAuthService();
       final token = authService.token;
-      
-      print('🔑 [CartPage] Token: ${token != null ? 'Présent' : 'Absent'}');
-      
+
       final itemsByRestaurant = cartState.itemsByRestaurant;
-      final List<Commande> commandesCreees = [];
       final List<CartItem> itemsToRemove = [];
-      
-      // Traiter chaque restaurant séparément
+
       for (final entry in itemsByRestaurant.entries) {
         final restaurantId = entry.key;
         final items = entry.value;
-        
-        print('🛒 [CartPage] Traitement du restaurant $restaurantId (${items.length} items)');
-        
-        // Créer la commande pour ce restaurant (userId sera extrait du token côté backend)
+
         final commande = await ApiService().createCommande(
           restaurantId: restaurantId,
           items: items,
@@ -905,15 +500,14 @@ class _CartPageState extends ConsumerState<CartPage> {
           token: token,
         );
 
-          print('✅ [CartPage] Commande créée pour le restaurant $restaurantId: ID ${commande.id}');
-        
-        // Finaliser le paiement en ajoutant les informations Stripe et de livraison
-        print('💳 [CartPage] Finalisation du paiement pour la commande ${commande.id}...');
+        final rTotalHT = items.fold(0.0, (s, it) => s + (it.menu.prix * it.quantite));
+        final rTotalTTC = rTotalHT * 1.2;
+
         final paymentResult2 = await CommandeService.completePayment(
           commandeId: commande.id!,
           paymentIntentId: paymentResult.paymentIntentId ?? '',
           paymentMethodId: paymentResult.paymentMethodId ?? '',
-          amount: commande.totalTTC,
+          amount: rTotalTTC,
           currency: 'EUR',
           cardBrand: paymentResult.cardBrand,
           cardLast4: paymentResult.cardLast4,
@@ -923,53 +517,396 @@ class _CartPageState extends ConsumerState<CartPage> {
           },
           token: token,
         );
-        
-        if (!paymentResult2['success']) {
-          throw Exception(paymentResult2['error']);
-        }
-        
-        print('✅ [CartPage] Paiement finalisé pour la commande ${commande.id}');
+        if (!paymentResult2['success']) throw Exception(paymentResult2['error']);
 
-        commandesCreees.add(commande);
-        // Ajouter les items à la liste de suppression
         itemsToRemove.addAll(items);
       }
-      
-      // Supprimer uniquement les items des commandes réussies
-      for (final item in itemsToRemove) {
-        ref.read(cartProvider.notifier).removeItem(item.menu, item.restaurantId);
+
+      for (final it in itemsToRemove) {
+        ref.read(cartProvider.notifier).removeItem(it.menu, it.restaurantId);
       }
-      print('🗑️ [CartPage] ${itemsToRemove.length} items supprimés du panier après création de ${commandesCreees.length} commandes');
-      
-      // Afficher un message de succès
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${commandesCreees.length} commandes payées et créées avec succès !'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 4),
-          ),
+          const SnackBar(content: Text('Commandes payées et créées !'), backgroundColor: Colors.green),
         );
       }
-      
     } catch (e) {
-      print('❌ [CartPage] Erreur lors de la création des commandes: $e');
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de la création des commandes: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
+          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingPayment = false;
-        });
-      }
+      if (mounted) setState(() => _isProcessingPayment = false);
     }
+  }
+
+
+}
+
+// =================== UI SUBWIDGETS (style only) ===================
+
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final Color accentColor;
+  final Widget child;
+  const _SectionCard({required this.title, required this.accentColor, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2.5,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: accentColor.withOpacity(0.25), width: 1.2),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // header coloré
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.10),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            child: Row(
+              children: [
+                Container(width: 6, height: 18, decoration: BoxDecoration(color: accentColor, borderRadius: BorderRadius.circular(4))),
+                const SizedBox(width: 10),
+                Text(title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: accentColor,
+                    )),
+              ],
+            ),
+          ),
+          Padding(padding: const EdgeInsets.all(12), child: child),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onClose;
+  const _ErrorBanner({required this.message, required this.onClose});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning, color: Colors.red.shade700, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.w600),
+            ),
+          ),
+          IconButton(onPressed: onClose, icon: Icon(Icons.close, color: Colors.red.shade700)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoBanner extends StatelessWidget {
+  final String text;
+  const _InfoBanner({required this.text});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.blue.shade700, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: Colors.blue.shade800, fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String actionText;
+  final VoidCallback onAction;
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.actionText,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: kIsWeb ? 24 : 12, vertical: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 72, color: Theme.of(context).colorScheme.outline),
+          const SizedBox(height: 18),
+          Text(title, style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          Text(subtitle, style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          ElevatedButton(onPressed: onAction, child: Text(actionText)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RestaurantOrderCard extends StatelessWidget {
+  final int restaurantId;
+  final List<CartItem> items;
+  final VoidCallback onOrderPressed;
+  final void Function(CartItem) removeItem;
+  final void Function(CartItem, int) updateQty;
+
+  const _RestaurantOrderCard({
+    required this.restaurantId,
+    required this.items,
+    required this.onOrderPressed,
+    required this.removeItem,
+    required this.updateQty,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final totalHT = items.fold(0.0, (sum, it) => sum + it.totalPrice);
+    final totalTVA = totalHT * 0.2;
+    final totalTTC = totalHT + totalTVA;
+
+    final accent = Theme.of(context).colorScheme.primary;
+
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: accent.withOpacity(0.25), width: 1.2),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          // header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.08),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.restaurant, color: accent, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Restaurant ID: $restaurantId',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: accent,
+                      )),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: accent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: accent.withOpacity(0.25)),
+                  ),
+                  child: Text(
+                    '${items.length} article${items.length > 1 ? 's' : ''}',
+                    style: TextStyle(color: accent, fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          // items
+          ...items.map((it) => _RestaurantItemTile(
+            item: it,
+            removeItem: () => removeItem(it),
+            updateQty: (q) => updateQty(it, q),
+          )),
+
+          // footer
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(14)),
+            ),
+            child: Column(
+              children: [
+                _priceRow(context, 'Sous-total HT', totalHT),
+                const SizedBox(height: 4),
+                _priceRow(context, 'TVA (20%)', totalTVA),
+                const Divider(height: 16),
+                _priceRow(context, 'Total TTC', totalTTC, bold: true, highlight: true),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: onOrderPressed,
+                    icon: const Icon(Icons.shopping_basket_outlined),
+                    label: const Text('Commander ce restaurant'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _priceRow(BuildContext context, String label, double value, {bool bold = false, bool highlight = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          '${value.toStringAsFixed(2)} €',
+          style: (highlight
+              ? Theme.of(context).textTheme.titleMedium
+              : Theme.of(context).textTheme.bodyMedium)
+              ?.copyWith(
+            fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+            color: highlight ? Theme.of(context).colorScheme.primary : null,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RestaurantItemTile extends StatelessWidget {
+  final CartItem item;
+  final VoidCallback removeItem;
+  final void Function(int) updateQty;
+
+  const _RestaurantItemTile({
+    required this.item,
+    required this.removeItem,
+    required this.updateQty,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.primary;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.menu.titre,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                ),
+              ),
+              IconButton(
+                onPressed: removeItem,
+                icon: const Icon(Icons.delete_outline, size: 20),
+                color: Colors.red,
+                tooltip: 'Retirer du panier',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Text('${item.menu.prix.toStringAsFixed(2)} €',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700)),
+              const Spacer(),
+              // Contrôles quantité
+              IconButton(
+                onPressed: () => updateQty(item.quantite - 1),
+                icon: const Icon(Icons.remove, size: 18),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text('${item.quantite}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+              ),
+              IconButton(
+                onPressed: () => updateQty(item.quantite + 1),
+                icon: const Icon(Icons.add, size: 18),
+                color: accent,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text('Total :', style: Theme.of(context).textTheme.bodyMedium),
+              const Spacer(),
+              Text(
+                '${item.totalPrice.toStringAsFixed(2)} €',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: accent,
+                ),
+              ),
+            ],
+          ),
+        ]),
+      ),
+    );
   }
 }
