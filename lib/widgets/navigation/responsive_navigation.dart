@@ -1,4 +1,4 @@
-// Placez ce fichier dans : lib/widgets/navigation/responsive_navigation.dart
+// lib/widgets/navigation/responsive_navigation.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,8 +36,8 @@ class NavigationDestinations {
     ),
     NavDestination(
       route: '/restaurants',
-      icon: Icons.location_on_outlined,
-      selectedIcon: Icons.location_on,
+      icon: Icons.store_mall_directory_outlined,
+      selectedIcon: Icons.store_mall_directory,
       label: 'Restaurants',
     ),
     NavDestination(
@@ -46,6 +46,7 @@ class NavigationDestinations {
       selectedIcon: Icons.event,
       label: 'Événements',
     ),
+    // Place de marché (restaurateur)
     NavDestination(
       route: '/market',
       icon: Icons.shopping_cart_outlined,
@@ -57,35 +58,39 @@ class NavigationDestinations {
     // qui affiche EventAdminDashboard pour les admins/restaurateurs
     NavDestination(
       route: '/mes-offres',
-      icon: Icons.event_outlined,
-      selectedIcon: Icons.event,
-      label: 'Gestions de la place de marcher',
+      icon: Icons.inventory_2_outlined,
+      selectedIcon: Icons.inventory_2,
+      label: 'Mes offres',
       requiredRoles: ['fournisseur'],
     ),
-    NavDestination(
-      route: '/dashboard',
-      icon: Icons.dashboard_outlined,
-      selectedIcon: Icons.dashboard,
-      label: 'Dashboard',
-      requiredRoles: ['restaurateur', 'admin', 'fournisseur'],
-    ),
+    // ❌ Dashboard retiré
+    // NavDestination(
+    //   route: '/dashboard',
+    //   icon: Icons.dashboard_outlined,
+    //   selectedIcon: Icons.dashboard,
+    //   label: 'Dashboard',
+    //   requiredRoles: ['restaurateur', 'admin', 'fournisseur'],
+    // ),
+    // Commandes (client/restaurateur/admin)
     NavDestination(
       route: '/commandes',
       icon: Icons.shopping_bag_outlined,
       selectedIcon: Icons.shopping_bag,
       label: 'Commandes',
-      requiredRoles: ['client', 'restaurateur','admin'],
+      requiredRoles: ['client', 'restaurateur', 'admin'],
     ),
+    // Admin — reports
     NavDestination(
       route: '/admin/reports',
-      icon: Icons.person_outlined,
-      selectedIcon: Icons.person,
-      label: 'Gestion des signalement',
+      icon: Icons.report_outlined,
+      selectedIcon: Icons.report,
+      label: 'Signalements',
       requiredRoles: ['admin'],
     ),
+    // Profil (tout le monde)
     NavDestination(
       route: '/profil',
-      icon: Icons.person_outlined,
+      icon: Icons.person_outline,
       selectedIcon: Icons.person,
       label: 'Profil',
     ),
@@ -94,13 +99,8 @@ class NavigationDestinations {
   /// Filtre les destinations selon les permissions utilisateur
   static List<NavDestination> getVisibleDestinations(AuthState authState) {
     return destinations.where((dest) {
-      // Si pas de rôles requis, toujours visible
-      if (dest.requiredRoles.isEmpty) return true;
-
-      // Si pas connecté, masquer
+      if (dest.requiredRoles.isEmpty) return true; // public
       if (!authState.isAuthenticated) return false;
-
-      // Vérifier si l'utilisateur a le rôle requis
       final userRole = authState.role?.toLowerCase();
       return userRole != null && dest.requiredRoles.contains(userRole);
     }).toList();
@@ -119,14 +119,12 @@ class ResponsiveNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= kDesktopBreakpoint;
+    final isDesktop = MediaQuery.of(context).size.width >= kDesktopBreakpoint;
 
     if (isDesktop) {
       return const SizedBox.shrink(); // Le sidebar est géré dans MainLayout
     }
 
-    // Navigation bottom bar pour mobile
     return _buildBottomNavigationBar(context, ref, authState);
   }
 
@@ -135,24 +133,21 @@ class ResponsiveNavigationBar extends ConsumerWidget {
       WidgetRef ref,
       AuthState authState,
       ) {
-    final visibleDestinations = NavigationDestinations.getVisibleDestinations(authState);
+    final visibleDestinations =
+    NavigationDestinations.getVisibleDestinations(authState);
     final currentIndex = _getCurrentIndex(visibleDestinations);
 
     return NavigationBar(
-      backgroundColor: Colors.green,
+      backgroundColor: const Color(0xFF387D35),
       indicatorColor: Colors.white,
       elevation: 8,
       selectedIndex: currentIndex,
-      onDestinationSelected: (index) => _handleNavigation(
-        context,
-        ref,
-        visibleDestinations[index].route,
-      ),
+      onDestinationSelected: (index) =>
+          _handleNavigation(context, ref, visibleDestinations[index].route),
       destinations: visibleDestinations.map((dest) {
-        final isSelected = dest.route == currentRoute;
         return NavigationDestination(
-          icon: Icon(dest.icon),
-          selectedIcon: Icon(dest.selectedIcon),
+          icon: Icon(dest.icon, color: Colors.white),
+          selectedIcon: Icon(dest.selectedIcon, color: Colors.green),
           label: dest.label,
         );
       }).toList(),
@@ -181,12 +176,13 @@ class NavigationSidebar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final visibleDestinations = NavigationDestinations.getVisibleDestinations(authState);
+    final visibleDestinations =
+    NavigationDestinations.getVisibleDestinations(authState);
 
     return Container(
       width: 250,
       decoration: BoxDecoration(
-        color: Colors.green.shade700,
+        color: const Color(0xFF387D35),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -203,11 +199,7 @@ class NavigationSidebar extends ConsumerWidget {
             color: Colors.green.shade800,
             child: Column(
               children: [
-                const Icon(
-                  Icons.eco,
-                  size: 48,
-                  color: Colors.white,
-                ),
+                const Icon(Icons.eco, size: 48, color: Colors.white),
                 const SizedBox(height: 12),
                 const Text(
                   'Veg\'N Bio',
@@ -248,17 +240,12 @@ class NavigationSidebar extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(
-                    color: Colors.white.withOpacity(0.2),
-                  ),
+                  top: BorderSide(color: Colors.white.withOpacity(0.2)),
                 ),
               ),
               child: ListTile(
                 leading: const Icon(Icons.logout, color: Colors.white),
-                title: const Text(
-                  'Déconnexion',
-                  style: TextStyle(color: Colors.white),
-                ),
+                title: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
                 onTap: () => _handleLogout(ref),
               ),
             ),

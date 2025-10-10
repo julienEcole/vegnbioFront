@@ -7,10 +7,10 @@ import '../../models/restaurant.dart';
 import '../../services/api_service.dart';
 
 /// Écran de formulaire pour créer ou modifier un menu
-/// Utilisé par les restaurateurs, fournisseurs et admins pour gérer les menus
+/// (même logique, UI améliorée + contenu centré)
 class MenuFormScreen extends ConsumerStatefulWidget {
   final Menu? menuToEdit;
-  
+
   const MenuFormScreen({super.key, this.menuToEdit});
 
   @override
@@ -23,7 +23,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
   final _descriptionController = TextEditingController();
   final _dateController = TextEditingController();
   final _prixController = TextEditingController();
-  
+
   List<String> _selectedAllergenes = [];
   List<String> _selectedProduits = [];
   List<String> _availableAllergenes = [];
@@ -48,43 +48,41 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
   Future<void> _loadInitialData() async {
     try {
       final apiService = ApiService();
-      
-      // Charger les restaurants
       final restaurants = await apiService.getRestaurants();
-      
-      // Charger les menus existants pour récupérer les allergènes et produits
       final menus = await apiService.getMenus();
-      
+
       setState(() {
         _restaurants = restaurants;
-        
-        // Extraire tous les allergènes et produits uniques des menus existants
+
         final allAllergenes = <String>{};
         final allProduits = <String>{};
-        
-        for (final menu in menus) {
-          allAllergenes.addAll(menu.allergenes);
-          allProduits.addAll(menu.produits);
+        for (final m in menus) {
+          allAllergenes.addAll(m.allergenes);
+          allProduits.addAll(m.produits);
         }
-        
-        // Ajouter les allergènes et produits par défaut
+
         allAllergenes.addAll([
           'Gluten', 'Lactose', 'Œufs', 'Arachides', 'Fruits à coque',
           'Soja', 'Poisson', 'Crustacés', 'Mollusques', 'Céleri',
           'Moutarde', 'Sésame', 'Sulfites', 'Lupin'
         ]);
-        
         allProduits.addAll([
           'Légumes bio', 'Fruits bio', 'Céréales complètes', 'Protéines végétales',
           'Épices bio', 'Huiles bio', 'Herbes fraîches', 'Graines bio',
           'Légumineuses', 'Champignons bio', 'Algues', 'Noix bio'
         ]);
-        
+
         _availableAllergenes = allAllergenes.toList()..sort();
         _availableProduits = allProduits.toList()..sort();
+
+        // s’il n’y avait pas encore de restaurants au moment de _initializeEmptyForm
+        if (widget.menuToEdit == null && _selectedRestaurantId == null && _restaurants.isNotEmpty) {
+          _selectedRestaurantId = _restaurants.first.id;
+        }
       });
     } catch (e) {
-      print('Erreur lors du chargement des données initiales: $e');
+      // Pas d’UI d’erreur ici volontairement (on reste léger)
+      debugPrint('Erreur _loadInitialData: $e');
     }
   }
 
@@ -96,20 +94,17 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
     _selectedRestaurantId = menu.restaurantId;
     _imageUrl = menu.imageUrl;
     _disponible = menu.disponible;
-    
+
     _selectedAllergenes = List.from(menu.allergenes);
     _selectedProduits = List.from(menu.produits);
   }
 
   void _initializeEmptyForm() {
     final now = DateTime.now();
-    _dateController.text = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    _dateController.text =
+    '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     _prixController.text = '0.00';
-    
-    // Sélectionner le premier restaurant par défaut
-    if (_restaurants.isNotEmpty) {
-      _selectedRestaurantId = _restaurants.first.id;
-    }
+    // _selectedRestaurantId sera défini après _loadInitialData si vide
   }
 
   @override
@@ -130,15 +125,12 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final apiService = ApiService();
-      
+
       if (widget.menuToEdit != null) {
-        // Modification d'un menu existant
         await apiService.updateMenu(
           id: widget.menuToEdit!.id,
           titre: _titreController.text.trim(),
@@ -151,12 +143,10 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
           disponible: _disponible,
           imageUrl: _imageUrl,
         );
-        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Menu modifié avec succès')),
         );
       } else {
-        // Création d'un nouveau menu
         await apiService.createMenu(
           titre: _titreController.text.trim(),
           description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
@@ -168,21 +158,20 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
           disponible: _disponible,
           imageUrl: _imageUrl,
         );
-        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Menu créé avec succès')),
         );
       }
 
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -212,39 +201,70 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
 
   Future<void> _deleteMenu() async {
     if (widget.menuToEdit == null) return;
-    
-    setState(() {
-      _isLoading = true;
-    });
 
+    setState(() => _isLoading = true);
     try {
       final apiService = ApiService();
       await apiService.deleteMenu(widget.menuToEdit!.id);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Menu "${widget.menuToEdit!.titre}" supprimé avec succès')),
-      );
-      
-      Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Menu "${widget.menuToEdit!.titre}" supprimé avec succès')),
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de la suppression: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la suppression: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // ================= UI =================
+
+  // Conteneur centré + largeur max (évite full-width sur web)
+  Widget _centeredShell({required Widget child}) {
+    const maxWidth = 900.0;
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: maxWidth),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  // Petite étiquette de section
+  Widget _sectionLabel(String text, {IconData? icon}) {
+    return Row(
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+        ],
+        Text(
+          text,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.menuToEdit != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.menuToEdit != null ? 'Modifier le menu' : 'Nouveau menu'),
+        title: Text(isEditing ? 'Modifier le menu' : 'Nouveau menu'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          if (widget.menuToEdit != null)
+          if (isEditing)
             IconButton(
               icon: const Icon(Icons.delete_forever, color: Colors.red, size: 24),
               onPressed: _showDeleteConfirmation,
@@ -252,206 +272,261 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
             ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Titre
-              TextFormField(
-                controller: _titreController,
-                decoration: const InputDecoration(
-                  labelText: '🍽️ Titre du menu *',
-                  hintText: 'Ex: Menu Végétarien Bio',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le titre est obligatoire';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+      body: _centeredShell(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24, // espace clavier
+            ),
+            child: Card(
 
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: '📝 Description',
-                  hintText: 'Description du menu...',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
+              elevation: 1,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Header visuel
+                      Row(
+                        children: [
+                          Icon(Icons.restaurant_menu, color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            isEditing ? 'Modifier un menu' : 'Créer un menu',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
 
-              // Restaurant
-              DropdownButtonFormField<int>(
-                value: _selectedRestaurantId,
-                decoration: const InputDecoration(
-                  labelText: '🏪 Restaurant *',
-                  border: OutlineInputBorder(),
-                ),
-                items: _restaurants.map((restaurant) {
-                  return DropdownMenuItem<int>(
-                    value: restaurant.id,
-                    child: Text(restaurant.nom),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedRestaurantId = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Veuillez sélectionner un restaurant';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                      // Bloc 1 — Infos principales
+                      _sectionLabel('Informations principales', icon: Icons.info_outline),
+                      const SizedBox(height: 8),
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: _titreController,
+                                decoration: const InputDecoration(
+                                  labelText: '🍽️ Titre du menu *',
+                                  hintText: 'Ex: Menu Végétarien Bio',
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? 'Le titre est obligatoire' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _descriptionController,
+                                decoration: const InputDecoration(
+                                  labelText: '📝 Description',
+                                  hintText: 'Description du menu...',
+                                  border: OutlineInputBorder(),
+                                ),
+                                maxLines: 3,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
-              // Date
-              TextFormField(
-                controller: _dateController,
-                decoration: const InputDecoration(
-                  labelText: '📅 Date *',
-                  hintText: 'YYYY-MM-DD',
-                  border: OutlineInputBorder(),
-                ),
-                readOnly: true,
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.tryParse(_dateController.text) ?? DateTime.now(),
-                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (date != null) {
-                    _dateController.text = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-                  }
-                },
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'La date est obligatoire';
-                  }
-                  try {
-                    DateTime.parse(value);
-                    return null;
-                  } catch (e) {
-                    return 'Format de date invalide';
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-              // Prix
-              TextFormField(
-                controller: _prixController,
-                decoration: const InputDecoration(
-                  labelText: '💰 Prix (€) *',
-                  hintText: '0.00',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le prix est obligatoire';
-                  }
-                  final prix = double.tryParse(value);
-                  if (prix == null || prix < 0) {
-                    return 'Prix invalide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                      // Bloc 2 — Restaurant / Date / Prix / Disponibilité
+                      _sectionLabel('Planification & prix', icon: Icons.event),
+                      const SizedBox(height: 8),
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              DropdownButtonFormField<int>(
+                                value: _selectedRestaurantId,
+                                decoration: const InputDecoration(
+                                  labelText: '🏪 Restaurant *',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: _restaurants.map((r) {
+                                  return DropdownMenuItem<int>(
+                                    value: r.id,
+                                    child: Text(r.nom),
+                                  );
+                                }).toList(),
+                                onChanged: (v) => setState(() => _selectedRestaurantId = v),
+                                validator: (v) => v == null ? 'Veuillez sélectionner un restaurant' : null,
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _dateController,
+                                      decoration: const InputDecoration(
+                                        labelText: '📅 Date *',
+                                        hintText: 'YYYY-MM-DD',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      readOnly: true,
+                                      onTap: () async {
+                                        final date = await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.tryParse(_dateController.text) ?? DateTime.now(),
+                                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                                        );
+                                        if (date != null) {
+                                          _dateController.text =
+                                          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+                                        }
+                                      },
+                                      validator: (v) {
+                                        if (v == null || v.trim().isEmpty) return 'La date est obligatoire';
+                                        try {
+                                          DateTime.parse(v);
+                                          return null;
+                                        } catch (_) {
+                                          return 'Format de date invalide';
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _prixController,
+                                      decoration: const InputDecoration(
+                                        labelText: '💰 Prix (€) *',
+                                        hintText: '0.00',
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (v) {
+                                        if (v == null || v.trim().isEmpty) return 'Le prix est obligatoire';
+                                        final prix = double.tryParse(v);
+                                        if (prix == null || prix < 0) return 'Prix invalide';
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              SwitchListTile(
+                                title: const Text('✅ Disponible'),
+                                subtitle: const Text('Le menu est disponible à la commande'),
+                                value: _disponible,
+                                onChanged: (val) => setState(() => _disponible = val),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
-              // Produits
-              ProductAllergenSelector(
-                label: '🥬 Produits',
-                selectedItems: _selectedProduits,
-                availableItems: _availableProduits,
-                onChanged: (produits) {
-                  setState(() {
-                    _selectedProduits = produits;
-                  });
-                },
-                hintText: 'Ajouter des produits...',
-                icon: Icons.eco,
-              ),
-              const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-              // Allergènes
-              ProductAllergenSelector(
-                label: '⚠️ Allergènes',
-                selectedItems: _selectedAllergenes,
-                availableItems: _availableAllergenes,
-                onChanged: (allergenes) {
-                  setState(() {
-                    _selectedAllergenes = allergenes;
-                  });
-                },
-                hintText: 'Ajouter des allergènes...',
-                icon: Icons.warning,
-              ),
-              const SizedBox(height: 16),
+                      // Bloc 3 — Produits & Allergènes
+                      _sectionLabel('Composition', icon: Icons.list_alt),
+                      const SizedBox(height: 8),
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              ProductAllergenSelector(
+                                label: '🥬 Produits',
+                                selectedItems: _selectedProduits,
+                                availableItems: _availableProduits,
+                                onChanged: (produits) => setState(() => _selectedProduits = produits),
+                                hintText: 'Ajouter des produits...',
+                                icon: Icons.eco,
+                              ),
+                              const SizedBox(height: 12),
+                              ProductAllergenSelector(
+                                label: '⚠️ Allergènes',
+                                selectedItems: _selectedAllergenes,
+                                availableItems: _availableAllergenes,
+                                onChanged: (allergenes) => setState(() => _selectedAllergenes = allergenes),
+                                hintText: 'Ajouter des allergènes...',
+                                icon: Icons.warning,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
-              // Disponibilité
-              SwitchListTile(
-                title: const Text('✅ Disponible'),
-                subtitle: const Text('Le menu est disponible à la commande'),
-                value: _disponible,
-                onChanged: (value) {
-                  setState(() {
-                    _disponible = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-              // Image
-              ImageUploadWidget(
-                currentImageUrl: _imageUrl,
-                onImageUploaded: (imageUrl) {
-                  setState(() {
-                    _imageUrl = imageUrl;
-                  });
-                },
-                uploadType: 'menu',
-                itemId: widget.menuToEdit?.id ?? 0,
-              ),
-              const SizedBox(height: 24),
+                      // Bloc 4 — Image
+                      _sectionLabel('Image', icon: Icons.image_outlined),
+                      const SizedBox(height: 8),
+                      Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: ImageUploadWidget(
+                            currentImageUrl: _imageUrl,
+                            onImageUploaded: (imageUrl) => setState(() => _imageUrl = imageUrl),
+                            uploadType: 'menu',
+                            itemId: widget.menuToEdit?.id ?? 0,
+                          ),
+                        ),
+                      ),
 
-              // Boutons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isLoading ? null : () => Navigator.pop(context),
-                      child: const Text('Annuler'),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _saveMenu,
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                      const SizedBox(height: 20),
+
+                      // Actions — alignées à gauche + couleurs "plein"
+                      Row(
+                        children: [
+                          FilledButton.tonal(
+                            onPressed: _isLoading ? null : () => Navigator.pop(context),
+                            child: const Text('Annuler'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: _isLoading ? null : _saveMenu,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                          : Text(widget.menuToEdit != null ? 'Modifier' : 'Créer'),
-                    ),
+                                : Text(isEditing ? 'Modifier' : 'Créer'),
+                          ),
+                          const Spacer(),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -472,7 +472,7 @@ class _UnifiedPaymentFormState extends State<UnifiedPaymentForm> {
                   'Paiement sécurisé par Stripe. Vos informations de carte sont chiffrées et ne sont jamais stockées.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.green.shade700,
+                    color: const Color(0xFF387D35),
                   ),
                 ),
               ),

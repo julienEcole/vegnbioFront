@@ -12,7 +12,7 @@ class OffresService {
   };
 
   Future<List<Map<String, dynamic>>> listOffres() async {
-    final uri = Uri.parse('$baseUrl/offreRouter/offres'); // ✅ PUBLIC GET /offreRouter/offres
+    final uri = Uri.parse('$baseUrl/offreRouter/offres');
     print('[OffresService] GET $uri'); // debug
     final res = await http.get(uri);
     if (res.statusCode >= 400) {
@@ -28,7 +28,7 @@ class OffresService {
 
   Future<void> createOffre(Map<String, dynamic> body) async {
     final token = await getToken();
-    final uri = Uri.parse('$baseUrl/offreRouter/offres'); // ✅ POST /offreRouter/offres (auth)
+    final uri = Uri.parse('$baseUrl/offreRouter/offres');
     final res = await http.post(uri, headers: _headers(token), body: jsonEncode(body));
     if (res.statusCode >= 400) {
       throw Exception('Erreur createOffre: ${res.body}');
@@ -37,7 +37,7 @@ class OffresService {
 
   Future<void> updateOffre(int id, Map<String, dynamic> patch) async {
     final token = await getToken();
-    final uri = Uri.parse('$baseUrl/offreRouter/offres/$id'); // ✅ PATCH /offreRouter/offres/:id
+    final uri = Uri.parse('$baseUrl/offreRouter/offres/$id');
     final res = await http.patch(uri, headers: _headers(token), body: jsonEncode(patch));
     if (res.statusCode >= 400) {
       throw Exception('Erreur updateOffre: ${res.body}');
@@ -46,7 +46,7 @@ class OffresService {
 
   Future<void> toggleDisponibilite(int id) async {
     final token = await getToken();
-    final uri = Uri.parse('$baseUrl/offreRouter/offres/$id/toggle'); // ✅ PATCH /offreRouter/offres/:id/toggle
+    final uri = Uri.parse('$baseUrl/offreRouter/offres/$id/toggle');
     final res = await http.patch(uri, headers: _headers(token));
     if (res.statusCode >= 400) {
       throw Exception('Erreur toggle: ${res.body}');
@@ -55,7 +55,7 @@ class OffresService {
 
   Future<void> deleteOffre(int id) async {
     final token = await getToken();
-    final uri = Uri.parse('$baseUrl/offreRouter/offres/$id'); // ✅ DELETE /offreRouter/offres/:id
+    final uri = Uri.parse('$baseUrl/offreRouter/offres/$id');
     final res = await http.delete(uri, headers: _headers(token));
     if (res.statusCode >= 400) {
       throw Exception('Erreur deleteOffre: ${res.body}');

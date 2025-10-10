@@ -28,44 +28,39 @@ class _AuthLoginScreenState extends ConsumerState<AuthLoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      await ref.read(authProvider.notifier).login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-      
-      // Vérifier le résultat
-      final authState = ref.read(authProvider);
-      if (authState.isAuthenticated) {
-        if (mounted) {
-          // Vérifier s'il y a des filtres sauvegardés (venant de la vue publique des menus)
-          final savedFilters = ref.read(savedFiltersProvider);
-          
-          if (savedFilters != null) {
-            // Restaurer les filtres et retourner aux menus
-            ref.read(searchCriteriaProvider.notifier).state = savedFilters;
-            ref.read(savedFiltersProvider.notifier).state = null; // Nettoyer
-            context.go('/menus');
-          } else {
-            // Navigation par défaut selon le rôle
-            final role = authState.role?.toLowerCase();
-            switch (role) {
-              case 'admin':
-              case 'restaurateur':
-              case 'fournisseur':
-                context.go('/dashboard');
-                break;
-              case 'client':
-                context.go('/menus');
-                break;
-              default:
-                context.go('/');
-            }
-          }
-        }
-      }
+    if (!_formKey.currentState!.validate()) return;
+
+    await ref.read(authProvider.notifier).login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    final authState = ref.read(authProvider);
+    if (!authState.isAuthenticated || !mounted) return;
+
+    final role = authState.role?.toLowerCase();
+    final savedFilters = ref.read(savedFiltersProvider);
+
+    // Règles de redirection
+    if (role == 'client') {
+      // Cas spécial client : vers /restaurants
+      // (Si tu veux absolument revenir aux menus quand savedFilters existe, dé-commente le bloc suivant)
+      /*
+    if (savedFilters != null) {
+      ref.read(searchCriteriaProvider.notifier).state = savedFilters;
+      ref.read(savedFiltersProvider.notifier).state = null;
+      context.go('/menus');
+      return;
     }
+    */
+      context.go('/restaurants');
+      return;
+    }
+
+    // Tous les autres rôles (admin/restaurateur/fournisseur) -> profil
+    context.go('/');
   }
+
 
   @override
   Widget build(BuildContext context) {

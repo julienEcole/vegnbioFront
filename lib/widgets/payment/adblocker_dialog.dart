@@ -143,7 +143,7 @@ class AdBlockerDialog extends StatelessWidget {
                       'Vos données de carte sont toujours sécurisées par Stripe',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.green.shade700,
+                        color: const Color(0xFF387D35),
                         fontWeight: FontWeight.w500,
                       ),
                     ),

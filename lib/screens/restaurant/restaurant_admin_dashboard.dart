@@ -48,6 +48,23 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
 
   @override
   Widget build(BuildContext context) {
+    // —— Shell centré + largeur max pour éviter full width sur le web
+    Widget wrapShell(Widget child) {
+      const maxContentWidth = 1100.0;
+      final width = MediaQuery.of(context).size.width;
+      final hPad = width >= 1200 ? 32.0 : (width >= 900 ? 24.0 : 16.0);
+
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: maxContentWidth),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 12),
+            child: child,
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('🏪 Administration des Restaurants'),
@@ -65,7 +82,7 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
           ),
         ],
       ),
-      body: _buildBody(),
+      body: wrapShell(_buildBody()),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToMenuManagement,
         icon: const Icon(Icons.restaurant_menu),
@@ -149,14 +166,18 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
     return RefreshIndicator(
       onRefresh: _loadRestaurants,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(top: 8, bottom: 24), // padding vertical, l’horizontal est géré par le shell
         itemCount: _restaurants.length,
         itemBuilder: (context, index) {
           final restaurant = _restaurants[index];
+          final scheme = Theme.of(context).colorScheme;
+
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
+            elevation: 1.5,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -165,45 +186,45 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
                     children: [
                       // Image du restaurant
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         child: restaurant.primaryImageUrl != null
                             ? Image.network(
-                                restaurant.primaryImageUrl!,
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.primaryContainer,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      Icons.restaurant,
-                                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                      size: 32,
-                                    ),
-                                  );
-                                },
-                              )
-                            : Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.restaurant,
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                  size: 32,
-                                ),
+                          restaurant.primaryImageUrl!,
+                          width: 88,
+                          height: 88,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 88,
+                              height: 88,
+                              decoration: BoxDecoration(
+                                color: scheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(10),
                               ),
+                              child: Icon(
+                                Icons.restaurant,
+                                color: scheme.onPrimaryContainer,
+                                size: 32,
+                              ),
+                            );
+                          },
+                        )
+                            : Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            color: scheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.restaurant,
+                            color: scheme.onPrimaryContainer,
+                            size: 32,
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      
+                      const SizedBox(width: 14),
+
                       // Informations du restaurant
                       Expanded(
                         child: Column(
@@ -212,45 +233,45 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
                             Text(
                               restaurant.nom,
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            
+                            const SizedBox(height: 6),
+
                             Row(
                               children: [
                                 Icon(
                                   Icons.location_on,
-                                  size: 16,
-                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 18,
+                                  color: scheme.primary,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 6),
                                 Text(
                                   restaurant.quartier,
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w500,
+                                    color: scheme.primary,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
                             ),
-                            
+
                             if (restaurant.adresse != null && restaurant.adresse!.isNotEmpty) ...[
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
                               Text(
                                 restaurant.adresse!,
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: scheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
-                            
+
                             if (restaurant.hasImages) ...[
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(
                                 '📸 ${restaurant.imagesCount} image${restaurant.imagesCount > 1 ? 's' : ''}',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: scheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -259,34 +280,41 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Boutons d'action
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
+
+                  const SizedBox(height: 14),
+
+                  // Boutons d'action (gauche, compacts, "filled", pas full width)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.icon(
                           onPressed: () => _navigateToMenuManagement(restaurantId: restaurant.id),
-                          icon: const Icon(Icons.restaurant_menu, size: 16, color: Colors.green),
-                          label: const Text('Menus', style: TextStyle(color: Colors.green)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          icon: const Icon(Icons.restaurant_menu, size: 18),
+                          label: const Text('Menus'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
+                        FilledButton.icon(
                           onPressed: () => _editRestaurant(restaurant),
-                          icon: const Icon(Icons.edit, size: 16),
+                          icon: const Icon(Icons.edit, size: 18),
                           label: const Text('Modifier'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: scheme.primary,
+                            foregroundColor: scheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -319,7 +347,7 @@ class _RestaurantAdminDashboardState extends ConsumerState<RestaurantAdminDashbo
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const MenuAdminDashboard(),
+        builder: (context) => MenuAdminDashboard(restaurantId: restaurantId),
       ),
     );
   }
