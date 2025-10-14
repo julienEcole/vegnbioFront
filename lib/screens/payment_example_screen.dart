@@ -26,7 +26,7 @@ class _PaymentExampleScreenState extends State<PaymentExampleScreen> {
         _isInitialized = true;
       });
     } catch (e) {
-      print('❌ Erreur lors de l\'initialisation du paiement: $e');
+      // print('❌ Erreur lors de l\'initialisation du paiement: $e');
     }
   }
 

@@ -9,43 +9,43 @@ class DashboardViewFactory {
   
   /// Créer la vue de tableau de bord appropriée selon le rôle de l'utilisateur
   static Widget createDashboardView(WidgetRef ref) {
-    print('📊 [DashboardViewFactory] createDashboardView appelé');
+    // print('📊 [DashboardViewFactory] createDashboardView appelé');
     
     final authState = ref.watch(authProvider);
-    print('📊 [DashboardViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
+    // print('📊 [DashboardViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Vérifier si l'utilisateur est authentifié
     if (!authState.isAuthenticated) {
-      print('📊 [DashboardViewFactory] Utilisateur non authentifié - Redirection vers auth');
+      // print('📊 [DashboardViewFactory] Utilisateur non authentifié - Redirection vers auth');
       return _createUnauthorizedView();
     }
     
     final role = authState.role?.toLowerCase();
-    print('📊 [DashboardViewFactory] Rôle détecté: $role');
+    // print('📊 [DashboardViewFactory] Rôle détecté: $role');
     
     // Créer le tableau de bord selon le rôle
     switch (role) {
       case 'admin':
-        print('📊 [DashboardViewFactory] Affichage: Dashboard Admin');
+        // print('📊 [DashboardViewFactory] Affichage: Dashboard Admin');
         return _createAdminDashboard(ref);
       case 'restaurateur':
-        print('📊 [DashboardViewFactory] Affichage: Dashboard Restaurateur');
+        // print('📊 [DashboardViewFactory] Affichage: Dashboard Restaurateur');
         return _createRestaurateurDashboard(ref);
       case 'fournisseur':
-        print('📊 [DashboardViewFactory] Affichage: Dashboard Fournisseur');
+        // print('📊 [DashboardViewFactory] Affichage: Dashboard Fournisseur');
         return _createFournisseurDashboard(ref);
       case 'client':
-        print('📊 [DashboardViewFactory] Affichage: Dashboard Client');
+        // print('📊 [DashboardViewFactory] Affichage: Dashboard Client');
         return _createClientDashboard(ref);
       default:
-        print('📊 [DashboardViewFactory] Rôle non reconnu: $role - Dashboard par défaut');
+        // print('📊 [DashboardViewFactory] Rôle non reconnu: $role - Dashboard par défaut');
         return _createDefaultDashboard(ref);
     }
   }
   
   /// Créer un tableau de bord spécifique selon le type
   static Widget createSpecificDashboardView(DashboardViewType type, WidgetRef ref) {
-    print('📊 [DashboardViewFactory] createSpecificDashboardView: $type');
+    // print('📊 [DashboardViewFactory] createSpecificDashboardView: $type');
     
     switch (type) {
       case DashboardViewType.admin:

@@ -11,7 +11,7 @@ class ReportingService {
   /// POST /reports/createReport
   Future<void> createReport(ReportRequest req, {required String token}) async {
     final url = Uri.parse('$_baseUrl/createReport');
-    print('🌐 [ReportingService] POST $url');
+    // print('🌐 [ReportingService] POST $url');
     final res = await http.post(
       url,
       headers: {
@@ -20,7 +20,7 @@ class ReportingService {
       },
       body: json.encode(req.toJson()),
     );
-    print('📥 [ReportingService] POST status=${res.statusCode} body=${res.body}');
+    // print('📥 [ReportingService] POST status=${res.statusCode} body=${res.body}');
     if (res.statusCode != 200 && res.statusCode != 201) {
       throw Exception('HTTP ${res.statusCode}: ${res.body}');
     }
@@ -45,13 +45,13 @@ class ReportingService {
       if (q != null && q.isNotEmpty) 'q': q,
     };
     final url = Uri.parse(_withQuery('$_baseUrl', qp));
-    print('🌐 [ReportingService] GET $url');
+    // print('🌐 [ReportingService] GET $url');
 
     final res = await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     });
-    print('📥 [ReportingService] GET status=${res.statusCode} body=${res.body}');
+    // print('📥 [ReportingService] GET status=${res.statusCode} body=${res.body}');
     if (res.statusCode != 200) {
       throw Exception('HTTP ${res.statusCode}: ${res.body}');
     }
@@ -61,12 +61,12 @@ class ReportingService {
   /// GET /reports/:id
   Future<Report> getReportById(int id, {required String token}) async {
     final url = Uri.parse('$_baseUrl/$id');
-    print('🌐 [ReportingService] GET $url');
+    // print('🌐 [ReportingService] GET $url');
     final res = await http.get(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     });
-    print('📥 [ReportingService] GET by id status=${res.statusCode} body=${res.body}');
+    // print('📥 [ReportingService] GET by id status=${res.statusCode} body=${res.body}');
     if (res.statusCode != 200) {
       throw Exception('HTTP ${res.statusCode}: ${res.body}');
     }

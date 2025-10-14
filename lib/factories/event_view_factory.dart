@@ -11,26 +11,26 @@ class EventViewFactory {
   
   /// Créer la vue d'événement appropriée selon l'état d'authentification et les permissions
   static Widget createEventView(WidgetRef ref, {int? eventId}) {
-    print('🎉 [EventViewFactory] createEventView appelé');
-    print('🎉 [EventViewFactory] eventId: $eventId');
+    // print('🎉 [EventViewFactory] createEventView appelé');
+    // print('🎉 [EventViewFactory] eventId: $eventId');
     
     final authState = ref.watch(authProvider);
-    print('🎉 [EventViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
+    // print('🎉 [EventViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Si l'utilisateur est authentifié et a les permissions d'administration
     if (authState.isAuthenticated && _hasAdminPermissions(authState.role)) {
-      print('🎉 [EventViewFactory] Affichage: EventAdminDashboard (Admin/Restaurateur)');
+      // print('🎉 [EventViewFactory] Affichage: EventAdminDashboard (Admin/Restaurateur)');
       return const EventAdminDashboard();
     }
     
     // Sinon, afficher la vue publique
-    print('🎉 [EventViewFactory] Affichage: EventsScreen (Public)');
+    // print('🎉 [EventViewFactory] Affichage: EventsScreen (Public)');
     return const EventsScreen();
   }
   
   /// Créer une vue d'événement spécifique
   static Widget createSpecificEventView(EventViewType type, WidgetRef ref, {int? eventId}) {
-    print('🎉 [EventViewFactory] createSpecificEventView: $type');
+    // print('🎉 [EventViewFactory] createSpecificEventView: $type');
     
     switch (type) {
       case EventViewType.publicList:

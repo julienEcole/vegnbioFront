@@ -12,47 +12,47 @@ import '../screens/auth/auth_profile_screen.dart';
 class AuthViewFactory {
   /// Créer le widget d'authentification approprié selon l'état
   static Widget createAuthView(WidgetRef ref, {AuthViewType? forcedType}) {
-    print('🏗️ [AuthViewFactory] createAuthView appelé');
+    // print('🏗️ [AuthViewFactory] createAuthView appelé');
     
     final authState = ref.watch(authProvider);
-    print('🏗️ [AuthViewFactory] AuthState: ${authState.status}');
+    // print('🏗️ [AuthViewFactory] AuthState: ${authState.status}');
     
     // Si un type est forcé, l'utiliser directement
     if (forcedType != null) {
-      print('🏗️ [AuthViewFactory] Type forcé: $forcedType');
+      // print('🏗️ [AuthViewFactory] Type forcé: $forcedType');
       return _createViewByType(forcedType, ref);
     }
     
     // Si l'état est non authentifié, afficher directement l'écran par défaut
     if (authState.status == AuthStatus.unauthenticated) {
-      print('🏗️ [AuthViewFactory] État non authentifié - Affichage écran par défaut');
+      // print('🏗️ [AuthViewFactory] État non authentifié - Affichage écran par défaut');
       return const AuthDefaultScreen();
     }
     
     // Sinon, déterminer selon l'état d'authentification
     if (authState.isLoading) {
-      print('🏗️ [AuthViewFactory] État: Loading');
+      // print('🏗️ [AuthViewFactory] État: Loading');
       return const AuthLoadingView();
     }
     
     if (authState.isAuthenticated) {
-      print('🏗️ [AuthViewFactory] État: Authenticated - Affichage SimpleProfileScreen');
+      // print('🏗️ [AuthViewFactory] État: Authenticated - Affichage SimpleProfileScreen');
       return const AuthProfileScreen();
     }
     
     if (authState.hasError) {
-      print('🏗️ [AuthViewFactory] État: Error - ${authState.errorMessage}');
+      // print('🏗️ [AuthViewFactory] État: Error - ${authState.errorMessage}');
       return AuthDefaultScreen(errorMessage: authState.errorMessage);
     }
     
     // Par défaut, afficher l'écran de connexion/inscription
-    print('🏗️ [AuthViewFactory] État: Par défaut - AuthDefaultScreen');
+    // print('🏗️ [AuthViewFactory] État: Par défaut - AuthDefaultScreen');
     return const AuthDefaultScreen();
   }
   
   /// Créer un écran spécifique selon le type
   static Widget _createViewByType(AuthViewType type, WidgetRef ref) {
-    print('🏗️ [AuthViewFactory] _createViewByType: $type');
+    // print('🏗️ [AuthViewFactory] _createViewByType: $type');
     
     switch (type) {
       case AuthViewType.defaultView:
@@ -68,7 +68,7 @@ class AuthViewFactory {
   
   /// Naviguer vers un écran d'authentification spécifique
   static void navigateToAuthView(BuildContext context, AuthViewType type) {
-    print('🔀 [AuthViewFactory] navigateToAuthView: $type');
+    // print('🔀 [AuthViewFactory] navigateToAuthView: $type');
     
     switch (type) {
       case AuthViewType.defaultView:

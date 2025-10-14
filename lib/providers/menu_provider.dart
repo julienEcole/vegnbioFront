@@ -12,13 +12,13 @@ final menuRefreshProvider = StateProvider<int>((ref) => 0);
 final menusProvider = FutureProvider<List<Menu>>((ref) async {
   // Écouter le provider de rafraîchissement pour forcer la mise à jour
   final refreshCount = ref.watch(menuRefreshProvider);
-  print('🚨🚨🚨 [menusProvider] APPELÉ ! refreshCount: $refreshCount 🚨🚨🚨');
+      // print('🚨🚨🚨 [menusProvider] APPELÉ ! refreshCount: $refreshCount 🚨🚨🚨');
   debugPrint('🚨🚨🚨 [menusProvider] APPELÉ ! refreshCount: $refreshCount 🚨🚨🚨');
   
   // Utiliser le cache intelligent
   final cacheService = ref.read(menuCacheServiceProvider);
   final menus = await cacheService.getMenus();
-  print('📋 menusProvider: Chargement depuis le cache intelligent (${menus.length} menus)');
+      // print('📋 menusProvider: Chargement depuis le cache intelligent (${menus.length} menus)');
   
   return menus;
 });
@@ -146,11 +146,11 @@ final filteredMenusProvider = FutureProvider<List<Menu>>((ref) async {
 
 // Provider pour les allergènes disponibles dans la base de données
 final availableAllergenesProvider = FutureProvider<List<String>>((ref) async {
-  print('🏷️  Provider availableAllergenesProvider appelé');
+      // print('🏷️  Provider availableAllergenesProvider appelé');
   
   // Utiliser les menus déjà chargés au lieu de faire un nouvel appel API
   final allMenus = await ref.watch(menusProvider.future);
-  print('🏷️  Menus chargés: ${allMenus.length}');
+      // print('🏷️  Menus chargés: ${allMenus.length}');
   
   final Set<String> allergenes = {};
   for (final menu in allMenus) {
@@ -158,7 +158,7 @@ final availableAllergenesProvider = FutureProvider<List<String>>((ref) async {
   }
   
   final result = allergenes.toList()..sort();
-  print('🏷️  Provider availableAllergenesProvider retourne: $result (${result.length} au total)');
+      // print('🏷️  Provider availableAllergenesProvider retourne: $result (${result.length} au total)');
   return result;
 });
 
@@ -172,11 +172,11 @@ final availableAllergenesForRestaurantProvider = FutureProvider<List<String>>((r
   // Si un restaurant est sélectionné, filtrer seulement ses menus
   if (searchCriteria.restaurantId != null) {
     menusToCheck = allMenus.where((menu) => menu.restaurantId == searchCriteria.restaurantId).toList();
-    print('🏷️  Filtrage allergènes pour restaurant ${searchCriteria.restaurantId}');
+    // print('🏷️  Filtrage allergènes pour restaurant ${searchCriteria.restaurantId}');
   } else {
     // Sinon, utiliser tous les menus
     menusToCheck = allMenus;
-    print('🏷️  Récupération de tous les allergènes disponibles');
+    // print('🏷️  Récupération de tous les allergènes disponibles');
   }
   
   // Extraire tous les allergènes uniques
@@ -186,17 +186,17 @@ final availableAllergenesForRestaurantProvider = FutureProvider<List<String>>((r
   }
   
   final result = allergenes.toList()..sort();
-  print('🏷️  Allergènes trouvés: $result (${result.length} au total)');
+      // print('🏷️  Allergènes trouvés: $result (${result.length} au total)');
   return result;
 });
 
 // Provider pour les produits disponibles dans la base de données
 final availableProduitsProvider = FutureProvider<List<String>>((ref) async {
-  print('🍽️  Provider availableProduitsProvider appelé');
+      // print('🍽️  Provider availableProduitsProvider appelé');
   
   // Utiliser les menus déjà chargés au lieu de faire un nouvel appel API
   final allMenus = await ref.watch(menusProvider.future);
-  print('🍽️  Menus chargés: ${allMenus.length}');
+      // print('🍽️  Menus chargés: ${allMenus.length}');
   
   final Set<String> produits = {};
   for (final menu in allMenus) {
@@ -204,7 +204,7 @@ final availableProduitsProvider = FutureProvider<List<String>>((ref) async {
   }
   
   final result = produits.toList()..sort();
-  print('🍽️  Provider availableProduitsProvider retourne: $result (${result.length} au total)');
+      // print('🍽️  Provider availableProduitsProvider retourne: $result (${result.length} au total)');
   return result;
 });
 

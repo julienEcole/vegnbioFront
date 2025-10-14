@@ -20,9 +20,9 @@ class UnifiedPaymentService {
       } else {
         await _initializeMobile();
       }
-      print('✅ [UnifiedPaymentService] Stripe initialisé avec succès');
+      // print('✅ [UnifiedPaymentService] Stripe initialisé avec succès');
     } catch (e) {
-      print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation: $e');
+      // print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation: $e');
       rethrow;
     }
   }
@@ -32,9 +32,9 @@ class UnifiedPaymentService {
     try {
       // Pour le web, on utilise l'API backend pour créer les PaymentMethods
       // Pas besoin d'accéder directement à Stripe.js
-      print('🌐 [UnifiedPaymentService] Mode web - utilisation de l\'API backend pour Stripe');
+      // print('🌐 [UnifiedPaymentService] Mode web - utilisation de l\'API backend pour Stripe');
     } catch (e) {
-      print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation web: $e');
+      // print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation web: $e');
       rethrow;
     }
   }
@@ -44,9 +44,9 @@ class UnifiedPaymentService {
     try {
       flutter_stripe.Stripe.publishableKey = AppConfig.stripePublicKey;
       await flutter_stripe.Stripe.instance.applySettings();
-      print('📱 [UnifiedPaymentService] flutter_stripe initialisé pour mobile');
+      // print('📱 [UnifiedPaymentService] flutter_stripe initialisé pour mobile');
     } catch (e) {
-      print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation mobile: $e');
+      // print('❌ [UnifiedPaymentService] Erreur lors de l\'initialisation mobile: $e');
       rethrow;
     }
   }
@@ -113,7 +113,7 @@ class UnifiedPaymentService {
     BuildContext? context,
   }) async {
     try {
-      print('🔄 [UnifiedPaymentService] Traitement du paiement avec tokenisation...');
+      // print('🔄 [UnifiedPaymentService] Traitement du paiement avec tokenisation...');
       
       // Créer un token Stripe côté frontend
       final stripeToken = await _createStripeToken(
@@ -124,7 +124,7 @@ class UnifiedPaymentService {
         cardholderName: cardholderName,
       );
       
-      print('✅ [UnifiedPaymentService] Token créé: ${stripeToken.substring(0, 10)}...');
+      // print('✅ [UnifiedPaymentService] Token créé: ${stripeToken.substring(0, 10)}...');
       
       // Appeler l'API backend avec le token
       final response = await http.post(
@@ -145,14 +145,14 @@ class UnifiedPaymentService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ [UnifiedPaymentService] Paiement traité avec succès');
+        // print('✅ [UnifiedPaymentService] Paiement traité avec succès');
         return StripePaymentResult.fromJson(data);
       } else {
         final errorData = json.decode(response.body);
         throw Exception(errorData['error'] ?? 'Erreur lors du traitement du paiement');
       }
     } catch (e) {
-      print('❌ [UnifiedPaymentService] Erreur lors du traitement du paiement: $e');
+      // print('❌ [UnifiedPaymentService] Erreur lors du traitement du paiement: $e');
       
       // Si c'est un problème d'AdBlocker, afficher le dialog informatif
       if (e.toString().contains('ERR_BLOCKED_BY_CLIENT') || 
@@ -180,7 +180,7 @@ class UnifiedPaymentService {
     required String cardholderName,
   }) async {
     try {
-      print('🔄 [UnifiedPaymentService] Création du token Stripe...');
+      // print('🔄 [UnifiedPaymentService] Création du token Stripe...');
       
       if (kIsWeb) {
         return await _createStripeTokenWeb(
@@ -200,7 +200,7 @@ class UnifiedPaymentService {
         );
       }
     } catch (e) {
-      print('❌ [UnifiedPaymentService] Erreur lors de la création du token: $e');
+      // print('❌ [UnifiedPaymentService] Erreur lors de la création du token: $e');
       rethrow;
     }
   }
@@ -214,7 +214,7 @@ class UnifiedPaymentService {
     required String cardholderName,
   }) async {
     try {
-      print('🔄 [UnifiedPaymentService] Création du PaymentMethod via API backend...');
+      // print('🔄 [UnifiedPaymentService] Création du PaymentMethod via API backend...');
       
       // Appeler l'API backend pour créer un vrai PaymentMethod Stripe
       final response = await http.post(
@@ -236,8 +236,8 @@ class UnifiedPaymentService {
         final data = json.decode(response.body);
         final paymentMethodId = data['paymentMethodId'] as String;
         
-        print('✅ [UnifiedPaymentService] PaymentMethod créé: $paymentMethodId');
-        print('💳 [UnifiedPaymentService] Carte: ${data['card']['brand']} **** ${data['card']['last4']}');
+        // print('✅ [UnifiedPaymentService] PaymentMethod créé: $paymentMethodId');
+        // print('💳 [UnifiedPaymentService] Carte: ${data['card']['brand']} **** ${data['card']['last4']}');
         
         return paymentMethodId;
       } else {
@@ -246,7 +246,7 @@ class UnifiedPaymentService {
       }
       
     } catch (e) {
-      print('❌ [UnifiedPaymentService] Erreur création PaymentMethod: $e');
+      // print('❌ [UnifiedPaymentService] Erreur création PaymentMethod: $e');
       rethrow;
     }
   }

@@ -32,7 +32,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
 
   Future<void> _loadCommandes() async {
     try {
-      print('🔄 [OrdersScreen] Début du chargement des commandes...');
+      // print('🔄 [OrdersScreen] Début du chargement des commandes...');
       setState(() {
         _isLoading = true;
         _error = null;
@@ -42,11 +42,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       await ref.read(authProvider.notifier).checkAuthStatus();
       
       final authState = ref.read(authProvider);
-      print('🔐 [OrdersScreen] État d\'authentification: ${authState.isAuthenticated}');
+      // print('🔐 [OrdersScreen] État d\'authentification: ${authState.isAuthenticated}');
       
       // Vérifier si l'utilisateur est connecté
       if (!authState.isAuthenticated || authState.userData == null) {
-        print('❌ [OrdersScreen] Utilisateur non connecté');
+        // print('❌ [OrdersScreen] Utilisateur non connecté');
         setState(() {
           _error = 'Utilisateur non connecté';
           _isLoading = false;
@@ -59,11 +59,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       final token = authService.token;
       final userId = authState.userData!['id'] as int;
       
-      print('👤 [OrdersScreen] User ID: $userId');
-      print('🔑 [OrdersScreen] Token: ${token != null ? 'Présent' : 'Absent'}');
+      // print('👤 [OrdersScreen] User ID: $userId');
+      // print('🔑 [OrdersScreen] Token: ${token != null ? 'Présent' : 'Absent'}');
 
       // Charger les commandes et restaurants en parallèle
-      print('📡 [OrdersScreen] Appel API getUserCommandes...');
+      // print('📡 [OrdersScreen] Appel API getUserCommandes...');
       final results = await Future.wait([
         ApiService().getUserCommandes(
           userId: userId,
@@ -75,7 +75,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       final commandes = results[0] as List<Commande>;
       final restaurants = results[1] as Map<int, Restaurant>;
       
-      print('✅ [OrdersScreen] ${commandes.length} commandes récupérées');
+      // print('✅ [OrdersScreen] ${commandes.length} commandes récupérées');
       
       setState(() {
         _commandes = commandes;
@@ -83,7 +83,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ [OrdersScreen] Erreur lors du chargement: $e');
+      // print('❌ [OrdersScreen] Erreur lors du chargement: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;

@@ -11,27 +11,27 @@ class AuthNavigationService {
   
   /// Naviguer vers l'authentification (profil ou connexion selon l'état)
   static void navigateToAuth(BuildContext context, WidgetRef ref) {
-    print('🔐 [AuthNavigationService] navigateToAuth appelé');
+    // print('🔐 [AuthNavigationService] navigateToAuth appelé');
     
     final authState = ref.read(authProvider);
-    print('🔐 [AuthNavigationService] État auth actuel: ${authState.status}');
+    // print('🔐 [AuthNavigationService] État auth actuel: ${authState.status}');
     
     // Toujours naviguer vers /profil
     // AuthViewFactory gérera l'affichage selon l'état d'authentification
-    print('🔐 [AuthNavigationService] Navigation vers /profil via AuthViewFactory');
+    // print('🔐 [AuthNavigationService] Navigation vers /profil via AuthViewFactory');
     AuthViewFactory.navigateToAuthView(context, AuthViewType.profile);
   }
 
   /// Naviguer vers l'accueil
   static void navigateToHome(BuildContext context) {
-    print('🏠 [AuthNavigationService] Navigation vers l\'accueil');
+    // print('🏠 [AuthNavigationService] Navigation vers l\'accueil');
     context.go('/');
   }
 
   /// Naviguer vers une route spécifique après authentification
   static void navigateAfterAuth(BuildContext context, String? redirectPath) {
     final path = redirectPath ?? '/';
-    print('🔀 [AuthNavigationService] Navigation après auth vers: $path');
+    // print('🔀 [AuthNavigationService] Navigation après auth vers: $path');
     context.go(path);
   }
 
@@ -87,7 +87,7 @@ class AuthNavigationService {
 
   /// Naviguer vers l'écran de connexion
   static void navigateToLogin(BuildContext context) {
-    print('🔐 [AuthNavigationService] Navigation vers l\'écran de connexion');
+    // print('🔐 [AuthNavigationService] Navigation vers l\'écran de connexion');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AuthLoginScreen()),
@@ -96,7 +96,7 @@ class AuthNavigationService {
 
   /// Naviguer vers l'écran d'inscription
   static void navigateToRegister(BuildContext context) {
-    print('📝 [AuthNavigationService] Navigation vers l\'écran d\'inscription');
+    // print('📝 [AuthNavigationService] Navigation vers l\'écran d\'inscription');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AuthRegisterScreen()),

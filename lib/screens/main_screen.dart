@@ -19,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget _getScreen(int index) {
     switch (index) {
       case 0:
-        print('🏠 [MainScreen] HomeScreen');
+        // print('🏠 [MainScreen] HomeScreen');
         return const HomeScreen();
       case 1:
         return MenuScreen();
@@ -36,13 +36,13 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('🧭 [MainScreen] BUILD APPELÉ ! Index: $_selectedIndex');
+    // print('🧭 [MainScreen] BUILD APPELÉ ! Index: $_selectedIndex');
     return Scaffold(
       body: _getScreen(_selectedIndex),
       bottomNavigationBar: CustomNavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
-          print('🔄 [MainScreen] Navigation vers index: $index');
+          // print('🔄 [MainScreen] Navigation vers index: $index');
           setState(() {
             _selectedIndex = index;
           });

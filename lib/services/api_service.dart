@@ -158,44 +158,44 @@ class ApiService {
   // Récupérer tous les restaurants
   Future<List<Restaurant>> getRestaurants() async {
     try {
-      print('🔗 Tentative de connexion à: $baseUrl/restaurants');
+      // print('🔗 Tentative de connexion à: $baseUrl/restaurants');
       
       final response = await http.get(
         Uri.parse('$baseUrl/restaurants'),
         headers: headers,
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 Statut de réponse: ${response.statusCode}');
+      // print('📡 Statut de réponse: ${response.statusCode}');
       
       if (response.statusCode == 200) {
-        print('📄 Corps de réponse reçu: ${response.body.substring(0, 200)}...');
+        // print('📄 Corps de réponse reçu: ${response.body.substring(0, 200)}...');
         try {
           final List<dynamic> jsonData = json.decode(response.body);
-          print('🔢 Nombre de restaurants trouvés: ${jsonData.length}');
+          // print('🔢 Nombre de restaurants trouvés: ${jsonData.length}');
           
           final List<Restaurant> restaurants = [];
           for (int i = 0; i < jsonData.length; i++) {
             try {
               final restaurant = Restaurant.fromJson(jsonData[i] as Map<String, dynamic>);
               restaurants.add(restaurant);
-              print('✅ Restaurant ${i + 1} parsé: ${restaurant.nom}');
+              // print('✅ Restaurant ${i + 1} parsé: ${restaurant.nom}');
             } catch (e) {
-              print('❌ Erreur parsing restaurant ${i + 1}: $e');
-              print('📄 Données du restaurant ${i + 1}: ${jsonData[i]}');
+              // print('❌ Erreur parsing restaurant ${i + 1}: $e');
+              // print('📄 Données du restaurant ${i + 1}: ${jsonData[i]}');
               rethrow;
             }
           }
           return restaurants;
         } catch (e) {
-          print('❌ Erreur de parsing JSON: $e');
-          print('📄 Réponse complète: ${response.body}');
+          // print('❌ Erreur de parsing JSON: $e');
+          // print('📄 Réponse complète: ${response.body}');
           rethrow;
         }
       } else {
         throw Exception('Erreur HTTP ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print('❌ Erreur de connexion détaillée: $e');
+      // print('❌ Erreur de connexion détaillée: $e');
       
       if (e.toString().contains('Connection refused') || 
           e.toString().contains('ERR_CONNECTION_REFUSED')) {
@@ -326,19 +326,19 @@ class ApiService {
       }
 
       final uri = Uri.parse('$baseUrl/menus/search').replace(queryParameters: queryParams);
-      print('🔍 Recherche menus avec URL: $uri');
+      // print('🔍 Recherche menus avec URL: $uri');
       
       final response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
-        print('🔢 Nombre de menus trouvés: ${jsonData.length}');
+        // print('🔢 Nombre de menus trouvés: ${jsonData.length}');
         return jsonData.map((json) => Menu.fromJson(json)).toList();
       } else {
         throw Exception('Erreur lors de la recherche de menus: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Erreur recherche menus: $e');
+      // print('❌ Erreur recherche menus: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -350,28 +350,28 @@ class ApiService {
 
   // Récupérer tous les allergènes disponibles dans les menus
   Future<List<String>> getAvailableAllergenes() async {
-    print('🔍 Récupération des allergènes disponibles...');
+    // print('🔍 Récupération des allergènes disponibles...');
     
     try {
       final result = await _extractAllergenesFromMenus();
-      print('✅ getAvailableAllergenes retourne: $result');
+      // print('✅ getAvailableAllergenes retourne: $result');
       return result;
     } catch (e) {
-      print('❌ Erreur dans getAvailableAllergenes: $e');
+      // print('❌ Erreur dans getAvailableAllergenes: $e');
       return [];
     }
   }
 
   // Récupérer tous les produits disponibles dans les menus
   Future<List<String>> getAvailableProduits() async {
-    print('🔍 Récupération des produits disponibles...');
+    // print('🔍 Récupération des produits disponibles...');
     
     try {
       final result = await _extractProduitsFromMenus();
-      print('✅ getAvailableProduits retourne: $result');
+      // print('✅ getAvailableProduits retourne: $result');
       return result;
     } catch (e) {
-      print('❌ Erreur dans getAvailableProduits: $e');
+      // print('❌ Erreur dans getAvailableProduits: $e');
       return [];
     }
   }
@@ -379,27 +379,27 @@ class ApiService {
   // Méthode fallback pour extraire les allergènes depuis tous les menus
   Future<List<String>> _extractAllergenesFromMenus() async {
     try {
-      print('📋 Récupération de tous les menus pour extraire les allergènes...');
+      // print('📋 Récupération de tous les menus pour extraire les allergènes...');
       final menus = await getMenus();
-      print('📊 Nombre de menus récupérés: ${menus.length}');
+      // print('📊 Nombre de menus récupérés: ${menus.length}');
       
       final Set<String> allAllergenes = {};
       
       for (int i = 0; i < menus.length; i++) {
         final menu = menus[i];
-        print('🍽️  Menu ${i + 1}: "${menu.titre}" - Allergènes: ${menu.allergenes}');
+        // print('🍽️  Menu ${i + 1}: "${menu.titre}" - Allergènes: ${menu.allergenes}');
         if (menu.allergenes.isNotEmpty) {
           allAllergenes.addAll(menu.allergenes);
         }
       }
       
       final allergenes = allAllergenes.toList()..sort();
-      print('🏷️  ALLERGÈNES FINAUX EXTRAITS: $allergenes');
-      print('🔢 Nombre total d\'allergènes uniques: ${allergenes.length}');
+      // print('🏷️  ALLERGÈNES FINAUX EXTRAITS: $allergenes');
+      // print('🔢 Nombre total d\'allergènes uniques: ${allergenes.length}');
       
       return allergenes;
     } catch (e) {
-      print('❌ Erreur extraction allergènes: $e');
+      // print('❌ Erreur extraction allergènes: $e');
       return [];
     }
   }
@@ -407,27 +407,27 @@ class ApiService {
   // Méthode fallback pour extraire les produits depuis tous les menus
   Future<List<String>> _extractProduitsFromMenus() async {
     try {
-      print('📋 Récupération de tous les menus pour extraire les produits...');
+      // print('📋 Récupération de tous les menus pour extraire les produits...');
       final menus = await getMenus();
-      print('📊 Nombre de menus récupérés: ${menus.length}');
+      // print('📊 Nombre de menus récupérés: ${menus.length}');
       
       final Set<String> allProduits = {};
       
       for (int i = 0; i < menus.length; i++) {
         final menu = menus[i];
-        print('🍽️  Menu ${i + 1}: "${menu.titre}" - Produits: ${menu.produits}');
+        // print('🍽️  Menu ${i + 1}: "${menu.titre}" - Produits: ${menu.produits}');
         if (menu.produits.isNotEmpty) {
           allProduits.addAll(menu.produits);
         }
       }
       
       final produits = allProduits.toList()..sort();
-      print('🏷️  PRODUITS FINAUX EXTRAITS: $produits');
-      print('🔢 Nombre total de produits uniques: ${produits.length}');
+      // print('🏷️  PRODUITS FINAUX EXTRAITS: $produits');
+      // print('🔢 Nombre total de produits uniques: ${produits.length}');
       
       return produits;
     } catch (e) {
-      print('❌ Erreur extraction produits: $e');
+      // print('❌ Erreur extraction produits: $e');
       return [];
     }
   }
@@ -461,7 +461,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('❌ Erreur récupération image principale: $e');
+      // print('❌ Erreur récupération image principale: $e');
       return null;
     }
   }
@@ -482,7 +482,7 @@ class ApiService {
       }
       return [];
     } catch (e) {
-      print('❌ Erreur récupération images restaurant: $e');
+      // print('❌ Erreur récupération images restaurant: $e');
       return [];
     }
   }
@@ -503,7 +503,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('❌ Erreur récupération image menu: $e');
+      // print('❌ Erreur récupération image menu: $e');
       return null;
     }
   }
@@ -525,15 +525,15 @@ class ApiService {
       );
       request.files.add(multipartFile);
       
-      print('📤 Upload image restaurant - URI: $uri');
-      print('📎 Fichier: ${imageFile.path}');
-      print('🎯 Type MIME: $mimeType');
+      // print('📤 Upload image restaurant - URI: $uri');
+      // print('📎 Fichier: ${imageFile.path}');
+      // print('🎯 Type MIME: $mimeType');
       
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
       
-      print('📡 Statut upload: ${response.statusCode}');
-      print('📄 Réponse: $responseBody');
+      // print('📡 Statut upload: ${response.statusCode}');
+      // print('📄 Réponse: $responseBody');
       
       if (response.statusCode == 200) {
         return json.decode(responseBody);
@@ -541,7 +541,7 @@ class ApiService {
         throw Exception('Erreur upload image restaurant: ${response.statusCode} - $responseBody');
       }
     } catch (e) {
-      print('❌ Erreur upload image restaurant: $e');
+      // print('❌ Erreur upload image restaurant: $e');
       throw Exception('Erreur lors de l\'upload de l\'image: $e');
     }
   }
@@ -563,15 +563,15 @@ class ApiService {
       );
       request.files.add(multipartFile);
       
-      print('📤 Upload image menu - URI: $uri');
-      print('📎 Fichier: ${imageFile.path}');
-      print('🎯 Type MIME: $mimeType');
+      // print('📤 Upload image menu - URI: $uri');
+      // print('📎 Fichier: ${imageFile.path}');
+      // print('🎯 Type MIME: $mimeType');
       
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
       
-      print('📡 Statut upload: ${response.statusCode}');
-      print('📄 Réponse: $responseBody');
+      // print('📡 Statut upload: ${response.statusCode}');
+      // print('📄 Réponse: $responseBody');
       
       if (response.statusCode == 200) {
         return json.decode(responseBody);
@@ -579,7 +579,7 @@ class ApiService {
         throw Exception('Erreur upload image menu: ${response.statusCode} - $responseBody');
       }
     } catch (e) {
-      print('❌ Erreur upload image menu: $e');
+      // print('❌ Erreur upload image menu: $e');
       throw Exception('Erreur lors de l\'upload de l\'image: $e');
     }
   }
@@ -631,7 +631,7 @@ class ApiService {
     List<Map<String, dynamic>>? horaires,
   }) async {
     try {
-      print('🔄 API: Début updateRestaurant pour ID $id');
+      // print('🔄 API: Début updateRestaurant pour ID $id');
       final Map<String, dynamic> updateData = {};
       
       if (nom != null) updateData['nom'] = nom;
@@ -640,7 +640,7 @@ class ApiService {
       if (equipementIds != null) updateData['equipementIds'] = equipementIds;
       if (horaires != null) updateData['horaires'] = horaires;
 
-      print('📤 API: Données à envoyer: $updateData');
+      // print('📤 API: Données à envoyer: $updateData');
 
       final response = await http.put(
         Uri.parse('$baseUrl/restaurants/$id'),
@@ -648,21 +648,21 @@ class ApiService {
         body: json.encode(updateData),
       );
 
-      print('📥 API: Réponse status: ${response.statusCode}');
-      print('📥 API: Réponse body: ${response.body}');
+      // print('📥 API: Réponse status: ${response.statusCode}');
+      // print('📥 API: Réponse body: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final restaurant = Restaurant.fromJson(jsonData);
-        print('✅ API: Restaurant mis à jour: ${restaurant.nom}');
+        // print('✅ API: Restaurant mis à jour: ${restaurant.nom}');
         return restaurant;
       } else {
         final errorData = json.decode(response.body);
-        print('❌ API: Erreur mise à jour restaurant: ${errorData['message']}');
+        // print('❌ API: Erreur mise à jour restaurant: ${errorData['message']}');
         throw Exception(errorData['message'] ?? 'Erreur lors de la mise à jour du restaurant');
       }
     } catch (e) {
-      print('❌ API: Exception updateRestaurant: $e');
+      // print('❌ API: Exception updateRestaurant: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -678,11 +678,11 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
       } else {
-        print('❌ Erreur suppression restaurant: ${response.statusCode} - ${response.body}');
+        // print('❌ Erreur suppression restaurant: ${response.statusCode} - ${response.body}');
         return false;
       }
     } catch (e) {
-      print('❌ Exception suppression restaurant: $e');
+      // print('❌ Exception suppression restaurant: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -765,7 +765,7 @@ class ApiService {
     String? imageUrl,
   }) async {
     try {
-      print('🔄 API: Début updateMenu pour ID $id');
+      // print('🔄 API: Début updateMenu pour ID $id');
       final Map<String, dynamic> updateData = {};
       
       if (titre != null) updateData['titre'] = titre;
@@ -778,7 +778,7 @@ class ApiService {
       if (disponible != null) updateData['disponible'] = disponible;
       if (imageUrl != null) updateData['imageUrl'] = imageUrl;
 
-      print('📤 API: Données à envoyer: $updateData');
+      // print('📤 API: Données à envoyer: $updateData');
 
       final response = await http.put(
         Uri.parse('$baseUrl/menus/$id'),
@@ -786,21 +786,21 @@ class ApiService {
         body: json.encode(updateData),
       );
 
-      print('📥 API: Réponse status: ${response.statusCode}');
-      print('📥 API: Réponse body: ${response.body}');
+      // print('📥 API: Réponse status: ${response.statusCode}');
+      // print('📥 API: Réponse body: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final menu = Menu.fromJson(jsonData);
-        print('✅ API: Menu mis à jour: ${menu.titre}');
+        // print('✅ API: Menu mis à jour: ${menu.titre}');
         return menu;
       } else {
         final errorData = json.decode(response.body);
-        print('❌ API: Erreur mise à jour menu: ${errorData['message']}');
+        // print('❌ API: Erreur mise à jour menu: ${errorData['message']}');
         throw Exception(errorData['message'] ?? 'Erreur lors de la mise à jour du menu');
       }
     } catch (e) {
-      print('❌ API: Exception updateMenu: $e');
+      // print('❌ API: Exception updateMenu: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -816,11 +816,11 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
       } else {
-        print('❌ Erreur suppression menu: ${response.statusCode} - ${response.body}');
+        // print('❌ Erreur suppression menu: ${response.statusCode} - ${response.body}');
         return false;
       }
     } catch (e) {
-      print('❌ Exception suppression menu: $e');
+      // print('❌ Exception suppression menu: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -895,8 +895,8 @@ class ApiService {
     String? token,
   }) async {
     try {
-      print('🛒 [ApiService] Création d\'une commande pour le restaurant $restaurantId');
-      print('🔑 [ApiService] Token: ${token != null ? 'Présent' : 'Absent'}');
+      // print('🛒 [ApiService] Création d\'une commande pour le restaurant $restaurantId');
+      // print('🔑 [ApiService] Token: ${token != null ? 'Présent' : 'Absent'}');
       
       // Envoyer seulement les menuId et quantités - les prix seront récupérés côté backend
       final commandeItems = items.map((item) => {
@@ -916,7 +916,7 @@ class ApiService {
         body['token'] = token;
       }
 
-      print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
+      // print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
 
       final response = await http.post(
         Uri.parse('$baseUrl/commandes'),
@@ -924,20 +924,20 @@ class ApiService {
         body: json.encode(body),
       ).timeout(const Duration(seconds: 30));
 
-      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
-      print('📄 [ApiService] Corps de réponse: ${response.body}');
+      // print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      // print('📄 [ApiService] Corps de réponse: ${response.body}');
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final commande = Commande.fromJson(jsonData);
-        print('✅ [ApiService] Commande créée avec succès: ID ${commande.id}');
+        // print('✅ [ApiService] Commande créée avec succès: ID ${commande.id}');
         return commande;
       } else {
         final errorData = json.decode(response.body);
         throw Exception('Erreur lors de la création de la commande: ${errorData['error'] ?? 'Erreur inconnue'}');
       }
     } catch (e) {
-      print('❌ [ApiService] Erreur lors de la création de la commande: $e');
+      // print('❌ [ApiService] Erreur lors de la création de la commande: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -945,7 +945,7 @@ class ApiService {
   /// Récupérer une commande par son ID
   Future<Commande> getCommandeById(int commandeId, {String? token}) async {
     try {
-      print('🔍 [ApiService] Récupération de la commande $commandeId');
+      // print('🔍 [ApiService] Récupération de la commande $commandeId');
       
       final body = <String, dynamic>{};
       if (token != null) {
@@ -958,19 +958,19 @@ class ApiService {
         body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      // print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final commande = Commande.fromJson(jsonData);
-        print('✅ [ApiService] Commande récupérée: ${commande.id}');
+        // print('✅ [ApiService] Commande récupérée: ${commande.id}');
         return commande;
       } else {
         final errorData = json.decode(response.body);
         throw Exception('Erreur lors de la récupération de la commande: ${errorData['error'] ?? 'Erreur inconnue'}');
       }
     } catch (e) {
-      print('❌ [ApiService] Erreur lors de la récupération de la commande: $e');
+      // print('❌ [ApiService] Erreur lors de la récupération de la commande: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -978,7 +978,7 @@ class ApiService {
   /// Récupérer toutes les commandes (admin uniquement)
   Future<List<Commande>> getAllCommandes({String? token}) async {
     try {
-      print('📋 [ApiService] Récupération de toutes les commandes');
+      // print('📋 [ApiService] Récupération de toutes les commandes');
       
       final body = <String, dynamic>{};
       if (token != null) {
@@ -991,21 +991,21 @@ class ApiService {
         body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      // print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         final List<Commande> commandes = jsonData
             .map((data) => Commande.fromJson(data as Map<String, dynamic>))
             .toList();
-        print('✅ [ApiService] ${commandes.length} commandes récupérées');
+        // print('✅ [ApiService] ${commandes.length} commandes récupérées');
         return commandes;
       } else {
         final errorData = json.decode(response.body);
         throw Exception('Erreur lors de la récupération des commandes: ${errorData['error'] ?? 'Erreur inconnue'}');
       }
     } catch (e) {
-      print('❌ [ApiService] Erreur lors de la récupération des commandes: $e');
+      // print('❌ [ApiService] Erreur lors de la récupération des commandes: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -1016,7 +1016,7 @@ class ApiService {
     String? token,
   }) async {
     try {
-      print('📋 [ApiService] Récupération des commandes de l\'utilisateur $userId');
+      // print('📋 [ApiService] Récupération des commandes de l\'utilisateur $userId');
       
       final body = <String, dynamic>{};
       if (token != null) {
@@ -1029,21 +1029,21 @@ class ApiService {
         body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      // print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         final List<Commande> commandes = (data['commandes'] as List)
             .map((item) => Commande.fromJson(item as Map<String, dynamic>))
             .toList();
-        print('✅ [ApiService] ${commandes.length} commandes récupérées pour l\'utilisateur $userId');
+        // print('✅ [ApiService] ${commandes.length} commandes récupérées pour l\'utilisateur $userId');
         return commandes;
       } else {
         final errorData = json.decode(response.body);
         throw Exception('Erreur lors de la récupération des commandes: ${errorData['error'] ?? 'Erreur inconnue'}');
       }
     } catch (e) {
-      print('❌ [ApiService] Erreur lors de la récupération des commandes: $e');
+      // print('❌ [ApiService] Erreur lors de la récupération des commandes: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -1055,7 +1055,7 @@ class ApiService {
     double? tvaRate,
   }) async {
     try {
-      print('🔄 [ApiService] Remplacement des items de la commande $commandeId');
+      // print('🔄 [ApiService] Remplacement des items de la commande $commandeId');
       
       // Convertir les CartItem en format attendu par le backend
       final commandeItems = items.map((item) => item.toCommandeItemJson()).toList();
@@ -1065,7 +1065,7 @@ class ApiService {
         if (tvaRate != null) 'tvaRate': tvaRate,
       };
 
-      print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
+      // print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
 
       final response = await http.put(
         Uri.parse('$baseUrl/commandes/items/$commandeId'),
@@ -1073,20 +1073,20 @@ class ApiService {
         body: json.encode(body),
       ).timeout(const Duration(seconds: 30));
 
-      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
-      print('📄 [ApiService] Corps de réponse: ${response.body}');
+      // print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      // print('📄 [ApiService] Corps de réponse: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final commande = Commande.fromJson(jsonData);
-        print('✅ [ApiService] Items de la commande remplacés: ID ${commande.id}');
+        // print('✅ [ApiService] Items de la commande remplacés: ID ${commande.id}');
         return commande;
       } else {
         final errorData = json.decode(response.body);
         throw Exception('Erreur lors du remplacement des items: ${errorData['error'] ?? 'Erreur inconnue'}');
       }
     } catch (e) {
-      print('❌ [ApiService] Erreur lors du remplacement des items: $e');
+      // print('❌ [ApiService] Erreur lors du remplacement des items: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
@@ -1098,14 +1098,14 @@ class ApiService {
     String? token,
   }) async {
     try {
-      print('📊 [ApiService] Mise à jour du statut de la commande $commandeId: $statut');
+      // print('📊 [ApiService] Mise à jour du statut de la commande $commandeId: $statut');
       
       final body = {
         'statut': statut,
         if (token != null) 'token': token,
       };
 
-      print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
+      // print('📤 [ApiService] Corps de la requête: ${json.encode(body)}');
 
       final response = await http.put(
         Uri.parse('$baseUrl/commandes/statut/$commandeId'),
@@ -1113,20 +1113,20 @@ class ApiService {
         body: json.encode(body),
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
-      print('📄 [ApiService] Corps de réponse: ${response.body}');
+      // print('📡 [ApiService] Statut de réponse: ${response.statusCode}');
+      // print('📄 [ApiService] Corps de réponse: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         final commande = Commande.fromJson(jsonData);
-        print('✅ [ApiService] Statut de la commande mis à jour: ${commande.statut}');
+        // print('✅ [ApiService] Statut de la commande mis à jour: ${commande.statut}');
         return commande;
       } else {
         final errorData = json.decode(response.body);
         throw Exception('Erreur lors de la mise à jour du statut: ${errorData['error'] ?? 'Erreur inconnue'}');
       }
     } catch (e) {
-      print('❌ [ApiService] Erreur lors de la mise à jour du statut: $e');
+      // print('❌ [ApiService] Erreur lors de la mise à jour du statut: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }

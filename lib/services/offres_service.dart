@@ -13,7 +13,7 @@ class OffresService {
 
   Future<List<Map<String, dynamic>>> listOffres() async {
     final uri = Uri.parse('$baseUrl/offreRouter/offres');
-    print('[OffresService] GET $uri'); // debug
+    // print('[OffresService] GET $uri'); // debug
     final res = await http.get(uri);
     if (res.statusCode >= 400) {
       throw Exception('Erreur listOffres: ${res.body}');

@@ -21,32 +21,32 @@ class MenuCacheService {
   // Obtenir les menus (depuis le cache si valide, sinon depuis l'API)
   Future<List<Menu>> getMenus() async {
     if (isCacheValid) {
-      print('📋 MenuCacheService: Utilisation du cache (${_cachedMenus.length} menus)');
+      // print('📋 MenuCacheService: Utilisation du cache (${_cachedMenus.length} menus)');
       return _cachedMenus;
     }
 
-    print('🔄 MenuCacheService: Chargement depuis l\'API');
+        // print('🔄 MenuCacheService: Chargement depuis l\'API');
     final apiService = ApiService();
     
     try {
       _cachedMenus = await apiService.getMenus();
       _lastUpdate = DateTime.now();
       
-      print('✅ MenuCacheService: Cache mis à jour (${_cachedMenus.length} menus)');
+      // print('✅ MenuCacheService: Cache mis à jour (${_cachedMenus.length} menus)');
       
       // Debug: afficher les détails des premiers menus
       for (int i = 0; i < _cachedMenus.length && i < 3; i++) {
         final menu = _cachedMenus[i];
-        print('🍽️  Menu ${i + 1}: "${menu.titre}"');
-        print('   - Description: ${menu.description}');
-        print('   - Allergènes: ${menu.allergenes}');
-        print('   - Produits: ${menu.produits}');
-        print('   - Prix: ${menu.prix}');
+        // print('🍽️  Menu ${i + 1}: "${menu.titre}"');
+        // print('   - Description: ${menu.description}');
+        // print('   - Allergènes: ${menu.allergenes}');
+        // print('   - Produits: ${menu.produits}');
+        // print('   - Prix: ${menu.prix}');
       }
       
       return _cachedMenus;
     } catch (e) {
-      print('❌ MenuCacheService: Erreur lors du chargement des menus: $e');
+      // print('❌ MenuCacheService: Erreur lors du chargement des menus: $e');
       return [];
     }
   }
@@ -58,12 +58,12 @@ class MenuCacheService {
       // Préserver l'ordre en remplaçant à la même position
       _cachedMenus[index] = updatedMenu;
       _lastUpdate = DateTime.now();
-      print('✅ MenuCacheService: Menu ${updatedMenu.id} mis à jour dans le cache à la position $index');
+      // print('✅ MenuCacheService: Menu ${updatedMenu.id} mis à jour dans le cache à la position $index');
     } else {
       // Ajouter à la fin si le menu n'existe pas
       _cachedMenus.add(updatedMenu);
       _lastUpdate = DateTime.now();
-      print('✅ MenuCacheService: Menu ${updatedMenu.id} ajouté au cache');
+      // print('✅ MenuCacheService: Menu ${updatedMenu.id} ajouté au cache');
     }
   }
 
@@ -71,14 +71,14 @@ class MenuCacheService {
   void removeMenuFromCache(int menuId) {
     _cachedMenus.removeWhere((menu) => menu.id == menuId);
     _lastUpdate = DateTime.now();
-    print('🗑️ MenuCacheService: Menu $menuId supprimé du cache');
+        // print('🗑️ MenuCacheService: Menu $menuId supprimé du cache');
   }
 
   // Vider le cache
   void clearCache() {
     _cachedMenus.clear();
     _lastUpdate = null;
-    print('🧹 MenuCacheService: Cache vidé');
+        // print('🧹 MenuCacheService: Cache vidé');
   }
 
   // Forcer le rafraîchissement du cache

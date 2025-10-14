@@ -60,7 +60,7 @@ class _RestaurateurOrdersScreenState extends State<RestaurateurOrdersScreen> {
         _restaurants = restaurants;
       });
     } catch (e) {
-      print('❌ [RestaurateurOrdersScreen] Erreur lors du chargement des restaurants: $e');
+      // print('❌ [RestaurateurOrdersScreen] Erreur lors du chargement des restaurants: $e');
     }
   }
 

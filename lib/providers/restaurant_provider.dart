@@ -10,7 +10,7 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 
 // Provider pour la liste des restaurants
 final restaurantsProvider = FutureProvider<List<Restaurant>>((ref) async {
-  print('🚨🚨🚨 [restaurantsProvider] APPELÉ ! 🚨🚨🚨');
+      // print('🚨🚨🚨 [restaurantsProvider] APPELÉ ! 🚨🚨🚨');
   debugPrint('🚨🚨🚨 [restaurantsProvider] APPELÉ ! 🚨🚨🚨');
   
   final apiService = ref.watch(apiServiceProvider);

@@ -26,7 +26,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:vegnbio_front/widgets/reports_admin_screen.dart';
 
 void main() async {
-  print('🚀 MAIN START');
+  // print('🚀 MAIN START');
   
   // Charger les variables d'environnement
   await AppConfig.loadEnv();
@@ -39,7 +39,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('🏗️ MYAPP BUILD');
+    // print('🏗️ MYAPP BUILD');
 
     return MaterialApp.router(
       title: 'Veg\'N Bio',

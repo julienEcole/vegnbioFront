@@ -89,7 +89,7 @@ class CartNotifier extends StateNotifier<CartState> {
     if (!state.canAddItemFromRestaurant(restaurantId)) {
       final errorMessage = state.getAddItemErrorMessage(restaurantId);
       state = state.copyWith(error: errorMessage);
-      print('❌ [CartNotifier] Impossible d\'ajouter l\'item: $errorMessage');
+      // print('❌ [CartNotifier] Impossible d\'ajouter l\'item: $errorMessage');
       return;
     }
 
@@ -122,7 +122,7 @@ class CartNotifier extends StateNotifier<CartState> {
       state = state.copyWith(items: [...state.items, newItem]);
     }
     
-    print('🛒 [CartNotifier] Item ajouté: ${menu.titre} (quantité: $quantite)');
+    // print('🛒 [CartNotifier] Item ajouté: ${menu.titre} (quantité: $quantite)');
   }
 
   void removeItem(Menu menu, int restaurantId) {
@@ -131,7 +131,7 @@ class CartNotifier extends StateNotifier<CartState> {
     ).toList();
     
     state = state.copyWith(items: updatedItems);
-    print('🛒 [CartNotifier] Item supprimé: ${menu.titre}');
+    // print('🛒 [CartNotifier] Item supprimé: ${menu.titre}');
   }
 
   void updateItemQuantity(Menu menu, int restaurantId, int newQuantite) {
@@ -152,13 +152,13 @@ class CartNotifier extends StateNotifier<CartState> {
       updatedItems[existingItemIndex] = updatedItem;
       
       state = state.copyWith(items: updatedItems);
-      print('🛒 [CartNotifier] Quantité mise à jour: ${menu.titre} -> $newQuantite');
+      // print('🛒 [CartNotifier] Quantité mise à jour: ${menu.titre} -> $newQuantite');
     }
   }
 
   void clearCart() {
     state = CartState();
-    print('🛒 [CartNotifier] Panier vidé');
+    // print('🛒 [CartNotifier] Panier vidé');
   }
 
   void setLoading(bool loading) {

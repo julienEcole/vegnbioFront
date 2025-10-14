@@ -60,7 +60,7 @@ class Menu {
         return dateValue;
       }
     } catch (e) {
-      print('Erreur parsing date: $e, valeur: $dateValue');
+      // print('Erreur parsing date: $e, valeur: $dateValue');
     }
     
     return DateTime.now();
@@ -78,7 +78,7 @@ class Menu {
         return [allergenesValue];
       }
     } catch (e) {
-      print('Erreur parsing allergènes: $e, valeur: $allergenesValue');
+      // print('Erreur parsing allergènes: $e, valeur: $allergenesValue');
     }
     
     return [];
@@ -96,7 +96,7 @@ class Menu {
         return [produitsValue];
       }
     } catch (e) {
-      print('Erreur parsing produits: $e, valeur: $produitsValue');
+      // print('Erreur parsing produits: $e, valeur: $produitsValue');
     }
     
     return [];

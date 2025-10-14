@@ -72,30 +72,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
   bool _isInitialized = false;
 
   AuthNotifier() : super(const AuthState.unauthenticated()) {
-    print('🏁 [AuthNotifier] Initialisation - État: non authentifié');
+    // print('🏁 [AuthNotifier] Initialisation - État: non authentifié');
   }
 
   /// Initialiser le service d'authentification
   Future<void> _ensureInitialized() async {
     if (_isInitialized) return;
     
-    print('🔍 [RealAuthNotifier] Initialisation du service...');
+    // print('🔍 [RealAuthNotifier] Initialisation du service...');
     state = const AuthState.loading();
     
     try {
       await _authService.initialize();
       
       if (_authService.isLoggedIn && _authService.userData != null) {
-        print('✅ [RealAuthNotifier] Utilisateur connecté');
+        // print('✅ [RealAuthNotifier] Utilisateur connecté');
         state = AuthState.authenticated(_authService.userData!);
       } else {
-        print('🌐 [RealAuthNotifier] Utilisateur non connecté');
+        // print('🌐 [RealAuthNotifier] Utilisateur non connecté');
         state = const AuthState.unauthenticated();
       }
       
       _isInitialized = true;
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur d\'initialisation: $e');
+      // print('❌ [RealAuthNotifier] Erreur d\'initialisation: $e');
       state = AuthState.error(e.toString());
       _isInitialized = true;
     }
@@ -103,26 +103,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Connexion
   Future<bool> login(String email, String password) async {
-    print('🔐 [RealAuthNotifier] Tentative de connexion: $email');
+    // print('🔐 [RealAuthNotifier] Tentative de connexion: $email');
     await _ensureInitialized();
     state = const AuthState.loading();
 
     try {
-      print('📞 [RealAuthNotifier] Appel du service de connexion...');
+      // print('📞 [RealAuthNotifier] Appel du service de connexion...');
       final success = await _authService.login(email, password);
       
       if (success && _authService.userData != null) {
-        print('✅ [RealAuthNotifier] Connexion réussie');
+        // print('✅ [RealAuthNotifier] Connexion réussie');
         state = AuthState.authenticated(_authService.userData!);
         return true;
       } else {
-        print('❌ [RealAuthNotifier] Échec de la connexion');
+        // print('❌ [RealAuthNotifier] Échec de la connexion');
         state = const AuthState.error('Échec de la connexion');
         return false;
       }
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur lors de la connexion: $e');
-      print('❌ [RealAuthNotifier] Type d\'erreur: ${e.runtimeType}');
+      // print('❌ [RealAuthNotifier] Erreur lors de la connexion: $e');
+      // print('❌ [RealAuthNotifier] Type d\'erreur: ${e.runtimeType}');
       state = AuthState.error(e.toString());
       return false;
     }
@@ -136,7 +136,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String motDePasse,
     required String nameRole,
   }) async {
-    print('📝 [RealAuthNotifier] Tentative d\'inscription: $email');
+    // print('📝 [RealAuthNotifier] Tentative d\'inscription: $email');
     await _ensureInitialized();
     state = const AuthState.loading();
 
@@ -150,16 +150,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       
       if (success && _authService.userData != null) {
-        print('✅ [RealAuthNotifier] Inscription réussie');
+        // print('✅ [RealAuthNotifier] Inscription réussie');
         state = AuthState.authenticated(_authService.userData!);
         return true;
       } else {
-        print('❌ [RealAuthNotifier] Échec de l\'inscription');
+        // print('❌ [RealAuthNotifier] Échec de l\'inscription');
         state = const AuthState.error('Échec de l\'inscription');
         return false;
       }
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur lors de l\'inscription: $e');
+      // print('❌ [RealAuthNotifier] Erreur lors de l\'inscription: $e');
       state = AuthState.error(e.toString());
       return false;
     }
@@ -167,15 +167,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Déconnexion
   Future<void> logout() async {
-    print('🚪 [RealAuthNotifier] Déconnexion...');
+    // print('🚪 [RealAuthNotifier] Déconnexion...');
     await _ensureInitialized();
     
     try {
       await _authService.logout();
       state = const AuthState.unauthenticated();
-      print('✅ [RealAuthNotifier] Déconnexion réussie');
+      // print('✅ [RealAuthNotifier] Déconnexion réussie');
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur lors de la déconnexion: $e');
+      // print('❌ [RealAuthNotifier] Erreur lors de la déconnexion: $e');
       state = AuthState.error(e.toString());
     }
   }
@@ -186,7 +186,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String prenom,
     String? email,
   }) async {
-    print('📝 [RealAuthNotifier] Mise à jour du profil...');
+    // print('📝 [RealAuthNotifier] Mise à jour du profil...');
     await _ensureInitialized();
     
     try {
@@ -202,7 +202,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
       return false;
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur lors de la mise à jour: $e');
+      // print('❌ [RealAuthNotifier] Erreur lors de la mise à jour: $e');
       state = AuthState.error(e.toString());
       return false;
     }
@@ -210,13 +210,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Changer le mot de passe
   Future<bool> changePassword(String newPassword) async {
-    print('🔐 [RealAuthNotifier] Changement du mot de passe...');
+    // print('🔐 [RealAuthNotifier] Changement du mot de passe...');
     await _ensureInitialized();
     
     try {
       return await _authService.changePassword(newPassword);
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur lors du changement de mot de passe: $e');
+      // print('❌ [RealAuthNotifier] Erreur lors du changement de mot de passe: $e');
       state = AuthState.error(e.toString());
       return false;
     }
@@ -229,7 +229,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Charger le profil complet de l'utilisateur
   Future<bool> loadUserProfile() async {
-    print('👤 [RealAuthNotifier] Chargement du profil utilisateur...');
+    // print('👤 [RealAuthNotifier] Chargement du profil utilisateur...');
     await _ensureInitialized();
     
     try {
@@ -237,14 +237,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       
       if (success && _authService.userData != null) {
         state = AuthState.authenticated(_authService.userData!);
-        print('✅ [RealAuthNotifier] Profil utilisateur chargé avec succès');
+        // print('✅ [RealAuthNotifier] Profil utilisateur chargé avec succès');
         return true;
       }
       
-      print('❌ [RealAuthNotifier] Échec du chargement du profil');
+      // print('❌ [RealAuthNotifier] Échec du chargement du profil');
       return false;
     } catch (e) {
-      print('❌ [RealAuthNotifier] Erreur lors du chargement du profil: $e');
+      // print('❌ [RealAuthNotifier] Erreur lors du chargement du profil: $e');
       state = AuthState.error(e.toString());
       return false;
     }

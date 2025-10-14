@@ -558,7 +558,7 @@ class _UnifiedPaymentFormState extends State<UnifiedPaymentForm> {
       
       widget.onPaymentResult(result);
     } catch (e) {
-      print('❌ [UnifiedPaymentForm] Erreur lors du paiement: $e');
+      // print('❌ [UnifiedPaymentForm] Erreur lors du paiement: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -9,7 +9,7 @@ final restaurantByIdProvider = FutureProvider.family<Restaurant?, int>((ref, res
     final apiService = ApiService();
     return await apiService.getRestaurant(restaurantId);
   } catch (e) {
-    print('Erreur lors de la récupération du restaurant $restaurantId: $e');
+    // print('Erreur lors de la récupération du restaurant $restaurantId: $e');
     return null;
   }
 });
@@ -20,7 +20,7 @@ final menuByIdProvider = FutureProvider.family<Menu?, int>((ref, menuId) async {
     final apiService = ApiService();
     return await apiService.getMenu(menuId);
   } catch (e) {
-    print('Erreur lors de la récupération du menu $menuId: $e');
+    // print('Erreur lors de la récupération du menu $menuId: $e');
     return null;
   }
 });
@@ -36,13 +36,13 @@ final restaurantsByIdsProvider = FutureProvider.family<List<Restaurant>, List<in
         final restaurant = await apiService.getRestaurant(id);
         restaurants.add(restaurant);
       } catch (e) {
-        print('Erreur lors de la récupération du restaurant $id: $e');
+        // print('Erreur lors de la récupération du restaurant $id: $e');
       }
     }
     
     return restaurants;
   } catch (e) {
-    print('Erreur lors de la récupération des restaurants: $e');
+    // print('Erreur lors de la récupération des restaurants: $e');
     return [];
   }
 });
@@ -58,13 +58,13 @@ final menusByIdsProvider = FutureProvider.family<List<Menu>, List<int>>((ref, me
         final menu = await apiService.getMenu(id);
         menus.add(menu);
       } catch (e) {
-        print('Erreur lors de la récupération du menu $id: $e');
+        // print('Erreur lors de la récupération du menu $id: $e');
       }
     }
     
     return menus;
   } catch (e) {
-    print('Erreur lors de la récupération des menus: $e');
+    // print('Erreur lors de la récupération des menus: $e');
     return [];
   }
 });

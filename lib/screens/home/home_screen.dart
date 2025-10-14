@@ -7,7 +7,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('🏠 [HomeScreen] BUILD APPELÉ !');
+    // print('🏠 [HomeScreen] BUILD APPELÉ !');
     
     return Scaffold(
       appBar: AppBar(

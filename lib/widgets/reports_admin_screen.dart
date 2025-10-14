@@ -9,7 +9,7 @@ class ReportsAdminScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('🧭 ReportsAdminScreen BUILD');
+    // print('🧭 ReportsAdminScreen BUILD');
     final asyncList = ref.watch(reportsListProvider);
 
     return Scaffold(

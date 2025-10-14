@@ -33,7 +33,7 @@ class ReportsAdminService {
       if (to != null) 'to': to.toIso8601String(),
     };
     final url = Uri.parse(_buildPath(_baseUrl, qp));
-    print('🌐 [ReportsAdminService] GET $url');
+    // print('🌐 [ReportsAdminService] GET $url');
 
     final res = await http.get(
       url,
@@ -42,7 +42,7 @@ class ReportsAdminService {
         'Authorization': 'Bearer $token',
       },
     );
-    print('📥 [ReportsAdminService] GET status=${res.statusCode} body=${res.body.substring(0, res.body.length > 500 ? 500 : res.body.length)}');
+    // print('📥 [ReportsAdminService] GET status=${res.statusCode} body=${res.body.substring(0, res.body.length > 500 ? 500 : res.body.length)}');
     if (res.statusCode == 200) {
       return ReportListResponse.fromJson(json.decode(res.body));
     } else {
@@ -58,7 +58,7 @@ class ReportsAdminService {
     required String token,
   }) async {
     final url = Uri.parse('$_baseUrl/$id');
-    print('🌐 [ReportsAdminService] PATCH $url status=$status note=$resolutionNote');
+    // print('🌐 [ReportsAdminService] PATCH $url status=$status note=$resolutionNote');
 
     final res = await http.patch(
       url,
@@ -71,7 +71,7 @@ class ReportsAdminService {
         if (resolutionNote != null && resolutionNote.isNotEmpty) 'resolutionNote': resolutionNote,
       }),
     );
-    print('📥 [ReportsAdminService] PATCH status=${res.statusCode} body=${res.body.substring(0, res.body.length > 500 ? 500 : res.body.length)}');
+    // print('📥 [ReportsAdminService] PATCH status=${res.statusCode} body=${res.body.substring(0, res.body.length > 500 ? 500 : res.body.length)}');
     if (res.statusCode == 200) {
       return Report.fromJson(json.decode(res.body));
     } else {

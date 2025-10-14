@@ -52,7 +52,7 @@ class RestaurantService {
       final restaurants = await getAllRestaurants();
       return {for (var restaurant in restaurants) restaurant.id: restaurant};
     } catch (e) {
-      print('❌ [RestaurantService] Erreur lors de la récupération des restaurants: $e');
+      // print('❌ [RestaurantService] Erreur lors de la récupération des restaurants: $e');
       return {};
     }
   }

@@ -58,7 +58,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         _restaurants = restaurants;
       });
     } catch (e) {
-      print('❌ [AdminOrdersScreen] Erreur lors du chargement des restaurants: $e');
+      // print('❌ [AdminOrdersScreen] Erreur lors du chargement des restaurants: $e');
     }
   }
 

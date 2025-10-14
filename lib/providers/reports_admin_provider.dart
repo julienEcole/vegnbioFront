@@ -56,12 +56,12 @@ final reportsListProvider = FutureProvider.autoDispose<ReportListResponse>((ref)
   final auth = ref.watch(authProvider);
   final token = auth.token;
 
-  print('🔎 [reportsListProvider] start with filter: '
-      'status=${filter.status} category=${filter.category} targetType=${filter.targetType} '
-      'q=${filter.q} page=${filter.page}/${filter.pageSize}');
+  // print('🔎 [reportsListProvider] start with filter: '
+  //     'status=${filter.status} category=${filter.category} targetType=${filter.targetType} '
+  //     'q=${filter.q} page=${filter.page}/${filter.pageSize}');
 
   if (token == null || token.isEmpty) {
-    print('⛔ [reportsListProvider] token missing');
+    // print('⛔ [reportsListProvider] token missing');
     throw Exception('Non authentifié : token manquant');
   }
 
@@ -75,7 +75,7 @@ final reportsListProvider = FutureProvider.autoDispose<ReportListResponse>((ref)
     page: filter.page,
     pageSize: filter.pageSize,
   );
-  print('✅ [reportsListProvider] got ${resp.data.length} items (page ${resp.page})');
+  // print('✅ [reportsListProvider] got ${resp.data.length} items (page ${resp.page})');
   return resp;
 });
 

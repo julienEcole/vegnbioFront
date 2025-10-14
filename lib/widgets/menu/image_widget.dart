@@ -93,7 +93,7 @@ class ImageWidget extends StatelessWidget {
             height: height,
             fit: fit,
             errorBuilder: (context, error, stackTrace) {
-              print('Erreur de chargement de l\'image: $fullImageUrl - $error');
+              // print('Erreur de chargement de l\'image: $fullImageUrl - $error');
               return _buildFallback(context, borderRadius, effectiveBorderColor, effectiveShadow);
             },
             loadingBuilder: (context, child, loadingProgress) {

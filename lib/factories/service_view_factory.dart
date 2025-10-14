@@ -10,21 +10,21 @@ class ServiceViewFactory {
   
   /// Créer la vue de service appropriée selon l'état d'authentification et les permissions
   static Widget createServiceView(WidgetRef ref, {int? serviceId}) {
-    print('🛠️ [ServiceViewFactory] createServiceView appelé');
-    print('🛠️ [ServiceViewFactory] serviceId: $serviceId');
+    // print('🛠️ [ServiceViewFactory] createServiceView appelé');
+    // print('🛠️ [ServiceViewFactory] serviceId: $serviceId');
     
     final authState = ref.watch(authProvider);
-    print('🛠️ [ServiceViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
+    // print('🛠️ [ServiceViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Pour l'instant, tous les utilisateurs voient la même vue
     // TODO: Implémenter une vue admin pour les services si nécessaire
-    print('🛠️ [ServiceViewFactory] Affichage: ServicesScreen');
+    // print('🛠️ [ServiceViewFactory] Affichage: ServicesScreen');
     return const ServicesScreen();
   }
   
   /// Créer une vue de service spécifique
   static Widget createSpecificServiceView(ServiceViewType type, WidgetRef ref, {int? serviceId}) {
-    print('🛠️ [ServiceViewFactory] createSpecificServiceView: $type');
+    // print('🛠️ [ServiceViewFactory] createSpecificServiceView: $type');
     
     switch (type) {
       case ServiceViewType.publicList:

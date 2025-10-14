@@ -100,31 +100,31 @@ class AppConfig {
     
     if (apiUrl.isNotEmpty || stripeKey.isNotEmpty || env.isNotEmpty) {
       // Production : utiliser les variables d'environnement système
-      print('✅ [AppConfig] Mode production - utilisation des variables d\'environnement système');
-      print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
-      print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
-      print('🌍 [AppConfig] Environment: $environment');
+      // print('✅ [AppConfig] Mode production - utilisation des variables d\'environnement système');
+      // print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
+      // print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
+      // print('🌍 [AppConfig] Environment: $environment');
       return;
     }
     
     // Développement local : essayer de charger le fichier .env
     try {
       await dotenv.load(fileName: ".env");
-      print('✅ [AppConfig] Mode développement - variables d\'environnement chargées depuis .env');
-      print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
-      print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
-      print('🌍 [AppConfig] Environment: $environment');
+      // print('✅ [AppConfig] Mode développement - variables d\'environnement chargées depuis .env');
+      // print('🔗 [AppConfig] API Base URL: $apiBaseUrl');
+      // print('🔑 [AppConfig] Stripe Public Key: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
+      // print('🌍 [AppConfig] Environment: $environment');
       
       // Debug: afficher toutes les variables chargées
-      print('📋 [AppConfig] Toutes les variables d\'environnement:');
+      // print('📋 [AppConfig] Toutes les variables d\'environnement:');
       dotenv.env.forEach((key, value) {
-        print('   $key = $value');
+        // print('   $key = $value');
       });
     } catch (e) {
-      print('⚠️  [AppConfig] Fichier .env non trouvé, utilisation des valeurs par défaut');
-      print('🔗 [AppConfig] API Base URL par défaut: $apiBaseUrl');
-      print('🔑 [AppConfig] Stripe Public Key par défaut: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
-      print('🌍 [AppConfig] Environment par défaut: $environment');
+      // print('⚠️  [AppConfig] Fichier .env non trouvé, utilisation des valeurs par défaut');
+      // print('🔗 [AppConfig] API Base URL par défaut: $apiBaseUrl');
+      // print('🔑 [AppConfig] Stripe Public Key par défaut: ${stripePublicKey.isNotEmpty ? "Configuré" : "Non configuré"}');
+      // print('🌍 [AppConfig] Environment par défaut: $environment');
     }
   }
 }

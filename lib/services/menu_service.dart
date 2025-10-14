@@ -52,7 +52,7 @@ class MenuService {
       final menus = await getAllMenus();
       return {for (var menu in menus) menu.id: menu};
     } catch (e) {
-      print('❌ [MenuService] Erreur lors de la récupération des menus: $e');
+      // print('❌ [MenuService] Erreur lors de la récupération des menus: $e');
       return {};
     }
   }

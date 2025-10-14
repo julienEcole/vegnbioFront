@@ -25,8 +25,8 @@ class RealAuthService {
 
   /// Initialiser le service en vérifiant le token stocké
   Future<void> initialize() async {
-    print('🔐 [RealAuthService] Initialisation...');
-    print('🌐 [RealAuthService] URL de base: $baseUrl');
+    // print('🔐 [RealAuthService] Initialisation...');
+    // print('🌐 [RealAuthService] URL de base: $baseUrl');
     
     try {
       // Test de connectivité réseau
@@ -40,17 +40,17 @@ class RealAuthService {
         // Vérifier si le token est encore valide (les données utilisateur sont récupérées automatiquement)
         final isValid = await verifyToken();
         if (isValid) {
-          print('✅ [RealAuthService] Token valide, utilisateur connecté');
+          // print('✅ [RealAuthService] Token valide, utilisateur connecté');
         } else {
-          print('❌ [RealAuthService] Token invalide, déconnexion');
+          // print('❌ [RealAuthService] Token invalide, déconnexion');
           await logout();
         }
       } else {
-        print('🌐 [RealAuthService] Aucun token trouvé, utilisateur non connecté');
+        // print('🌐 [RealAuthService] Aucun token trouvé, utilisateur non connecté');
         _isLoggedIn = false;
       }
     } catch (e) {
-      print('❌ [RealAuthService] Erreur d\'initialisation: $e');
+      // print('❌ [RealAuthService] Erreur d\'initialisation: $e');
       _isLoggedIn = false;
     }
   }
@@ -58,7 +58,7 @@ class RealAuthService {
   /// Tester la connectivité avec le backend
   Future<void> _testConnectivity() async {
     try {
-      print('🔍 [RealAuthService] Test de connectivité...');
+      // print('🔍 [RealAuthService] Test de connectivité...');
       // Utiliser l'URL de base configurée au lieu de l'URL codée en dur
       final healthUrl = baseUrl.replaceAll('/api', '/health');
       final response = await http.get(
@@ -66,11 +66,11 @@ class RealAuthService {
         headers: headers,
       ).timeout(const Duration(seconds: 10));
       
-      print('✅ [RealAuthService] Backend accessible (${response.statusCode})');
-      print('📄 [RealAuthService] Réponse santé: ${response.body}');
+      // print('✅ [RealAuthService] Backend accessible (${response.statusCode})');
+      // print('📄 [RealAuthService] Réponse santé: ${response.body}');
     } catch (e) {
-      print('⚠️ [RealAuthService] Test de connectivité échoué: $e');
-      print('🔧 [RealAuthService] Vérifiez que le backend est démarré sur $baseUrl');
+      // print('⚠️ [RealAuthService] Test de connectivité échoué: $e');
+      // print('🔧 [RealAuthService] Vérifiez que le backend est démarré sur $baseUrl');
     }
   }
 
@@ -85,8 +85,8 @@ class RealAuthService {
 
   /// Connexion avec email et mot de passe
   Future<bool> login(String email, String password) async {
-    print('🔐 [RealAuthService] Tentative de connexion: $email');
-    print('🌐 [RealAuthService] URL de connexion: $baseUrl/auth/login');
+    // print('🔐 [RealAuthService] Tentative de connexion: $email');
+    // print('🌐 [RealAuthService] URL de connexion: $baseUrl/auth/login');
     
     try {
       final requestBody = json.encode({
@@ -94,8 +94,8 @@ class RealAuthService {
         'password': password,
       });
       
-      print('📤 [RealAuthService] Corps de la requête: $requestBody');
-      print('📤 [RealAuthService] Headers: $headers');
+      // print('📤 [RealAuthService] Corps de la requête: $requestBody');
+      // print('📤 [RealAuthService] Headers: $headers');
       
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
@@ -103,9 +103,9 @@ class RealAuthService {
         body: requestBody,
       ).timeout(const Duration(seconds: 30));
 
-      print('📡 [RealAuthService] Statut de réponse: ${response.statusCode}');
-      print('📄 [RealAuthService] Corps de réponse: ${response.body}');
-      print('📄 [RealAuthService] Headers de réponse: ${response.headers}');
+      // print('📡 [RealAuthService] Statut de réponse: ${response.statusCode}');
+      // print('📄 [RealAuthService] Corps de réponse: ${response.body}');
+      // print('📄 [RealAuthService] Headers de réponse: ${response.headers}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -122,30 +122,30 @@ class RealAuthService {
           // Récupérer les données utilisateur
           await _loadUserData();
           
-          print('✅ [RealAuthService] Connexion réussie');
+          // print('✅ [RealAuthService] Connexion réussie');
           return true;
         } else {
-          print('❌ [RealAuthService] Échec de la connexion: ${data['message']}');
+          // print('❌ [RealAuthService] Échec de la connexion: ${data['message']}');
           return false;
         }
       } else {
         try {
           final errorData = json.decode(response.body);
-          print('❌ [RealAuthService] Erreur HTTP: ${errorData['message']}');
+          // print('❌ [RealAuthService] Erreur HTTP: ${errorData['message']}');
         } catch (e) {
-          print('❌ [RealAuthService] Erreur HTTP ${response.statusCode}: ${response.body}');
+          // print('❌ [RealAuthService] Erreur HTTP ${response.statusCode}: ${response.body}');
         }
         return false;
       }
     } catch (e) {
-      print('❌ [RealAuthService] Erreur de connexion détaillée: $e');
-      print('❌ [RealAuthService] Type d\'erreur: ${e.runtimeType}');
+      // print('❌ [RealAuthService] Erreur de connexion détaillée: $e');
+      // print('❌ [RealAuthService] Type d\'erreur: ${e.runtimeType}');
       
       if (e.toString().contains('Connection refused') || 
           e.toString().contains('Failed to connect') ||
           e.toString().contains('SocketException')) {
-        print('🌐 [RealAuthService] Problème de connectivité réseau');
-        print('🔧 [RealAuthService] Vérifiez que le backend est accessible sur $baseUrl');
+        // print('🌐 [RealAuthService] Problème de connectivité réseau');
+        // print('🔧 [RealAuthService] Vérifiez que le backend est accessible sur $baseUrl');
       }
       
       return false;
@@ -160,7 +160,7 @@ class RealAuthService {
     required String motDePasse,
     required String nameRole,
   }) async {
-    print('📝 [RealAuthService] Tentative d\'inscription: $email');
+    // print('📝 [RealAuthService] Tentative d\'inscription: $email');
     
     try {
       final response = await http.post(
@@ -175,8 +175,8 @@ class RealAuthService {
         }),
       );
 
-      print('📡 [RealAuthService] Statut d\'inscription: ${response.statusCode}');
-      print('📄 [RealAuthService] Réponse inscription: ${response.body}');
+      // print('📡 [RealAuthService] Statut d\'inscription: ${response.statusCode}');
+      // print('📄 [RealAuthService] Réponse inscription: ${response.body}');
 
       if (response.statusCode == 201) {
         final data = json.decode(response.body);
@@ -193,19 +193,19 @@ class RealAuthService {
           // Récupérer les données utilisateur
           await _loadUserData();
           
-          print('✅ [RealAuthService] Inscription réussie');
+          // print('✅ [RealAuthService] Inscription réussie');
           return true;
         } else {
-          print('❌ [RealAuthService] Échec de l\'inscription: ${data['message']}');
+          // print('❌ [RealAuthService] Échec de l\'inscription: ${data['message']}');
           return false;
         }
       } else {
         final errorData = json.decode(response.body);
-        print('❌ [RealAuthService] Erreur inscription: ${errorData['message']}');
+        // print('❌ [RealAuthService] Erreur inscription: ${errorData['message']}');
         return false;
       }
     } catch (e) {
-      print('❌ [RealAuthService] Erreur d\'inscription: $e');
+      // print('❌ [RealAuthService] Erreur d\'inscription: $e');
       return false;
     }
   }
@@ -215,7 +215,7 @@ class RealAuthService {
     if (_token == null) return false;
     
     try {
-      print('🔍 [RealAuthService] Vérification du token...');
+      // print('🔍 [RealAuthService] Vérification du token...');
       final response = await http.get(
         Uri.parse('$baseUrl/auth/verify'),
         headers: authHeaders,
@@ -223,7 +223,7 @@ class RealAuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ [RealAuthService] Token valide');
+        // print('✅ [RealAuthService] Token valide');
         
         if (data['valid'] == true && data['user'] != null) {
           // Utiliser les données utilisateur retournées par la vérification
@@ -233,16 +233,16 @@ class RealAuthService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_userDataKey, json.encode(_userData));
           
-          print('✅ [RealAuthService] Données utilisateur mises à jour');
+          // print('✅ [RealAuthService] Données utilisateur mises à jour');
         }
         
         return data['valid'] == true;
       } else {
-        print('❌ [RealAuthService] Token invalide');
+        // print('❌ [RealAuthService] Token invalide');
         return false;
       }
     } catch (e) {
-      print('❌ [RealAuthService] Erreur vérification token: $e');
+      // print('❌ [RealAuthService] Erreur vérification token: $e');
       return false;
     }
   }
@@ -252,7 +252,7 @@ class RealAuthService {
     if (_token == null) return;
     
     try {
-      print('👤 [RealAuthService] Chargement des données utilisateur...');
+      // print('👤 [RealAuthService] Chargement des données utilisateur...');
       final response = await http.get(
         Uri.parse('$baseUrl/auth/profile'),
         headers: authHeaders,
@@ -267,13 +267,13 @@ class RealAuthService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_userDataKey, json.encode(_userData));
           
-          print('✅ [RealAuthService] Données utilisateur chargées');
+          // print('✅ [RealAuthService] Données utilisateur chargées');
         }
       } else {
-        print('❌ [RealAuthService] Erreur chargement profil: ${response.statusCode}');
+        // print('❌ [RealAuthService] Erreur chargement profil: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [RealAuthService] Erreur chargement profil: $e');
+      // print('❌ [RealAuthService] Erreur chargement profil: $e');
     }
   }
 
@@ -282,7 +282,7 @@ class RealAuthService {
     if (_token == null) return false;
     
     try {
-      print('🔍 [RealAuthService] Vérification du rôle: $role');
+      // print('🔍 [RealAuthService] Vérification du rôle: $role');
       final response = await http.get(
         Uri.parse('$baseUrl/auth/$role'),
         headers: authHeaders,
@@ -290,14 +290,14 @@ class RealAuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('✅ [RealAuthService] Rôle $role vérifié: ${data['success']}');
+        // print('✅ [RealAuthService] Rôle $role vérifié: ${data['success']}');
         return data['success'] == true;
       } else {
-        print('❌ [RealAuthService] Rôle $role non autorisé');
+        // print('❌ [RealAuthService] Rôle $role non autorisé');
         return false;
       }
     } catch (e) {
-      print('❌ [RealAuthService] Erreur vérification rôle: $e');
+      // print('❌ [RealAuthService] Erreur vérification rôle: $e');
       return false;
     }
   }
@@ -307,14 +307,14 @@ class RealAuthService {
     if (_token == null) return false;
     
     try {
-      print('👤 [RealAuthService] Chargement du profil utilisateur...');
+      // print('👤 [RealAuthService] Chargement du profil utilisateur...');
       final response = await http.get(
         Uri.parse('$baseUrl/auth/profile'),
         headers: authHeaders,
       );
 
-      print('📡 [RealAuthService] Statut profil: ${response.statusCode}');
-      print('📄 [RealAuthService] Réponse profil: ${response.body}');
+      // print('📡 [RealAuthService] Statut profil: ${response.statusCode}');
+      // print('📄 [RealAuthService] Réponse profil: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -325,22 +325,22 @@ class RealAuthService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_userDataKey, json.encode(_userData));
           
-          print('✅ [RealAuthService] Profil utilisateur chargé avec succès');
+          // print('✅ [RealAuthService] Profil utilisateur chargé avec succès');
           return true;
         }
       }
       
-      print('❌ [RealAuthService] Échec du chargement du profil');
+      // print('❌ [RealAuthService] Échec du chargement du profil');
       return false;
     } catch (e) {
-      print('❌ [RealAuthService] Erreur chargement profil: $e');
+      // print('❌ [RealAuthService] Erreur chargement profil: $e');
       return false;
     }
   }
 
   /// Déconnexion
   Future<void> logout() async {
-    print('🚪 [RealAuthService] Déconnexion...');
+    // print('🚪 [RealAuthService] Déconnexion...');
     
     _token = null;
     _userData = null;
@@ -352,7 +352,7 @@ class RealAuthService {
     await prefs.remove(_userDataKey);
     await prefs.remove(_isLoggedInKey);
     
-    print('✅ [RealAuthService] Déconnexion réussie');
+    // print('✅ [RealAuthService] Déconnexion réussie');
   }
 
   /// Mettre à jour le profil
@@ -363,7 +363,7 @@ class RealAuthService {
   }) async {
     if (_token == null) return false;
     
-    print('📝 [RealAuthService] Mise à jour du profil...');
+    // print('📝 [RealAuthService] Mise à jour du profil...');
     
     try {
       final updateData = {
@@ -391,15 +391,15 @@ class RealAuthService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_userDataKey, json.encode(_userData));
           
-          print('✅ [RealAuthService] Profil mis à jour avec succès');
+          // print('✅ [RealAuthService] Profil mis à jour avec succès');
           return true;
         }
       }
       
-      print('❌ [RealAuthService] Échec de la mise à jour du profil');
+      // print('❌ [RealAuthService] Échec de la mise à jour du profil');
       return false;
     } catch (e) {
-      print('❌ [RealAuthService] Erreur mise à jour profil: $e');
+      // print('❌ [RealAuthService] Erreur mise à jour profil: $e');
       return false;
     }
   }
@@ -408,7 +408,7 @@ class RealAuthService {
   Future<bool> changePassword(String newPassword) async {
     if (_token == null) return false;
     
-    print('🔐 [RealAuthService] Changement du mot de passe...');
+    // print('🔐 [RealAuthService] Changement du mot de passe...');
     
     try {
       final response = await http.put(
@@ -419,21 +419,21 @@ class RealAuthService {
         }),
       );
 
-      print('📡 [RealAuthService] Statut changement mot de passe: ${response.statusCode}');
-      print('📄 [RealAuthService] Réponse changement mot de passe: ${response.body}');
+      // print('📡 [RealAuthService] Statut changement mot de passe: ${response.statusCode}');
+      // print('📄 [RealAuthService] Réponse changement mot de passe: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
-          print('✅ [RealAuthService] Mot de passe modifié avec succès');
+          // print('✅ [RealAuthService] Mot de passe modifié avec succès');
           return true;
         }
       }
       
-      print('❌ [RealAuthService] Échec du changement de mot de passe');
+      // print('❌ [RealAuthService] Échec du changement de mot de passe');
       return false;
     } catch (e) {
-      print('❌ [RealAuthService] Erreur changement mot de passe: $e');
+      // print('❌ [RealAuthService] Erreur changement mot de passe: $e');
       return false;
     }
   }

@@ -12,26 +12,26 @@ class MenuViewFactory {
   
   /// Créer la vue de menu appropriée selon l'état d'authentification et les permissions
   static Widget createMenuView(WidgetRef ref, {int? restaurantId}) {
-    print('🍽️ [MenuViewFactory] createMenuView appelé');
-    print('🍽️ [MenuViewFactory] restaurantId: $restaurantId');
+    // print('🍽️ [MenuViewFactory] createMenuView appelé');
+    // print('🍽️ [MenuViewFactory] restaurantId: $restaurantId');
     
     final authState = ref.watch(authProvider);
-    print('🍽️ [MenuViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
+    // print('🍽️ [MenuViewFactory] AuthState: ${authState.status}, Role: ${authState.role}');
     
     // Si l'utilisateur est authentifié et a les permissions d'administration
     if (authState.isAuthenticated && _hasAdminPermissions(authState.role)) {
-      print('🍽️ [MenuViewFactory] Affichage: MenuAdminDashboard');
+      // print('🍽️ [MenuViewFactory] Affichage: MenuAdminDashboard');
       return const MenuAdminDashboard();
     }
     
     // Sinon, afficher la vue publique
-    print('🍽️ [MenuViewFactory] Affichage: MenuScreen (vue publique)');
+    // print('🍽️ [MenuViewFactory] Affichage: MenuScreen (vue publique)');
     return MenuScreen(restaurantId: restaurantId);
   }
   
   /// Créer une vue de menu spécifique
   static Widget createSpecificMenuView(MenuViewType type, WidgetRef ref, {int? restaurantId, int? menuId}) {
-    print('🍽️ [MenuViewFactory] createSpecificMenuView: $type');
+    // print('🍽️ [MenuViewFactory] createSpecificMenuView: $type');
     
     switch (type) {
       case MenuViewType.publicList:

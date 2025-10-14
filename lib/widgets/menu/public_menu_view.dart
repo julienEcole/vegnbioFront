@@ -39,7 +39,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
         ref.read(searchCriteriaProvider.notifier).state = savedFilters;
         // Effacer les filtres sauvegardés
         ref.read(savedFiltersProvider.notifier).state = null;
-        print('🔄 [PublicMenuView] Filtres restaurés après connexion');
+        // print('🔄 [PublicMenuView] Filtres restaurés après connexion');
       } else {
         // Réinitialiser les filtres pour la vue publique
         ref.read(searchCriteriaProvider.notifier).state = MenuSearchCriteria();
@@ -61,7 +61,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
     // Sauvegarder les filtres actuels
     ref.read(savedFiltersProvider.notifier).state = currentFilters;
     
-    print('💾 [PublicMenuView] Filtres sauvegardés avant connexion: $currentFilters');
+    // print('💾 [PublicMenuView] Filtres sauvegardés avant connexion: $currentFilters');
     
     // Rediriger vers l'écran de connexion
     context.go('/profil?view=login');
@@ -70,7 +70,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
   /// Gérer la déconnexion
   void _handleLogout() {
     ref.read(authProvider.notifier).logout();
-    print('🚪 [PublicMenuView] Déconnexion effectuée');
+    // print('🚪 [PublicMenuView] Déconnexion effectuée');
   }
 
   @override
@@ -81,7 +81,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
 
   @override
   Widget build(BuildContext context) {
-    print('🌐 [PublicMenuView] ===== DÉBUT build() =====');
+    // print('🌐 [PublicMenuView] ===== DÉBUT build() =====');
     debugPrint('🌐 [PublicMenuView] ===== DÉBUT build() =====');
     
     final menusAsync = ref.watch(filteredMenusProvider);
@@ -818,11 +818,11 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
                 final isIncluded = currentCriteria.allergenesInclus.contains(allergene);
                 
                 // Debug: afficher l'état des filtres
-                print('🔍 [FilterDebug] Allergène: $allergene');
-                print('🔍 [FilterDebug] isExcluded: $isExcluded');
-                print('🔍 [FilterDebug] isIncluded: $isIncluded');
-                print('🔍 [FilterDebug] allergenesExclus: ${currentCriteria.allergenesExclus}');
-                print('🔍 [FilterDebug] allergenesInclus: ${currentCriteria.allergenesInclus}');
+                // print('🔍 [FilterDebug] Allergène: $allergene');
+                // print('🔍 [FilterDebug] isExcluded: $isExcluded');
+                // print('🔍 [FilterDebug] isIncluded: $isIncluded');
+                // print('🔍 [FilterDebug] allergenesExclus: ${currentCriteria.allergenesExclus}');
+                // print('🔍 [FilterDebug] allergenesInclus: ${currentCriteria.allergenesInclus}');
             
             return FilterChip(
               label: Text(allergene),
@@ -999,11 +999,11 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
             final isIncluded = currentCriteria.produitsInclus.contains(produit);
             
             // Debug: afficher l'état des filtres pour les produits
-            print('🔍 [FilterDebug] Produit: $produit');
-            print('🔍 [FilterDebug] isExcluded: $isExcluded');
-            print('🔍 [FilterDebug] isIncluded: $isIncluded');
-            print('🔍 [FilterDebug] produitsExclus: ${currentCriteria.produitsExclus}');
-            print('🔍 [FilterDebug] produitsInclus: ${currentCriteria.produitsInclus}');
+            // print('🔍 [FilterDebug] Produit: $produit');
+            // print('🔍 [FilterDebug] isExcluded: $isExcluded');
+            // print('🔍 [FilterDebug] isIncluded: $isIncluded');
+            // print('🔍 [FilterDebug] produitsExclus: ${currentCriteria.produitsExclus}');
+            // print('🔍 [FilterDebug] produitsInclus: ${currentCriteria.produitsInclus}');
             
             return FilterChip(
               label: Text(produit),

@@ -14,8 +14,8 @@ class ViewFactory {
   
   /// Créer une vue selon son type et ses paramètres
   static Widget createView(ViewType type, WidgetRef ref, {Map<String, dynamic>? params}) {
-    print('🏭 [ViewFactory] createView appelé pour: $type');
-    print('🏭 [ViewFactory] Paramètres: $params');
+    // print('🏭 [ViewFactory] createView appelé pour: $type');
+    // print('🏭 [ViewFactory] Paramètres: $params');
     
     switch (type) {
       case ViewType.auth:
@@ -162,22 +162,22 @@ class ViewFactory {
     final authState = ref.read(authProvider);
     
     if (!authState.isAuthenticated) {
-      print('🚫 [ViewFactory] Accès refusé: utilisateur non authentifié');
+      // print('🚫 [ViewFactory] Accès refusé: utilisateur non authentifié');
       return false;
     }
     
     final userRole = authState.role?.toLowerCase();
     if (userRole == null) {
-      print('🚫 [ViewFactory] Accès refusé: rôle utilisateur non défini');
+      // print('🚫 [ViewFactory] Accès refusé: rôle utilisateur non défini');
       return false;
     }
     
     final hasPermission = requiredRoles.any((role) => role.toLowerCase() == userRole);
     
     if (hasPermission) {
-      print('✅ [ViewFactory] Accès autorisé pour le rôle: $userRole');
+      // print('✅ [ViewFactory] Accès autorisé pour le rôle: $userRole');
     } else {
-      print('🚫 [ViewFactory] Accès refusé: rôle $userRole non autorisé (requis: $requiredRoles)');
+      // print('🚫 [ViewFactory] Accès refusé: rôle $userRole non autorisé (requis: $requiredRoles)');
     }
     
     return hasPermission;

@@ -26,7 +26,7 @@ class EventsAdminService {
 
   /// Récupère tous les événements (admin)
   Future<List<Event>> getAllEvents() async {
-    print('📋 [EventsAdminService] Récupération de tous les événements');
+    // print('📋 [EventsAdminService] Récupération de tous les événements');
 
     try {
       final response = await http.get(
@@ -34,7 +34,7 @@ class EventsAdminService {
         headers: _authHeaders,
       );
 
-      print('📡 [EventsAdminService] Statut: ${response.statusCode}');
+      // print('📡 [EventsAdminService] Statut: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
@@ -45,14 +45,14 @@ class EventsAdminService {
         throw Exception('Erreur lors du chargement: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [EventsAdminService] Erreur: $e');
+      // print('❌ [EventsAdminService] Erreur: $e');
       rethrow;
     }
   }
 
   /// Récupère un événement par son ID
   Future<Event> getEventById(int id) async {
-    print('🔍 [EventsAdminService] Récupération événement $id');
+    // print('🔍 [EventsAdminService] Récupération événement $id');
 
     try {
       final response = await http.get(
@@ -60,7 +60,7 @@ class EventsAdminService {
         headers: _authHeaders,
       );
 
-      print('📡 [EventsAdminService] Statut: ${response.statusCode}');
+      // print('📡 [EventsAdminService] Statut: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         return Event.fromJson(json.decode(response.body));
@@ -72,7 +72,7 @@ class EventsAdminService {
         throw Exception('Erreur lors du chargement: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [EventsAdminService] Erreur: $e');
+      // print('❌ [EventsAdminService] Erreur: $e');
       rethrow;
     }
   }
@@ -88,7 +88,7 @@ class EventsAdminService {
     required bool isPublic,
     String? imageUrl,
   }) async {
-    print('➕ [EventsAdminService] Création d\'un événement');
+    // print('➕ [EventsAdminService] Création d\'un événement');
 
     if (_authService.token == null) {
       throw Exception('Vous devez être connecté pour créer un événement');
@@ -106,7 +106,7 @@ class EventsAdminService {
         if (imageUrl != null) 'imageUrl': imageUrl,
       };
 
-      print('📤 [EventsAdminService] Body: ${json.encode(body)}');
+      // print('📤 [EventsAdminService] Body: ${json.encode(body)}');
 
       final response = await http.post(
         Uri.parse('$baseUrl/evenements'),
@@ -114,8 +114,8 @@ class EventsAdminService {
         body: json.encode(body),
       );
 
-      print('📡 [EventsAdminService] Statut: ${response.statusCode}');
-      print('📄 [EventsAdminService] Réponse: ${response.body}');
+      // print('📡 [EventsAdminService] Statut: ${response.statusCode}');
+      // print('📄 [EventsAdminService] Réponse: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return Event.fromJson(json.decode(response.body));
@@ -128,7 +128,7 @@ class EventsAdminService {
         throw Exception('Erreur lors de la création: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [EventsAdminService] Erreur: $e');
+      // print('❌ [EventsAdminService] Erreur: $e');
       if (e is Exception) rethrow;
       throw Exception('Erreur de connexion: $e');
     }
@@ -145,7 +145,7 @@ class EventsAdminService {
     bool? isPublic,
     String? imageUrl,
   }) async {
-    print('✏️ [EventsAdminService] Mise à jour événement $id');
+    // print('✏️ [EventsAdminService] Mise à jour événement $id');
 
     if (_authService.token == null) {
       throw Exception('Vous devez être connecté pour modifier un événement');
@@ -162,7 +162,7 @@ class EventsAdminService {
       if (isPublic != null) body['isPublic'] = isPublic;
       if (imageUrl != null) body['imageUrl'] = imageUrl;
 
-      print('📤 [EventsAdminService] Body: ${json.encode(body)}');
+      // print('📤 [EventsAdminService] Body: ${json.encode(body)}');
 
       final response = await http.patch(
         Uri.parse('$baseUrl/evenements/$id'),
@@ -170,8 +170,8 @@ class EventsAdminService {
         body: json.encode(body),
       );
 
-      print('📡 [EventsAdminService] Statut: ${response.statusCode}');
-      print('📄 [EventsAdminService] Réponse: ${response.body}');
+      // print('📡 [EventsAdminService] Statut: ${response.statusCode}');
+      // print('📄 [EventsAdminService] Réponse: ${response.body}');
 
       if (response.statusCode == 200) {
         return Event.fromJson(json.decode(response.body));
@@ -186,7 +186,7 @@ class EventsAdminService {
         throw Exception('Erreur lors de la mise à jour: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ [EventsAdminService] Erreur: $e');
+      // print('❌ [EventsAdminService] Erreur: $e');
       if (e is Exception) rethrow;
       throw Exception('Erreur de connexion: $e');
     }
@@ -194,7 +194,7 @@ class EventsAdminService {
 
   /// Supprime un événement
   Future<bool> deleteEvent(int id) async {
-    print('🗑️ [EventsAdminService] Suppression événement $id');
+    // print('🗑️ [EventsAdminService] Suppression événement $id');
 
     if (_authService.token == null) {
       throw Exception('Vous devez être connecté pour supprimer un événement');
@@ -206,7 +206,7 @@ class EventsAdminService {
         headers: _authHeaders,
       );
 
-      print('📡 [EventsAdminService] Statut: ${response.statusCode}');
+      // print('📡 [EventsAdminService] Statut: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
@@ -219,7 +219,7 @@ class EventsAdminService {
         throw Exception(error['message'] ?? 'Erreur lors de la suppression');
       }
     } catch (e) {
-      print('❌ [EventsAdminService] Erreur: $e');
+      // print('❌ [EventsAdminService] Erreur: $e');
       if (e is Exception) rethrow;
       throw Exception('Erreur de connexion: $e');
     }

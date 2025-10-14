@@ -232,6 +232,6 @@ class AdBlockerDialog extends StatelessWidget {
   void _openIncognitoWindow() {
     // Cette fonction pourrait ouvrir une nouvelle fenêtre en mode incognito
     // Pour l'instant, on affiche juste un message
-    print('💡 Conseil : Ouvrez cette page dans une fenêtre de navigation privée');
+    // print('💡 Conseil : Ouvrez cette page dans une fenêtre de navigation privée');
   }
 }

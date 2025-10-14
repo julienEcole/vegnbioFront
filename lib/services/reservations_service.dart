@@ -30,8 +30,8 @@ class ReservationsService {
       int eventId,
       ReservationRequest request,
       ) async {
-    print('📝 [ReservationsService] Création réservation pour événement $eventId');
-    print('🔑 [ReservationsService] Token présent: ${_authService.token != null}');
+    // print('📝 [ReservationsService] Création réservation pour événement $eventId');
+    // print('🔑 [ReservationsService] Token présent: ${_authService.token != null}');
 
     try {
       final response = await http.post(
@@ -40,8 +40,8 @@ class ReservationsService {
         body: json.encode(request.toJson()),
       );
 
-      print('📡 [ReservationsService] Statut: ${response.statusCode}');
-      print('📄 [ReservationsService] Réponse: ${response.body}');
+      // print('📡 [ReservationsService] Statut: ${response.statusCode}');
+      // print('📄 [ReservationsService] Réponse: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return Reservation.fromJson(json.decode(response.body));
@@ -61,7 +61,7 @@ class ReservationsService {
         );
       }
     } catch (e) {
-      print('❌ [ReservationsService] Erreur: $e');
+      // print('❌ [ReservationsService] Erreur: $e');
       if (e is Exception) rethrow;
       throw Exception('Erreur de connexion: $e');
     }
@@ -69,7 +69,7 @@ class ReservationsService {
 
   /// Récupère les réservations d'un événement
   Future<List<Reservation>> getEventReservations(int eventId) async {
-    print('📋 [ReservationsService] Récupération réservations événement $eventId');
+    // print('📋 [ReservationsService] Récupération réservations événement $eventId');
 
     try {
       final response = await http.get(
@@ -77,7 +77,7 @@ class ReservationsService {
         headers: _authHeaders,
       );
 
-      print('📡 [ReservationsService] Statut: ${response.statusCode}');
+      // print('📡 [ReservationsService] Statut: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
@@ -90,14 +90,14 @@ class ReservationsService {
         );
       }
     } catch (e) {
-      print('❌ [ReservationsService] Erreur: $e');
+      // print('❌ [ReservationsService] Erreur: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
 
   /// Récupère les réservations de l'utilisateur connecté
   Future<List<Reservation>> getMyReservations() async {
-    print('📋 [ReservationsService] Récupération de mes réservations');
+    // print('📋 [ReservationsService] Récupération de mes réservations');
 
     if (_authService.token == null) {
       throw Exception('Vous devez être connecté pour voir vos réservations');
@@ -109,7 +109,7 @@ class ReservationsService {
         headers: _authHeaders,
       );
 
-      print('📡 [ReservationsService] Statut: ${response.statusCode}');
+      // print('📡 [ReservationsService] Statut: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
@@ -122,14 +122,14 @@ class ReservationsService {
         );
       }
     } catch (e) {
-      print('❌ [ReservationsService] Erreur: $e');
+      // print('❌ [ReservationsService] Erreur: $e');
       throw Exception('Erreur de connexion: $e');
     }
   }
 
   /// Annule une réservation
   Future<bool> cancelReservation(int reservationId) async {
-    print('🗑️ [ReservationsService] Annulation réservation $reservationId');
+    // print('🗑️ [ReservationsService] Annulation réservation $reservationId');
 
     if (_authService.token == null) {
       throw Exception('Vous devez être connecté pour annuler une réservation');
@@ -141,7 +141,7 @@ class ReservationsService {
         headers: _authHeaders,
       );
 
-      print('📡 [ReservationsService] Statut: ${response.statusCode}');
+      // print('📡 [ReservationsService] Statut: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
@@ -154,7 +154,7 @@ class ReservationsService {
         throw Exception(error['message'] ?? 'Erreur lors de l\'annulation');
       }
     } catch (e) {
-      print('❌ [ReservationsService] Erreur: $e');
+      // print('❌ [ReservationsService] Erreur: $e');
       if (e is Exception) rethrow;
       throw Exception('Erreur de connexion: $e');
     }

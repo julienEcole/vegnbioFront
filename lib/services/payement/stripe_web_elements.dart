@@ -18,7 +18,7 @@ class StripeWebElements {
       // Charger Stripe.js si pas déjà chargé
       final existingScript = web.document.querySelector('script[src*="js.stripe.com"]');
       if (existingScript == null) {
-        print('🔄 [StripeWebElements] Chargement de Stripe.js...');
+        // print('🔄 [StripeWebElements] Chargement de Stripe.js...');
         
         final script = web.document.createElement('script');
         script.setAttribute('src', 'https://js.stripe.com/v3/');
@@ -30,9 +30,9 @@ class StripeWebElements {
         
         // Attendre que le script soit complètement chargé
         await scriptLoaded;
-        print('✅ [StripeWebElements] Script Stripe.js chargé');
+        // print('✅ [StripeWebElements] Script Stripe.js chargé');
       } else {
-        print('✅ [StripeWebElements] Script Stripe.js déjà présent');
+        // print('✅ [StripeWebElements] Script Stripe.js déjà présent');
       }
       
       // Attendre un peu plus pour s'assurer que Stripe est disponible
@@ -40,7 +40,7 @@ class StripeWebElements {
       
       // Vérifier que Stripe est disponible
       if (js.context['Stripe'] == null) {
-        print('❌ [StripeWebElements] Stripe non disponible dans js.context');
+        // print('❌ [StripeWebElements] Stripe non disponible dans js.context');
         throw Exception('Stripe.js n\'est pas chargé');
       }
       
@@ -48,9 +48,9 @@ class StripeWebElements {
       final stripeConstructor = js.context['Stripe'];
       _stripe = stripeConstructor.apply([publishableKey]);
       
-      print('✅ [StripeWebElements] Stripe initialisé avec succès');
+      // print('✅ [StripeWebElements] Stripe initialisé avec succès');
     } catch (e) {
-      print('❌ [StripeWebElements] Erreur lors de l\'initialisation: $e');
+      // print('❌ [StripeWebElements] Erreur lors de l\'initialisation: $e');
       rethrow;
     }
   }
@@ -109,9 +109,9 @@ class StripeWebElements {
         },
       }]);
       
-      print('✅ [StripeWebElements] CardElement créé');
+      // print('✅ [StripeWebElements] CardElement créé');
     } catch (e) {
-      print('❌ [StripeWebElements] Erreur lors de la création du CardElement: $e');
+      // print('❌ [StripeWebElements] Erreur lors de la création du CardElement: $e');
       rethrow;
     }
   }
@@ -129,9 +129,9 @@ class StripeWebElements {
       }
 
       _cardElement!.callMethod('mount', ['#$containerId']);
-      print('✅ [StripeWebElements] CardElement monté dans $containerId');
+      // print('✅ [StripeWebElements] CardElement monté dans $containerId');
     } catch (e) {
-      print('❌ [StripeWebElements] Erreur lors du montage: $e');
+      // print('❌ [StripeWebElements] Erreur lors du montage: $e');
       rethrow;
     }
   }
@@ -156,7 +156,7 @@ class StripeWebElements {
     web.document.body!.append(container);
 
     try {
-      print('🔄 [StripeWebElements] Création du PaymentMethod avec Elements...');
+      // print('🔄 [StripeWebElements] Création du PaymentMethod avec Elements...');
       
       // Créer les Elements si pas déjà fait
       if (_elements == null) {
@@ -206,11 +206,11 @@ class StripeWebElements {
       }
 
       final paymentMethodId = result['paymentMethod']['id'] as String;
-      print('✅ [StripeWebElements] PaymentMethod créé: $paymentMethodId');
+      // print('✅ [StripeWebElements] PaymentMethod créé: $paymentMethodId');
       
       return paymentMethodId;
     } catch (e) {
-      print('❌ [StripeWebElements] Erreur lors de la création du PaymentMethod: $e');
+      // print('❌ [StripeWebElements] Erreur lors de la création du PaymentMethod: $e');
       
       // Si c'est un problème d'AdBlocker, propager l'erreur avec un message spécifique
       if (e.toString().contains('ERR_BLOCKED_BY_CLIENT') || 
@@ -232,12 +232,12 @@ class StripeWebElements {
   static Future<dynamic> _waitForPromise(js.JsObject promise) async {
     return await promise.callMethod('then', [
       (result) {
-        print('✅ [StripeWebElements] Promise résolue: $result');
+        // print('✅ [StripeWebElements] Promise résolue: $result');
         return result;
       }
     ]).callMethod('catch', [
       (error) {
-        print('❌ [StripeWebElements] Promise rejetée: $error');
+        // print('❌ [StripeWebElements] Promise rejetée: $error');
         throw Exception('Erreur Promise: $error');
       }
     ]);
@@ -248,9 +248,9 @@ class StripeWebElements {
     if (_cardElement != null) {
       try {
         _cardElement!.callMethod('unmount');
-        print('✅ [StripeWebElements] CardElement démonté');
+        // print('✅ [StripeWebElements] CardElement démonté');
       } catch (e) {
-        print('❌ [StripeWebElements] Erreur lors du démontage: $e');
+        // print('❌ [StripeWebElements] Erreur lors du démontage: $e');
       }
     }
   }
