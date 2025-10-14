@@ -4,10 +4,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vegnbio_front/models/reservation_model.dart';
 import 'package:vegnbio_front/services/auth/real_auth_service.dart';
+import '../config/app_config.dart';
 
 /// Service pour gérer les réservations d'événements
 class ReservationsService {
-  static const String baseUrl = 'http://localhost:3001/api/reservations';
+  static String get baseUrl => '${AppConfig.apiBaseUrl}/reservations';
   final RealAuthService _authService = RealAuthService();
 
   /// Obtenir les headers avec authentification

@@ -3,10 +3,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vegnbio_front/models/event_model.dart';
+import '../config/app_config.dart';
 
 /// Service pour gérer les appels API liés aux événements
 class EventsService {
-  static const String baseUrl = 'http://localhost:3001/api/evenements';
+  static String get baseUrl => '${AppConfig.apiBaseUrl}/evenements';
 
   /// Récupère tous les événements publics
   Future<List<Event>> fetchPublicEvents() async {

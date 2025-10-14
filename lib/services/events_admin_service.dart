@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vegnbio_front/models/event_model.dart';
 import 'package:vegnbio_front/services/auth/real_auth_service.dart';
+import '../config/app_config.dart';
+
 /// Service d'administration des événements (CRUD complet)
 class EventsAdminService {
-  static const String baseUrl = 'http://localhost:3001/api/evenements';
+  static String get baseUrl => '${AppConfig.apiBaseUrl}/evenements';
   final RealAuthService _authService = RealAuthService();
 
   /// Obtenir les headers avec authentification
