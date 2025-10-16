@@ -142,14 +142,40 @@ class DataDeletionInfoScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Cette option supprime DÉFINITIVEMENT votre compte et toutes vos données.',
+                      'Cette option SUPPRIME DÉFINITIVEMENT votre compte de la base de données. Les commandes payées sont conservées de manière anonyme.',
                       style: TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 12),
                     _buildListItem('Sera supprimé :', Colors.red[900]!),
-                    _buildSubItem('• Votre nom, prénom, email et mot de passe', Colors.red[900]!),
-                    _buildSubItem('• TOUTES vos commandes (payées et non payées)', Colors.red[900]!),
-                    _buildSubItem('• Tout votre historique', Colors.red[900]!),
+                    _buildSubItem('• Votre compte complet (supprimé de la base de données)', Colors.red[900]!),
+                    _buildSubItem('• Toutes vos informations personnelles', Colors.red[900]!),
+                    _buildSubItem('• Vos commandes non payées', Colors.red[900]!),
+                    const SizedBox(height: 8),
+                    _buildListItem('Sera conservé (anonyme) :', Colors.green[700]!),
+                    _buildSubItem('• Vos commandes payées (anonymisées)', Colors.green[700]!),
+                    _buildSubItem('• Conservées pour conformité légale (RGPD + obligations fiscales)', Colors.green[700]!),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue[300]!),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info, color: Colors.blue[700], size: 20),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Les commandes payées doivent être conservées pour des raisons comptables et légales, mais elles seront totalement dissociées de votre identité.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -228,23 +254,25 @@ class DataDeletionInfoScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Après anonymisation des données :',
+                    'Après anonymisation des données (Option 1) :',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text('• Vous êtes automatiquement déconnecté'),
                   const Text('• Vous pouvez vous reconnecter immédiatement'),
                   const Text('• Votre profil affiche "Utilisateur Anonyme"'),
+                  const Text('• Vos commandes payées restent (anonymisées)'),
                   const SizedBox(height: 16),
                   const Text(
-                    'Après suppression complète du compte :',
+                    'Après suppression complète du compte (Option 2) :',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text('• Vous êtes automatiquement déconnecté'),
-                  const Text('• Votre compte n\'existe plus'),
-                  const Text('• Vous ne pouvez PLUS vous reconnecter'),
-                  const Text('• Toutes vos données sont définitivement perdues'),
+                  const Text('• Votre compte est complètement SUPPRIMÉ de la base de données'),
+                  const Text('• Vous ne pouvez PLUS JAMAIS vous reconnecter'),
+                  const Text('• Toutes vos données personnelles sont définitivement supprimées'),
+                  const Text('• Vos commandes payées sont conservées (anonymisées)', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -313,7 +341,7 @@ class DataDeletionInfoScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             const Text(
-              'Dernière mise à jour : 6 octobre 2025',
+              'Dernière mise à jour : 16 octobre 2024',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,

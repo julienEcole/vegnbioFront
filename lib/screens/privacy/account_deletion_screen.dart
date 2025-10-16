@@ -153,18 +153,61 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
   }
 
   Future<void> _handleDeleteAccount() async {
+    final paidOrders = _stats?['stats']?['paidOrders']?.toString() ?? '0';
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer mon compte'),
-        content: const Text(
-          'Cette action supprimera DÉFINITIVEMENT votre compte et TOUTES vos données :\n\n'
-          '• Informations personnelles\n'
-          '• Toutes vos commandes (payées ou non)\n'
-          '• Tout votre historique\n\n'
-          '⚠️ Vous serez automatiquement déconnecté et ne pourrez PLUS JAMAIS vous reconnecter.\n\n'
-          'Cette action est IRRÉVERSIBLE et TOUTES vos données seront perdues.\n\n'
-          'Êtes-vous ABSOLUMENT SÛR de vouloir continuer ?',
+        title: const Text('Supprimer définitivement mon compte'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Cette action SUPPRIMERA DÉFINITIVEMENT votre compte de la base de données :\n\n'
+                '✅ SERA CONSERVÉ :\n',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '• $paidOrders commande(s) payée(s) (anonymisées)\n'
+                '  → Conservées pour raisons comptables et légales\n'
+                '  → Totalement dissociées de votre identité\n\n',
+                style: TextStyle(color: Colors.green[700]),
+              ),
+              const Text(
+                '❌ SERA SUPPRIMÉ :\n',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                '• Votre compte complet (supprimé de la base de données)\n'
+                '• Toutes vos informations personnelles\n'
+                '• Votre email et mot de passe\n'
+                '• Toutes vos commandes non payées\n\n',
+                style: TextStyle(color: Colors.red),
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange),
+                ),
+                child: const Text(
+                  '⚠️ IMPORTANT :\n'
+                  '• Vous ne pourrez JAMAIS vous reconnecter\n'
+                  '• Cette action est IRRÉVERSIBLE\n'
+                  '• Les commandes payées restent pour conformité légale (RGPD + obligations fiscales)',
+                  style: TextStyle(fontSize: 13),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Êtes-vous ABSOLUMENT SÛR de vouloir continuer ?',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -194,11 +237,12 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
+              'Vos $paidOrders commande(s) payée(s) seront conservées de manière anonyme.\n\n'
               'Cette action est DÉFINITIVE et IRRÉVERSIBLE.\n\n'
-              'Vous serez déconnecté et ne pourrez JAMAIS vous reconnecter.\n\n'
+              'Vous ne pourrez JAMAIS vous reconnecter.\n\n'
               'Pour confirmer, tapez "SUPPRIMER" ci-dessous :',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -388,7 +432,7 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
                       // Option 2: Supprimer complètement le compte
                       _buildDeletionOption(
                         title: '2. Supprimer définitivement mon compte',
-                        description: _stats?['deletionOptions']?['deleteAccount']?['description'] ?? '',
+                        description: 'Supprime définitivement votre compte de la base de données. Les commandes payées sont conservées de manière anonyme pour conformité légale.',
                         color: Colors.red[900]!,
                         icon: Icons.delete_forever,
                         willDelete: _stats?['deletionOptions']?['deleteAccount']?['willDelete'] ?? [],
@@ -396,6 +440,7 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
                         willRemove: _stats?['deletionOptions']?['deleteAccount']?['willRemove'] ?? '',
                         onPressed: _handleDeleteAccount,
                         buttonText: 'Supprimer mon compte',
+                        warning: _stats?['deletionOptions']?['deleteAccount']?['warning'],
                       ),
                       const SizedBox(height: 24),
 
@@ -407,8 +452,8 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
                           'vous avez le droit de demander l\'accès, la rectification, la suppression '
                           'et la portabilité de vos données personnelles.\n\n'
                           'Ces options de suppression vous permettent d\'exercer votre droit à l\'effacement '
-                          '(droit à l\'oubli) de manière autonome.\n\n'
-                          'Pour toute question, contactez-nous à : privacy@vegnbio.com',
+                          '(droit à l\'oubli) de manière autonome.\n\n',
+                          // 'Pour toute question, contactez-nous à : privacy@vegnbio.com',
                           style: TextStyle(fontSize: 14, height: 1.5),
                         ),
                       ),
@@ -463,6 +508,7 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
     required String willRemove,
     required VoidCallback onPressed,
     required String buttonText,
+    String? warning,
   }) {
     return Card(
       elevation: 4,
@@ -493,6 +539,36 @@ class _AccountDeletionScreenState extends ConsumerState<AccountDeletionScreen> {
               style: const TextStyle(fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 16),
+            
+            // Avertissement si présent
+            if (warning != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade300),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info, color: Colors.blue[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        warning,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[900],
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             
             // Ce qui sera supprimé
             Text(
