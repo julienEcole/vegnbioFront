@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../models/cart_item.dart';
 import '../models/menu.dart';
 
@@ -82,7 +84,41 @@ class CartState {
 }
 
 class CartNotifier extends StateNotifier<CartState> {
-  CartNotifier() : super(CartState());
+  static const String _cartKey = 'vegnbio_cart';
+  
+  CartNotifier() : super(CartState()) {
+    _loadCart();
+  }
+
+  // Charger le panier depuis le stockage local
+  Future<void> _loadCart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cartJson = prefs.getString(_cartKey);
+      
+      if (cartJson != null) {
+        final List<dynamic> itemsJson = json.decode(cartJson);
+        final items = itemsJson.map((json) => CartItem.fromJson(json)).toList();
+        state = state.copyWith(items: items);
+        // print('🛒 [CartNotifier] Panier chargé: ${items.length} items');
+      }
+    } catch (e) {
+      // print('❌ [CartNotifier] Erreur lors du chargement du panier: $e');
+    }
+  }
+
+  // Sauvegarder le panier dans le stockage local
+  Future<void> _saveCart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final itemsJson = state.items.map((item) => item.toJson()).toList();
+      final cartJson = json.encode(itemsJson);
+      await prefs.setString(_cartKey, cartJson);
+      // print('🛒 [CartNotifier] Panier sauvegardé: ${state.items.length} items');
+    } catch (e) {
+      // print('❌ [CartNotifier] Erreur lors de la sauvegarde du panier: $e');
+    }
+  }
 
   void addItem(Menu menu, int restaurantId, {int quantite = 1}) {
     // Vérifier si on peut ajouter cet item
@@ -122,6 +158,7 @@ class CartNotifier extends StateNotifier<CartState> {
       state = state.copyWith(items: [...state.items, newItem]);
     }
     
+    _saveCart();
     // print('🛒 [CartNotifier] Item ajouté: ${menu.titre} (quantité: $quantite)');
   }
 
@@ -131,6 +168,7 @@ class CartNotifier extends StateNotifier<CartState> {
     ).toList();
     
     state = state.copyWith(items: updatedItems);
+    _saveCart();
     // print('🛒 [CartNotifier] Item supprimé: ${menu.titre}');
   }
 
@@ -152,12 +190,14 @@ class CartNotifier extends StateNotifier<CartState> {
       updatedItems[existingItemIndex] = updatedItem;
       
       state = state.copyWith(items: updatedItems);
+      _saveCart();
       // print('🛒 [CartNotifier] Quantité mise à jour: ${menu.titre} -> $newQuantite');
     }
   }
 
   void clearCart() {
     state = CartState();
+    _saveCart();
     // print('🛒 [CartNotifier] Panier vidé');
   }
 

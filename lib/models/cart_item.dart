@@ -34,6 +34,24 @@ class CartItem {
     };
   }
 
+  // Sérialisation pour le stockage local
+  Map<String, dynamic> toJson() {
+    return {
+      'menu': menu.toJson(),
+      'quantite': quantite,
+      'restaurantId': restaurantId,
+    };
+  }
+
+  // Désérialisation depuis le stockage local
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    return CartItem(
+      menu: Menu.fromJson(json['menu']),
+      quantite: json['quantite'] as int,
+      restaurantId: json['restaurantId'] as int,
+    );
+  }
+
   @override
   String toString() {
     return 'CartItem(menu: ${menu.titre}, quantite: $quantite, restaurantId: $restaurantId, totalPrice: $totalPrice)';

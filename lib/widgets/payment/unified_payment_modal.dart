@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../factories/payment_form_factory.dart';
 import '../../services/payement/unified_payment_service.dart';
 
@@ -47,6 +48,48 @@ class UnifiedPaymentModal extends StatefulWidget {
 }
 
 class _UnifiedPaymentModalState extends State<UnifiedPaymentModal> {
+  String? _initialRoute;
+
+  @override
+  void initState() {
+    super.initState();
+    // Capturer la route actuelle au moment de l'ouverture du modal
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          final router = GoRouter.of(context);
+          _initialRoute = router.routeInformationProvider.value.uri.toString();
+        } catch (e) {
+          // Si GoRouter n'est pas disponible, on continue sans surveillance
+        }
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Vérifier si la route a changé à chaque changement de dépendances
+    if (_initialRoute != null) {
+      try {
+        final router = GoRouter.of(context);
+        final currentRoute = router.routeInformationProvider.value.uri.toString();
+        
+        // Si la route a changé, fermer le modal
+        if (currentRoute != _initialRoute) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          });
+        }
+      } catch (e) {
+        // Ignorer les erreurs si GoRouter n'est pas disponible
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
