@@ -7,7 +7,6 @@ import 'screens/cart/cart_screen.dart';
 import 'screens/privacy/privacy_policy_screen.dart';
 import 'screens/privacy/account_deletion_screen.dart';
 import 'screens/privacy/data_deletion_info_screen.dart';
-import 'screens/orders/orders_screen.dart';
 import 'factories/auth_view_factory.dart';
 import 'factories/dashboard_view_factory.dart';
 import 'factories/event_view_factory.dart';

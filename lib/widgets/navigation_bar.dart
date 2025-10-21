@@ -15,6 +15,40 @@ class CustomNavigationBar extends ConsumerWidget {
 
   void _handleNavigation(BuildContext context, WidgetRef ref, int index) {
     final authState = ref.read(authProvider);
+    final userRole = authState.role?.toLowerCase();
+    
+    // Calculer les indices selon le rôle
+    int baseIndex = 0;
+    int restaurantsIndex = -1;
+    int eventsIndex = -1;
+    int profileIndex = -1;
+    int ordersIndex = -1;
+    
+    // Accueil (toujours index 0)
+    baseIndex = 0;
+    
+    // Menus (toujours index 1)
+    baseIndex = 1;
+    
+    // Restaurants (index 2 seulement si pas fournisseur)
+    if (userRole != 'fournisseur') {
+      restaurantsIndex = 2;
+      baseIndex = 2;
+    }
+    
+    // Événements (index suivant seulement si pas fournisseur)
+    if (userRole != 'fournisseur') {
+      eventsIndex = baseIndex + 1;
+      baseIndex = eventsIndex;
+    }
+    
+    // Profil (toujours le dernier avant commandes)
+    profileIndex = baseIndex + 1;
+    
+    // Commandes (seulement si connecté)
+    if (authState.isAuthenticated) {
+      ordersIndex = profileIndex + 1;
+    }
     
     switch (index) {
       case 0:
@@ -23,23 +57,22 @@ class CustomNavigationBar extends ConsumerWidget {
       case 1:
         context.go('/menus');
         break;
-      case 2:
-        context.go('/restaurants');
-        break;
-      case 3:
-        context.go('/evenements');
-        break;
-      case 4:
-        // Navigation intelligente vers le profil selon l'état d'authentification
-        if (authState.isAuthenticated) {
-          context.go('/profil?view=profile');
-        } else {
-          context.go('/profil');
+      default:
+        if (index == restaurantsIndex) {
+          context.go('/restaurants');
+        } else if (index == eventsIndex) {
+          context.go('/evenements');
+        } else if (index == profileIndex) {
+          // Navigation intelligente vers le profil selon l'état d'authentification
+          if (authState.isAuthenticated) {
+            context.go('/profil?view=profile');
+          } else {
+            context.go('/profil');
+          }
+        } else if (index == ordersIndex) {
+          // Bouton "Mes commandes" - seulement visible pour les clients connectés
+          context.go('/commandes');
         }
-        break;
-      case 5:
-        // Bouton "Mes commandes" - seulement visible pour les clients connectés
-        context.go('/commandes');
         break;
     }
   }
@@ -49,7 +82,7 @@ class CustomNavigationBar extends ConsumerWidget {
     // Surveiller l'état d'authentification pour mettre à jour l'interface
     final authState = ref.watch(authProvider);
     
-    // Créer la liste des destinations selon l'état d'authentification
+    // Créer la liste des destinations selon l'état d'authentification et le rôle
     final List<NavigationDestination> destinations = [
       const NavigationDestination(
         icon: Icon(Icons.home_outlined),
@@ -61,22 +94,39 @@ class CustomNavigationBar extends ConsumerWidget {
         selectedIcon: Icon(Icons.restaurant_menu),
         label: 'Menus',
       ),
-      const NavigationDestination(
-        icon: Icon(Icons.location_on_outlined),
-        selectedIcon: Icon(Icons.location_on),
-        label: 'Restaurants',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.event_outlined),
-        selectedIcon: Icon(Icons.event),
-        label: 'Événements',
-      ),
+    ];
+    
+    // Ajouter "Restaurants" seulement si l'utilisateur n'est pas fournisseur
+    final userRole = authState.role?.toLowerCase();
+    if (userRole != 'fournisseur') {
+      destinations.add(
+        const NavigationDestination(
+          icon: Icon(Icons.location_on_outlined),
+          selectedIcon: Icon(Icons.location_on),
+          label: 'Restaurants',
+        ),
+      );
+    }
+    
+    // Ajouter "Événements" seulement si l'utilisateur n'est pas fournisseur
+    if (userRole != 'fournisseur') {
+      destinations.add(
+        const NavigationDestination(
+          icon: Icon(Icons.event_outlined),
+          selectedIcon: Icon(Icons.event),
+          label: 'Événements',
+        ),
+      );
+    }
+    
+    // Ajouter le profil/connexion
+    destinations.add(
       NavigationDestination(
         icon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
         selectedIcon: Icon(authState.isAuthenticated ? Icons.person : Icons.login),
         label: authState.isAuthenticated ? 'Profil' : 'Connexion',
       ),
-    ];
+    );
 
     // Ajouter le bouton "Mes commandes" pour les utilisateurs connectés (clients, restaurateurs, fournisseurs)
     if (authState.isAuthenticated) {

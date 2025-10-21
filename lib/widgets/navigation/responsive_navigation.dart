@@ -46,13 +46,13 @@ class NavigationDestinations {
       selectedIcon: Icons.event,
       label: 'Événements',
     ),
-    // Place de marché (restaurateur)
+    // Place de marché (restaurateur + clients)
     NavDestination(
       route: '/market',
       icon: Icons.shopping_cart_outlined,
       selectedIcon: Icons.shopping_cart,
       label: 'Place de marché',
-      requiredRoles: ['restaurateur'],
+      requiredRoles: ['restaurateur', 'client'],
     ),
     // Note: "Gestion des événements" est géré automatiquement par /evenements avec EventViewFactory
     // qui affiche EventAdminDashboard pour les admins/restaurateurs
@@ -61,7 +61,7 @@ class NavigationDestinations {
       icon: Icons.inventory_2_outlined,
       selectedIcon: Icons.inventory_2,
       label: 'Mes offres',
-      requiredRoles: ['fournisseur'],
+      requiredRoles: ['fournisseur', 'admin'],
     ),
     // ❌ Dashboard retiré
     // NavDestination(
@@ -99,9 +99,17 @@ class NavigationDestinations {
   /// Filtre les destinations selon les permissions utilisateur
   static List<NavDestination> getVisibleDestinations(AuthState authState) {
     return destinations.where((dest) {
+      // Logique spéciale pour les fournisseurs
+      final userRole = authState.role?.toLowerCase();
+      if (userRole == 'fournisseur') {
+        // Les fournisseurs ne peuvent pas accéder aux restaurants et événements
+        if (dest.route == '/restaurants' || dest.route == '/evenements') {
+          return false;
+        }
+      }
+      
       if (dest.requiredRoles.isEmpty) return true; // public
       if (!authState.isAuthenticated) return false;
-      final userRole = authState.role?.toLowerCase();
       return userRole != null && dest.requiredRoles.contains(userRole);
     }).toList();
   }

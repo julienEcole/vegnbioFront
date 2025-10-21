@@ -409,19 +409,29 @@ class PublicEventsView extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Spacer(),
-                            TextButton.icon(
-                              onPressed: () => _showReportModal(context, event),
-                              icon: const Icon(Icons.flag, color: Colors.red),
-                              label: const Text('Signaler'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                              ),
-                            ),
-                          ],
+                        // Bouton "Signaler" - seulement visible pour les utilisateurs connectés
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final authState = ref.watch(authProvider);
+                            if (!authState.isAuthenticated) {
+                              return const SizedBox.shrink(); // Masquer le bouton si non connecté
+                            }
+                            
+                            return Row(
+                              children: [
+                                const Spacer(),
+                                TextButton.icon(
+                                  onPressed: () => _showReportModal(context, event),
+                                  icon: const Icon(Icons.flag, color: Colors.red),
+                                  label: const Text('Signaler'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
