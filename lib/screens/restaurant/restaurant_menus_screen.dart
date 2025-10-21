@@ -7,6 +7,7 @@ import '../../providers/menu_provider.dart';
 import '../../providers/cart_provider.dart';
 
 import 'package:vegnbio_front/widgets/cart/cart_floating_button.dart';
+import 'package:vegnbio_front/widgets/menu/menu_image_widget.dart';
 
 /// Page listant les menus d'un restaurant avec recherche + filtres + détail produits.
 class RestaurantMenusScreen extends ConsumerStatefulWidget {
@@ -299,15 +300,14 @@ class _MenuCardState extends State<_MenuCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // image placeholder
-                Container(
-                  width: 72, height: 72,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.fastfood),
+                // image du menu
+                MenuImageWidget(
+                  imageUrl: m.imageUrl,
+                  width: 72,
+                  height: 72,
+                  borderRadius: BorderRadius.circular(10),
+                  fallbackIcon: Icons.fastfood,
+                  imageQuality: 85,
                 ),
                 const SizedBox(width: 12),
                 // infos
@@ -469,6 +469,6 @@ extension _CartSelectors on CartState {
   int quantityFor({required int menuId, required int restaurantId}) {
     final match = items.where((it) => it.menu.id == menuId && it.restaurantId == restaurantId);
     if (match.isEmpty) return 0;
-    return match.first.quantite ?? 0;
+    return match.first.quantite;
   }
 }
