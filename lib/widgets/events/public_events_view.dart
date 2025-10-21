@@ -442,15 +442,36 @@ class PublicEventsView extends ConsumerWidget {
               // Bouton de réservation
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showReservationModal(context, event),
-                  icon: const Icon(Icons.event_available),
-                  label: const Text('Réserver une place'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final authState = ref.watch(authProvider);
+                    
+                    if (!authState.isAuthenticated) {
+                      // Bouton de connexion pour les utilisateurs non connectés
+                      return ElevatedButton.icon(
+                        onPressed: () => _handleLogin(context),
+                        icon: const Icon(Icons.login),
+                        label: const Text('Connectez-vous pour réserver'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      );
+                    } else {
+                      // Bouton de réservation normal pour les utilisateurs connectés
+                      return ElevatedButton.icon(
+                        onPressed: () => _showReservationModal(context, event),
+                        icon: const Icon(Icons.event_available),
+                        label: const Text('Réserver une place'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
             ],
