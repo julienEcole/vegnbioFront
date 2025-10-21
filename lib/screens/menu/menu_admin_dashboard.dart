@@ -105,43 +105,6 @@ class _MenuAdminDashboardState extends ConsumerState<MenuAdminDashboard> {
     );
   }
 
-  Widget _buildHeaderFilter(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<int?>(
-            value: widget.restaurantId,
-            decoration: const InputDecoration(
-              labelText: 'Filtrer par restaurant',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.restaurant),
-            ),
-            items: [
-              const DropdownMenuItem<int?>(
-                value: null,
-                child: Text('Tous les restaurants'),
-              ),
-              ..._restaurants.map((r) => DropdownMenuItem<int?>(
-                value: r.id,
-                child: Text(r.nom),
-              )),
-            ],
-            onChanged: (id) {
-              // Re-naviguer avec le nouveau filtre pour rester simple
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => MenuAdminDashboard(restaurantId: id),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
@@ -484,7 +447,7 @@ class _MenuAdminDashboardState extends ConsumerState<MenuAdminDashboard> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const MenuFormScreen(),
+        builder: (context) => MenuFormScreen(defaultRestaurantId: widget.restaurantId),
       ),
     ).then((_) => _loadMenus());
   }

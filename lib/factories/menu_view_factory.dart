@@ -41,7 +41,7 @@ class MenuViewFactory {
       case MenuViewType.publicWidget:
         return const PublicMenuView();
       case MenuViewType.createForm:
-        return const MenuFormScreen();
+        return MenuFormScreen(defaultRestaurantId: restaurantId);
       case MenuViewType.editForm:
         return const MenuFormScreen(); // Utilise le même écran avec menuToEdit
     }

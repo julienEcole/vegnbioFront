@@ -10,8 +10,13 @@ import '../../services/api_service.dart';
 /// (même logique, UI améliorée + contenu centré)
 class MenuFormScreen extends ConsumerStatefulWidget {
   final Menu? menuToEdit;
+  final int? defaultRestaurantId; // Restaurant par défaut lors de la création
 
-  const MenuFormScreen({super.key, this.menuToEdit});
+  const MenuFormScreen({
+    super.key, 
+    this.menuToEdit,
+    this.defaultRestaurantId,
+  });
 
   @override
   ConsumerState<MenuFormScreen> createState() => _MenuFormScreenState();
@@ -75,9 +80,10 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
         _availableAllergenes = allAllergenes.toList()..sort();
         _availableProduits = allProduits.toList()..sort();
 
-        // s’il n’y avait pas encore de restaurants au moment de _initializeEmptyForm
+        // s'il n'y avait pas encore de restaurants au moment de _initializeEmptyForm
         if (widget.menuToEdit == null && _selectedRestaurantId == null && _restaurants.isNotEmpty) {
-          _selectedRestaurantId = _restaurants.first.id;
+          // Utiliser le restaurant par défaut si fourni, sinon le premier
+          _selectedRestaurantId = widget.defaultRestaurantId ?? _restaurants.first.id;
         }
       });
     } catch (e) {
@@ -131,6 +137,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
       final apiService = ApiService();
 
       if (widget.menuToEdit != null) {
+        // Modification d'un menu existant
         await apiService.updateMenu(
           id: widget.menuToEdit!.id,
           titre: _titreController.text.trim(),
@@ -147,6 +154,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
           const SnackBar(content: Text('Menu modifié avec succès')),
         );
       } else {
+        // Création d'un nouveau menu
         await apiService.createMenu(
           titre: _titreController.text.trim(),
           description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
@@ -156,10 +164,11 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
           restaurantId: _selectedRestaurantId!,
           prix: double.parse(_prixController.text),
           disponible: _disponible,
-          imageUrl: _imageUrl,
+          imageUrl: null, // Pas d'image à la création
         );
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Menu créé avec succès')),
+          const SnackBar(content: Text('Menu créé avec succès. Vous pouvez maintenant ajouter une image.')),
         );
       }
 
@@ -474,25 +483,52 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Bloc 4 — Image
-                      _sectionLabel('Image', icon: Icons.image_outlined),
-                      const SizedBox(height: 8),
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: ImageUploadWidget(
-                            currentImageUrl: _imageUrl,
-                            onImageUploaded: (imageUrl) => setState(() => _imageUrl = imageUrl),
-                            uploadType: 'menu',
-                            itemId: widget.menuToEdit?.id ?? 0,
+                      // Bloc 4 — Image (uniquement en modification)
+                      if (isEditing) ...[
+                        _sectionLabel('Image', icon: Icons.image_outlined),
+                        const SizedBox(height: 8),
+                        Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: ImageUploadWidget(
+                              currentImageUrl: _imageUrl,
+                              onImageUploaded: (imageUrl) => setState(() => _imageUrl = imageUrl),
+                              uploadType: 'menu',
+                              itemId: widget.menuToEdit!.id,
+                            ),
                           ),
                         ),
-                      ),
+                      ] else ...[
+                        // Message informatif pour la création
+                        Card(
+                          elevation: 0,
+                          color: Colors.blue.shade50,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: Colors.blue.shade200),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.blue.shade700),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Vous pourrez ajouter une image après avoir créé le menu.',
+                                    style: TextStyle(color: Colors.blue.shade700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 20),
 

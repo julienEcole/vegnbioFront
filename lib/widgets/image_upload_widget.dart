@@ -14,6 +14,7 @@ import '../services/api_service.dart';
 class ImageUploadWidget extends StatefulWidget {
   final String? currentImageUrl;
   final Function(String? newImageUrl) onImageUploaded;
+  final Function(File?, Uint8List?, String?)? onImageSelected; // Callback pour la sélection locale
   final String uploadType; // 'restaurant' ou 'menu'
   final int itemId;
   final double width;
@@ -24,6 +25,7 @@ class ImageUploadWidget extends StatefulWidget {
     Key? key,
     this.currentImageUrl,
     required this.onImageUploaded,
+    this.onImageSelected,
     required this.uploadType,
     required this.itemId,
     this.width = double.infinity,
@@ -169,8 +171,8 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
                 ),
               ),
 
-              // Envoyer (visible si une image est sélectionnée localement)
-              if (_hasLocalSelection)
+              // Envoyer (visible si une image est sélectionnée localement ET que itemId > 0)
+              if (_hasLocalSelection && widget.itemId > 0)
                 ElevatedButton.icon(
                   onPressed: _isUploading ? null : _uploadImage,
                   icon: const Icon(Icons.upload, size: 18),
@@ -228,7 +230,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
   // --- LOGIQUE ---------------------------------------------------------------
 
   Future<void> _selectImage() async {
-    try {
+try {
       final XFile? picked =
       await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
 
@@ -242,6 +244,8 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
           _pickedFilename = picked.name; // ex: photo.png
           _selectedFile = null; // reset
         });
+        // Appeler le callback si fourni
+        widget.onImageSelected?.call(null, bytes, picked.name);
       } else {
         // Mobile/Desktop: on stocke le File
         setState(() {
@@ -249,6 +253,8 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
           _selectedBytes = null;
           _pickedFilename = null;
         });
+        // Appeler le callback si fourni
+        widget.onImageSelected?.call(File(picked.path), null, null);
       }
     } catch (e) {
       _snack('Erreur lors de la sélection: $e', isError: true);
