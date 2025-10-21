@@ -725,42 +725,61 @@ class _RestaurateurOrdersScreenState extends State<RestaurateurOrdersScreen> {
   }
 
   void _showCommandeDetails(Commande commande) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        maxChildSize: 0.95,
-        minChildSize: 0.6,
-        builder: (context, scrollController) => Container(
-          padding: const EdgeInsets.all(16),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // En-tête
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Commande #${commande.id}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  CommandeViewFactory.buildStatusChip(commande.statut),
-                ],
+              // Handle bar pour indiquer que c'est draggable
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              
-              const SizedBox(height: 16),
-              
-              // Contenu scrollable
+              // Contenu avec padding minimal en haut
               Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // En-tête
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Commande #${commande.id}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          CommandeViewFactory.buildStatusChip(commande.statut),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Contenu scrollable
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                       // Informations générales
                       Card(
                         child: Padding(
@@ -862,6 +881,10 @@ class _RestaurateurOrdersScreenState extends State<RestaurateurOrdersScreen> {
                         onVerifyPayment: () => _verifyPayment(commande),
                         onMarkSuspicious: (reason) => _markAsSuspicious(commande, reason),
                         onCancel: (reason) => _cancelCommande(commande, reason),
+                      ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),

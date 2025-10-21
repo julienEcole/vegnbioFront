@@ -82,7 +82,7 @@ class _PublicMenuViewState extends ConsumerState<PublicMenuView> {
   @override
   Widget build(BuildContext context) {
     // print('🌐 [PublicMenuView] ===== DÉBUT build() =====');
-    debugPrint('🌐 [PublicMenuView] ===== DÉBUT build() =====');
+    // debugPrint('🌐 [PublicMenuView] ===== DÉBUT build() =====');
     
     final menusAsync = ref.watch(filteredMenusProvider);
     final restaurantsAsync = ref.watch(restaurantsProvider);

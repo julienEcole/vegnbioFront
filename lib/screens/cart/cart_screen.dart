@@ -8,7 +8,6 @@ import '../../models/cart_item.dart';
 import '../../services/api_service.dart';
 import '../../services/auth/real_auth_service.dart';
 import '../../services/commande.service.dart';
-import '../../models/commande.model.dart';
 import '../../widgets/delivery_time_selector.dart';
 import '../../widgets/payment/unified_payment_modal.dart';
 
@@ -404,7 +403,7 @@ class _CartPageState extends ConsumerState<CartPage> {
       );
 
       final paymentResult2 = await CommandeService.completePayment(
-        commandeId: commande.id!,
+        commandeId: commande.id,
         paymentIntentId: paymentResult.paymentIntentId ?? '',
         paymentMethodId: paymentResult.paymentMethodId ?? '',
         amount: totalTTC,
@@ -431,6 +430,8 @@ class _CartPageState extends ConsumerState<CartPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Commande payée et créée ! ID: ${commande.id}'), backgroundColor: Colors.green),
         );
+        // Rediriger vers la page des commandes
+        context.go('/commandes');
       }
     } catch (e) {
       if (mounted) {
@@ -504,7 +505,7 @@ class _CartPageState extends ConsumerState<CartPage> {
         final rTotalTTC = rTotalHT * 1.2;
 
         final paymentResult2 = await CommandeService.completePayment(
-          commandeId: commande.id!,
+          commandeId: commande.id,
           paymentIntentId: paymentResult.paymentIntentId ?? '',
           paymentMethodId: paymentResult.paymentMethodId ?? '',
           amount: rTotalTTC,
@@ -530,6 +531,8 @@ class _CartPageState extends ConsumerState<CartPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Commandes payées et créées !'), backgroundColor: Colors.green),
         );
+        // Rediriger vers la page des commandes
+        context.go('/commandes');
       }
     } catch (e) {
       if (mounted) {

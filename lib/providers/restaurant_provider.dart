@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import '../models/restaurant.dart';
 import '../services/api_service.dart';
 
@@ -11,7 +10,7 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 // Provider pour la liste des restaurants
 final restaurantsProvider = FutureProvider<List<Restaurant>>((ref) async {
       // print('🚨🚨🚨 [restaurantsProvider] APPELÉ ! 🚨🚨🚨');
-  debugPrint('🚨🚨🚨 [restaurantsProvider] APPELÉ ! 🚨🚨🚨');
+  // debugPrint('🚨🚨🚨 [restaurantsProvider] APPELÉ ! 🚨🚨🚨');
   
   final apiService = ref.watch(apiServiceProvider);
   return apiService.getRestaurants();

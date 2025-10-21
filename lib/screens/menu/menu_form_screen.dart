@@ -82,7 +82,7 @@ class _MenuFormScreenState extends ConsumerState<MenuFormScreen> {
       });
     } catch (e) {
       // Pas d’UI d’erreur ici volontairement (on reste léger)
-      debugPrint('Erreur _loadInitialData: $e');
+      // debugPrint('Erreur _loadInitialData: $e');
     }
   }
 

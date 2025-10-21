@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import '../models/menu.dart';
 import '../models/search_criteria.dart';
 import '../services/api_service.dart';
@@ -11,9 +10,9 @@ final menuRefreshProvider = StateProvider<int>((ref) => 0);
 // Provider pour la liste des menus avec cache intelligent
 final menusProvider = FutureProvider<List<Menu>>((ref) async {
   // Écouter le provider de rafraîchissement pour forcer la mise à jour
-  final refreshCount = ref.watch(menuRefreshProvider);
+  ref.watch(menuRefreshProvider);
       // print('🚨🚨🚨 [menusProvider] APPELÉ ! refreshCount: $refreshCount 🚨🚨🚨');
-  debugPrint('🚨🚨🚨 [menusProvider] APPELÉ ! refreshCount: $refreshCount 🚨🚨🚨');
+  // debugPrint('🚨🚨🚨 [menusProvider] APPELÉ ! refreshCount: $refreshCount 🚨🚨🚨');
   
   // Utiliser le cache intelligent
   final cacheService = ref.read(menuCacheServiceProvider);
