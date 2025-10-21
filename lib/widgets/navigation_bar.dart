@@ -96,6 +96,7 @@ class CustomNavigationBar extends ConsumerWidget {
       backgroundColor: Colors.green,
       indicatorColor: Colors.white,
       elevation: 8,
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
       destinations: destinations,
       selectedIndex: selectedIndex,
       onDestinationSelected: (index) => _handleNavigation(context, ref, index),

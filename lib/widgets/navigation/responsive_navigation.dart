@@ -144,6 +144,7 @@ class ResponsiveNavigationBar extends ConsumerWidget {
       selectedIndex: currentIndex,
       onDestinationSelected: (index) =>
           _handleNavigation(context, ref, visibleDestinations[index].route),
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
       destinations: visibleDestinations.map((dest) {
         return NavigationDestination(
           icon: Icon(dest.icon, color: Colors.white),
