@@ -219,7 +219,7 @@ class PublicEventsView extends ConsumerWidget {
         const SizedBox(height: 24),
         ...events.map((event) => Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: _buildEventCard(context, event),
+          child: _buildEventCard(context, event, authState),
         )),
         const SizedBox(height: 16),
         // Afficher le bouton de connexion seulement si l'utilisateur n'est pas authentifié
@@ -278,7 +278,7 @@ class PublicEventsView extends ConsumerWidget {
   }
 
   /// Carte d'événement
-  Widget _buildEventCard(BuildContext context, Event event) {
+  Widget _buildEventCard(BuildContext context, Event event, AuthState authState) {
     // Format de date sans dépendance intl
     final day = event.startAt.day.toString().padLeft(2, '0');
     final month = _getMonthName(event.startAt.month);
@@ -409,35 +409,39 @@ class PublicEventsView extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Spacer(),
-                            TextButton.icon(
-                              onPressed: () => _showReportModal(context, event),
-                              icon: const Icon(Icons.flag, color: Colors.red),
-                              label: const Text('Signaler'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        // Afficher le bouton "Signaler" seulement si l'utilisateur est connecté
+                        if (authState.isAuthenticated)
+                          Row(
+                            children: [
+                              const Spacer(),
+                              TextButton.icon(
+                                onPressed: () => _showReportModal(context, event),
+                                icon: const Icon(Icons.flag, color: Colors.red),
+                                label: const Text('Signaler'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              // Bouton de réservation
+              // Bouton de réservation/connexion
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _showReservationModal(context, event),
-                  icon: const Icon(Icons.event_available),
-                  label: const Text('Réserver une place'),
+                  onPressed: authState.isAuthenticated 
+                    ? () => _showReservationModal(context, event)
+                    : () => _handleLogin(context),
+                  icon: Icon(authState.isAuthenticated ? Icons.event_available : Icons.login),
+                  label: Text(authState.isAuthenticated ? 'Réserver une place' : 'Se connecter'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: authState.isAuthenticated ? Colors.green : Colors.orange,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -459,15 +463,12 @@ class PublicEventsView extends ConsumerWidget {
   }
 
   String _capacityLabel(Event event) {
-    // Priorité à capacityRemaining si l’API l’envoie
+    // Priorité à capacityRemaining si l'API l'envoie
     if (event.capacityRemaining != null) {
       return '${event.capacityRemaining} places restantes';
     }
-    // fallback : si l’API n’a pas encore été mise à jour, affiche total
-    if (event.capacity != null) {
-      return '${event.capacity} places';
-    }
-    return 'Places illimitées';
+    // fallback : affiche la capacité totale
+    return '${event.capacity} places';
   }
 
   /// Retourne le nom du mois en français
