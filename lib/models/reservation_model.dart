@@ -3,13 +3,11 @@
 /// Modèle pour créer une réservation
 class ReservationRequest {
   final int places;
-  final String contactEmail;
   final String contactPhone;
   final String? notes;
 
   ReservationRequest({
     required this.places,
-    required this.contactEmail,
     required this.contactPhone,
     this.notes,
   });
@@ -18,7 +16,6 @@ class ReservationRequest {
   Map<String, dynamic> toJson() {
     return {
       'places': places,
-      'contactEmail': contactEmail,
       'contactPhone': contactPhone,
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
     };
@@ -30,7 +27,6 @@ class Reservation {
   final int id;
   final int eventId;
   final int places;
-  final String contactEmail;
   final String contactPhone;
   final String? notes;
   final String statut;
@@ -40,7 +36,6 @@ class Reservation {
     required this.id,
     required this.eventId,
     required this.places,
-    required this.contactEmail,
     required this.contactPhone,
     this.notes,
     required this.statut,
@@ -53,7 +48,6 @@ class Reservation {
       id: json['id'] as int,
       eventId: json['eventId'] as int,
       places: json['places'] as int,
-      contactEmail: json['contactEmail'] as String,
       contactPhone: json['contactPhone'] as String,
       notes: json['notes'] as String?,
       statut: json['statut'] as String,

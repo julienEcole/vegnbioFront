@@ -83,7 +83,7 @@ class PublicEventsView extends ConsumerWidget {
     if (authState.isAuthenticated) {
       return const SizedBox.shrink();
     }
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -399,7 +399,7 @@ class PublicEventsView extends ConsumerWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${event.capacity} places',
+                              _capacityLabel(event),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade500,
@@ -409,29 +409,19 @@ class PublicEventsView extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        // Bouton "Signaler" - seulement visible pour les utilisateurs connectés
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final authState = ref.watch(authProvider);
-                            if (!authState.isAuthenticated) {
-                              return const SizedBox.shrink(); // Masquer le bouton si non connecté
-                            }
-                            
-                            return Row(
-                              children: [
-                                const Spacer(),
-                                TextButton.icon(
-                                  onPressed: () => _showReportModal(context, event),
-                                  icon: const Icon(Icons.flag, color: Colors.red),
-                                  label: const Text('Signaler'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
+                        Row(
+                          children: [
+                            const Spacer(),
+                            TextButton.icon(
+                              onPressed: () => _showReportModal(context, event),
+                              icon: const Icon(Icons.flag, color: Colors.red),
+                              label: const Text('Signaler'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -442,36 +432,15 @@ class PublicEventsView extends ConsumerWidget {
               // Bouton de réservation
               SizedBox(
                 width: double.infinity,
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final authState = ref.watch(authProvider);
-                    
-                    if (!authState.isAuthenticated) {
-                      // Bouton de connexion pour les utilisateurs non connectés
-                      return ElevatedButton.icon(
-                        onPressed: () => _handleLogin(context),
-                        icon: const Icon(Icons.login),
-                        label: const Text('Connectez-vous pour réserver'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      );
-                    } else {
-                      // Bouton de réservation normal pour les utilisateurs connectés
-                      return ElevatedButton.icon(
-                        onPressed: () => _showReservationModal(context, event),
-                        icon: const Icon(Icons.event_available),
-                        label: const Text('Réserver une place'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      );
-                    }
-                  },
+                child: ElevatedButton.icon(
+                  onPressed: () => _showReservationModal(context, event),
+                  icon: const Icon(Icons.event_available),
+                  label: const Text('Réserver une place'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
             ],
@@ -487,6 +456,18 @@ class PublicEventsView extends ConsumerWidget {
       context: context,
       builder: (context) => ReservationModal(event: event),
     );
+  }
+
+  String _capacityLabel(Event event) {
+    // Priorité à capacityRemaining si l’API l’envoie
+    if (event.capacityRemaining != null) {
+      return '${event.capacityRemaining} places restantes';
+    }
+    // fallback : si l’API n’a pas encore été mise à jour, affiche total
+    if (event.capacity != null) {
+      return '${event.capacity} places';
+    }
+    return 'Places illimitées';
   }
 
   /// Retourne le nom du mois en français

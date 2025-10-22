@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vegnbio_front/models/event_model.dart';
 import 'package:vegnbio_front/models/reservation_model.dart';
 import 'package:vegnbio_front/providers/reservations_provider.dart';
+import 'package:vegnbio_front/providers/events_provider.dart';
 
 /// Modal pour réserver une place à un événement
 class ReservationModal extends ConsumerStatefulWidget {
@@ -22,14 +23,12 @@ class ReservationModal extends ConsumerStatefulWidget {
 
 class _ReservationModalState extends ConsumerState<ReservationModal> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
   int _places = 1;
 
   @override
   void dispose() {
-    _emailController.dispose();
     _phoneController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -42,11 +41,13 @@ class _ReservationModalState extends ConsumerState<ReservationModal> {
     // Écoute les changements d'état pour fermer la modal en cas de succès
     ref.listen<AsyncValue<Reservation?>>(
       reservationNotifierProvider,
-      (previous, next) {
+          (previous, next) {
         next.whenOrNull(
           data: (reservation) {
             if (reservation != null) {
               // Succès : fermer la modal et afficher un message
+              ref.invalidate(publicEventsProvider);
+
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -168,29 +169,6 @@ class _ReservationModalState extends ConsumerState<ReservationModal> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Email
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email de contact *',
-                      hintText: 'votre.email@exemple.com',
-                      prefixIcon: Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'L\'email est requis';
-                      }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                          .hasMatch(value)) {
-                        return 'Email invalide';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
                   // Téléphone
                   TextFormField(
                     controller: _phoneController,
@@ -244,13 +222,13 @@ class _ReservationModalState extends ConsumerState<ReservationModal> {
                             : _submitReservation,
                         icon: reservationState.isLoading
                             ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                             : const Icon(Icons.check),
                         label: Text(
                           reservationState.isLoading
@@ -281,7 +259,6 @@ class _ReservationModalState extends ConsumerState<ReservationModal> {
     if (_formKey.currentState!.validate()) {
       final request = ReservationRequest(
         places: _places,
-        contactEmail: _emailController.text.trim(),
         contactPhone: _phoneController.text.trim(),
         notes: _notesController.text.trim().isEmpty
             ? null

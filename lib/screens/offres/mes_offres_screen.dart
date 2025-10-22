@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/offres_provider.dart';
 import '../../providers/auth_provider.dart';
+import 'package:flutter/services.dart';
 
 class MesOffresScreen extends ConsumerStatefulWidget {
   const MesOffresScreen({super.key});
@@ -326,6 +327,9 @@ class _OffreDialogState extends State<_OffreDialog> {
   late TextEditingController _quantite;
   late TextEditingController _unite;
 
+  static const allowedUnits = ['kg', 'gr', 'piece'];
+  String? _uniteValue;
+
   @override
   void initState() {
     super.initState();
@@ -339,6 +343,7 @@ class _OffreDialogState extends State<_OffreDialog> {
         text: widget.initial?['quantite']?.toString() ?? '');
     _unite =
         TextEditingController(text: widget.initial?['unite']?.toString() ?? '');
+    //_uniteValue = widget.initial?.unite ?? 'kg';
   }
 
   @override
@@ -354,6 +359,8 @@ class _OffreDialogState extends State<_OffreDialog> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.initial != null;
+    const allowedUnits = ['kg', 'gr', 'piece'];
+
     return AlertDialog(
       title: Text(isEdit ? 'Modifier l’offre' : 'Créer une offre'),
       content: Form(
@@ -366,65 +373,89 @@ class _OffreDialogState extends State<_OffreDialog> {
               TextFormField(
                 controller: _titre,
                 decoration: const InputDecoration(labelText: 'Titre'),
-                validator: (v) =>
-                (v == null || v.isEmpty) ? 'Obligatoire' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Obligatoire' : null,
               ),
+
               TextFormField(
                 controller: _description,
                 decoration: const InputDecoration(labelText: 'Description'),
                 minLines: 2,
                 maxLines: 4,
               ),
+
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _prix,
                       decoration: const InputDecoration(
-                          labelText: 'Prix (ex: 9.90)'),
-                      validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Obligatoire' : null,
+                        labelText: 'Prix (entier, ex: 990 pour 9,90€)',
+                        hintText: 'en centimes',
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly], // <-- nécessite l’import services.dart
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Obligatoire';
+                        final n = int.tryParse(v.trim());
+                        if (n == null || n < 0) return 'Nombre entier positif requis';
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _quantite,
-                      decoration:
-                      const InputDecoration(labelText: 'Quantité'),
-                      validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Obligatoire' : null,
+                      decoration: const InputDecoration(labelText: 'Quantité'),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Obligatoire';
+                        final n = int.tryParse(v.trim());
+                        if (n == null || n <= 0) return 'Entier > 0 requis';
+                        return null;
+                      },
                     ),
                   ),
                 ],
               ),
-              TextFormField(
-                controller: _unite,
-                decoration:
-                const InputDecoration(labelText: 'Unité (ex: kg, pièce)'),
-                validator: (v) =>
-                (v == null || v.isEmpty) ? 'Obligatoire' : null,
+
+              const SizedBox(height: 8),
+
+              DropdownButtonFormField<String>(
+                value: _uniteValue, // <-- utilise la variable d’état
+                items: allowedUnits
+                    .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                    .toList(),
+                onChanged: (v) => setState(() => _uniteValue = v),
+                decoration: const InputDecoration(labelText: 'Unité'),
+                validator: (v) => (v == null || v.isEmpty) ? 'Obligatoire' : null,
               ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler')),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState?.validate() != true) return;
+
+            // Parsing fiable
+            final prixCents = int.parse(_prix.text.trim());       // ex: 990 pour 9,90€
+            final quantite = int.parse(_quantite.text.trim());
+            final unite = _uniteValue!;
+
             final payload = {
               'titre': _titre.text.trim(),
-              'description': _description.text.trim().isEmpty
-                  ? null
-                  : _description.text.trim(),
-              'prix': _prix.text.trim(),
-              'quantite': int.tryParse(_quantite.text.trim()) ?? 0,
-              'unite': _unite.text.trim(),
+              'description': _description.text.trim().isEmpty ? null : _description.text.trim(),
+
+              // ✅ Prix entier (long) + quantité int + unité depuis la liste
+              'prix': prixCents,
+              'quantite': quantite,
+              'unite': unite,
             };
+
             Navigator.pop(context, payload);
           },
           child: Text(isEdit ? 'Enregistrer' : 'Créer'),
@@ -432,4 +463,5 @@ class _OffreDialogState extends State<_OffreDialog> {
       ],
     );
   }
+
 }

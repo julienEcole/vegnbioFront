@@ -16,6 +16,9 @@ class Event {
   final String? imageUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int? capacityTotal;
+  final int? reservedPlaces;
+  final int? capacityRemaining;
 
   Event({
     required this.id,
@@ -32,6 +35,9 @@ class Event {
     this.imageUrl,
     required this.createdAt,
     required this.updatedAt,
+    this.capacityTotal,
+    this.reservedPlaces,
+    this.capacityRemaining,
   });
 
   /// Création d'un Event depuis JSON
@@ -51,12 +57,15 @@ class Event {
       imageUrl: json['imageUrl'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      capacityTotal: json['capacityTotal'] as int?,
+      reservedPlaces: json['reservedPlaces'] as int?,
+      capacityRemaining: json['capacityRemaining'] as int?,
     );
   }
 
   /// Conversion d'un Event en JSON
   Map<String, dynamic> toJson() {
-    return {
+    final map = {
       'id': id,
       'restaurantId': restaurantId,
       'createdBy': createdBy,
@@ -72,5 +81,9 @@ class Event {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
+    if (capacityTotal != null) map['capacityTotal'] = capacityTotal;
+    if (reservedPlaces != null) map['reservedPlaces'] = reservedPlaces;
+    if (capacityRemaining != null) map['capacityRemaining'] = capacityRemaining;
+    return map;
   }
 }
